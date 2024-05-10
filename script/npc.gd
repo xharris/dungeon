@@ -11,7 +11,7 @@ var l = Logger.create("npc")
 @export var target_strategy:TargetStrategy
 @export var ability:Ability
 @export var type:NPCType
-@export var body_radius:int
+@export var body_radius:int = 10
 @export var sprite:NPCSprite
 @export var movement:NPCMovement
 @export var health:Health
@@ -20,13 +20,25 @@ var l = Logger.create("npc")
 func _ready():
 	add_to_group(GROUP)
 	ability.activated.connect(on_ability_activated)
+	ability.speed_changed.connect(on_ability_speed_changed)
 	sprite.attack_climaxed.connect(on_sprite_attack_climaxed)
 	movement.started_moving.connect(on_started_moving)
 	movement.reached_target.connect(on_reached_target)
 	movement.move.connect(on_move)
+	health.damaged.connect(on_damaged)
+
+func on_ability_speed_changed(speed:float):
+	sprite.set_animation_speed(speed)
+
+func on_damaged(amt:int):
+	sprite.damage()
 
 func on_ability_activated():
-	sprite.attack()
+	match ability.ability_range:
+		Ability.AbilityRange.Melee:
+			sprite.melee_attack()
+		Ability.AbilityRange.Ranged:
+			sprite.ranged_attack()
 
 func on_sprite_attack_climaxed():
 	ability.inflict()
@@ -47,7 +59,7 @@ func on_reached_target():
 	ability.start()
 
 func sort_closest(a:NPC, b:NPC):
-	return a.global_position.distance_to(global_position) > b.global_position.distance_to(global_position)
+	return b.global_position.distance_to(global_position) > a.global_position.distance_to(global_position)
 
 func find_target():
 	if ability.target_type == Ability.TargetType.Self:

@@ -16,18 +16,18 @@ class _Logger:
 	func _is_level(l:Level) -> bool:
 		return self.level <= l or level <= l
 		
-	func error(msg:String, args:Variant = null):
+	func error(msg:Variant, args:Variant = null):
 		if _is_level(Level.Error):
-			push_error("[!] ", _name, " \t", msg.format(args))
+			push_error("[!] ", _name, " \t", str(msg).format(args))
 			
-	func warn(msg:String, args:Variant = null):
+	func warn(msg:Variant, args:Variant = null):
 		if _is_level(Level.Warn):
-			push_warning("[!] ", _name, " \t", msg.format(args))
+			push_warning("[!] ", _name, " \t", str(msg).format(args))
 			
-	func debug(msg:String, args:Variant = null):
+	func debug(msg:Variant, args:Variant = null):
 		if _is_level(Level.Debug):
-			print("[?] ", _name, " \t", msg.format(args))
+			print("[?] ", _name, " \t", str(msg).format(args))
 		
-	func info(msg:String, args:Variant = null):
+	func info(msg:Variant, args:Variant = null):
 		if _is_level(Level.Info):
-			print("[i] ", _name, " \t", msg.format(args))
+			print("[i] ", _name, " \t", str(msg).format(args))

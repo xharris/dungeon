@@ -5,10 +5,10 @@ enum TargetType {Ally, Enemy, Self}
 enum AbilityRange {Melee, Ranged}
 enum AbilityEffect {Damage, Heal}
 
-var l = Logger.create("ability", Logger.Level.Debug)
+var l = Logger.create("ability")
 
 @export var target_type:TargetType
-@export var range:AbilityRange
+@export var ability_range:AbilityRange
 @export var cooldown:float = 1.0:
 	set(v):
 		cooldown = v
@@ -16,6 +16,7 @@ var l = Logger.create("ability", Logger.Level.Debug)
 @export var strength:int = 1
 @export var effect:AbilityEffect
 @export var times:int = 1
+@export var projectile_speed:int = 0
 
 var target:NPC
 var timer = Timer.new()
@@ -23,6 +24,7 @@ var repeat_timer = Timer.new()
 var _times_count = 0
 
 signal activated
+signal speed_changed(float)
 
 func _ready():
 	add_child(timer)
@@ -31,10 +33,13 @@ func _ready():
 	add_child(repeat_timer)
 	repeat_timer.one_shot = true
 
-func inflict():
+func inflict(from_projectile = false):
 	if !target:
 		l.warn("no target to inflict ability")
 		return
+	if ability_range == AbilityRange.Ranged && !from_projectile:
+		var p := Projectile.create(self, target)
+		p.target_reached.connect(inflict.bind(true))
 	match effect:
 		AbilityEffect.Damage:
 			target.health.take_damage(strength)
@@ -50,7 +55,7 @@ func reset():
 	target = null
 
 func get_range() -> int:
-	match range:
+	match ability_range:
 		AbilityRange.Melee:
 			return 20
 		AbilityRange.Ranged:
@@ -68,17 +73,21 @@ func stop():
 func start():
 	if is_stopped():
 		l.debug("start ability")
+		speed_changed.emit(1.0 / (cooldown / times))
 		activate()
 		timer.start()
 
 func activate():
 	if _times_count < times:
-		l.debug("ability activate (x{times})",{ "times":_times_count + 1 })
 		repeat_timer.timeout.connect(activate)
 		repeat_timer.start(cooldown / times)
-		l.debug("wait time {t}", {"t":repeat_timer.wait_time})
-		activated.emit()
 		_times_count += 1
+		l.debug("ability activate (x{times}), range={range}",{ 
+			"times":_times_count, 
+			"range":ability_range,
+			"wait_time": repeat_timer.wait_time
+		})
+		activated.emit()
 	else:
 		_times_count = 0
 		repeat_timer.stop()

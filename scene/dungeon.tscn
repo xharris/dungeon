@@ -1,46 +1,11 @@
-[gd_scene load_steps=6 format=3 uid="uid://de4kvyp2eesf7"]
+[gd_scene load_steps=2 format=3 uid="uid://de4kvyp2eesf7"]
 
-[ext_resource type="Script" path="res://script/npc.gd" id="1_yngj8"]
-[ext_resource type="PackedScene" uid="uid://7wybiwkp0js2" path="res://scene/npc_sprite.tscn" id="2_3vf68"]
-[ext_resource type="PackedScene" uid="uid://3ycaasshefyh" path="res://scene/ability.tscn" id="3_wgbbk"]
-[ext_resource type="PackedScene" uid="uid://cifjnvbxqh1ga" path="res://scene/npc_movement.tscn" id="4_0k5t2"]
-[ext_resource type="PackedScene" uid="uid://cv34fv8ahuxer" path="res://scene/health.tscn" id="5_xemht"]
+[ext_resource type="Script" path="res://scene/dungeon.gd" id="1_otf8v"]
 
 [node name="Dungeon" type="Node2D"]
+script = ExtResource("1_otf8v")
 
-[node name="TestAlly" type="Node2D" parent="." node_paths=PackedStringArray("ability", "sprite", "movement", "health")]
-position = Vector2(173, 195)
-script = ExtResource("1_yngj8")
-ability = NodePath("Slash")
-body_radius = 10
-sprite = NodePath("NPCSprite")
-movement = NodePath("NPCMovement")
-health = NodePath("Health")
-
-[node name="NPCMovement" parent="TestAlly" instance=ExtResource("4_0k5t2")]
-
-[node name="NPCSprite" parent="TestAlly" instance=ExtResource("2_3vf68")]
-
-[node name="Slash" parent="TestAlly" instance=ExtResource("3_wgbbk")]
-target_type = 1
-
-[node name="Health" parent="TestAlly" instance=ExtResource("5_xemht")]
-
-[node name="TestEnemy" type="Node2D" parent="." node_paths=PackedStringArray("ability", "sprite", "movement", "health")]
-position = Vector2(398, 198)
-script = ExtResource("1_yngj8")
-ability = NodePath("Slash")
-type = 1
-body_radius = 10
-sprite = NodePath("NPCSprite")
-movement = NodePath("NPCMovement")
-health = NodePath("Health")
-
-[node name="NPCMovement" parent="TestEnemy" instance=ExtResource("4_0k5t2")]
-
-[node name="NPCSprite" parent="TestEnemy" instance=ExtResource("2_3vf68")]
-
-[node name="Slash" parent="TestEnemy" instance=ExtResource("3_wgbbk")]
-target_type = 1
-
-[node name="Health" parent="TestEnemy" instance=ExtResource("5_xemht")]
+[node name="Camera2D" type="Camera2D" parent="."]
+unique_name_in_owner = true
+position_smoothing_enabled = true
+position_smoothing_speed = 20.0

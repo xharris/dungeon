@@ -1,8 +1,10 @@
 class_name Health
 extends Node2D
 
-var remaining:int
-var total:int:
+signal damaged
+
+@export var remaining:int = 5
+@export var total:int = 5:
 	set(v):
 		var ratio = (remaining / total) * total
 		total = v
@@ -13,4 +15,4 @@ var total:int:
 
 func take_damage(amt:int):
 	remaining -= amt
-	# show hit point text
+	damaged.emit(amt)

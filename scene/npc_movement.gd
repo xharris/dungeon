@@ -1,18 +1,18 @@
 class_name NPCMovement
 extends Node2D
 
-var l = Logger.create("npc_movement")
+static var l = Logger.create("npc_movement")
 
 signal started_moving
 signal move(Vector2)
 signal reached_target
 
+@export var debug_draw = false
 var target:Node2D
 var target_distance:int:
 	set(v):
 		target_distance = v
 		queue_redraw()
-
 var in_range = false
 var paused = false
 var velocity:Vector2
@@ -50,11 +50,12 @@ func _process(delta):
 	_check_in_range()
 	# move towards target
 	if !in_range && !paused:
-		velocity = (target.global_position - global_position).normalized()
+		velocity = Velocity.calc(self.global_position, target.global_position)
 		move.emit(velocity)
 	# reached target
 	if in_range && velocity != Vector2.ZERO:
 		velocity = Vector2.ZERO
 
 func _draw():
-	draw_arc(Vector2(0, 0), target_distance, 0, TAU, 180, Color.WHITE, 1)
+	if debug_draw:
+		draw_arc(Vector2(0, 0), target_distance, 0, TAU, 180, Color.WHITE, 1)
