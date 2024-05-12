@@ -38,12 +38,12 @@ func inflict(from_projectile = false):
 		l.warn("no target to inflict ability")
 		return
 	if ability_range == AbilityRange.Ranged && !from_projectile:
-		var p := Projectile.create(self, target)
+		var p := Scenes.projectile(self, target)
 		p.target_reached.connect(inflict.bind(true))
 	match effect:
 		AbilityEffect.Damage:
 			target.health.take_damage(strength)
-			var at = ActionText.create(target, -1 if target.global_position.x < global_position.x else 1)
+			var at = Scenes.action_text(target, -1 if target.global_position.x < global_position.x else 1)
 			at.set_text(strength)
 			at.set_color(Color.hex(0xF44336FF))
 

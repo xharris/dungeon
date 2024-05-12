@@ -3,16 +3,7 @@ extends Node2D
 
 static var l = Logger.create("projectile")
 
-static var scn_projectile = preload("res://scene/projectile.tscn")
-
 enum PathType {Linear, Parabola, Oscillate}
-
-static func create(from:Node2D, target:Node2D) -> Projectile:
-	var p := scn_projectile.instantiate() as Projectile
-	p.global_position = from.global_position
-	p.target = target
-	from.get_tree().root.add_child(p)
-	return p
 
 signal target_reached
 

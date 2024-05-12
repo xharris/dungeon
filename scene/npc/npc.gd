@@ -15,6 +15,7 @@ var l = Logger.create("npc")
 @export var sprite:NPCSprite
 @export var movement:NPCMovement
 @export var health:Health
+var paused = false
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -30,7 +31,7 @@ func _ready():
 func on_ability_speed_changed(speed:float):
 	sprite.set_animation_speed(speed)
 
-func on_damaged(amt:int):
+func on_damaged(_amt:int):
 	sprite.damage()
 
 func on_ability_activated():
@@ -90,7 +91,10 @@ func get_range() -> int:
 	return ability.get_range() + body_radius
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta):
+func _process(_delta):
+	movement.paused = paused
+	if paused:
+		return
 	find_target()
 	movement.target_distance = get_range()
 

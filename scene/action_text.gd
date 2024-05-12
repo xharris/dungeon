@@ -1,21 +1,7 @@
 class_name ActionText
 extends Node2D
 
-static var scn_action_text = preload("res://scene/action_text.tscn")
 enum AnimationType {Fly, Slow}
-
-static func create(source:Node2D, direction:int = 1, animation_type:AnimationType = AnimationType.Fly) -> ActionText:
-	var at := scn_action_text.instantiate() as ActionText
-	at.global_position = source.global_position
-	at.z_index = 10
-	# animation type
-	match animation_type:
-		AnimationType.Fly:
-			at.velocity = Vector2(randi_range(1,2) * direction, -3)
-			at.gravity = Vector2(0, 0.25)
-			at._disappear_timer.wait_time = 0.25
-	source.get_tree().root.add_child(at)
-	return at
 
 var l = Logger.create("action_text")
 var gravity = Vector2.ZERO

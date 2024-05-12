@@ -1,0 +1,22 @@
+[gd_scene load_steps=6 format=3 uid="uid://bn2tr0l6io1ev"]
+
+[ext_resource type="Script" path="res://scene/shop/shop_npc.gd" id="1_junrn"]
+[ext_resource type="PackedScene" uid="uid://7wybiwkp0js2" path="res://scene/npc_sprite.tscn" id="2_6b3qx"]
+[ext_resource type="PackedScene" uid="uid://cv34fv8ahuxer" path="res://scene/health.tscn" id="3_6j10f"]
+[ext_resource type="PackedScene" uid="uid://3ycaasshefyh" path="res://scene/ability.tscn" id="4_iqdwt"]
+[ext_resource type="PackedScene" uid="uid://b4h0ptcj0k4vx" path="res://scene/shop_item.tscn" id="5_nwi8d"]
+
+[node name="ShopNPC" type="Node2D" node_paths=PackedStringArray("sprite", "health", "ability", "shop_item")]
+script = ExtResource("1_junrn")
+sprite = NodePath("NPCSprite")
+health = NodePath("Health")
+ability = NodePath("Ability")
+shop_item = NodePath("ShopItem")
+
+[node name="NPCSprite" parent="." instance=ExtResource("2_6b3qx")]
+
+[node name="Health" parent="." instance=ExtResource("3_6j10f")]
+
+[node name="Ability" parent="." instance=ExtResource("4_iqdwt")]
+
+[node name="ShopItem" parent="." instance=ExtResource("5_nwi8d")]
