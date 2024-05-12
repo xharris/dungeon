@@ -11,13 +11,16 @@ static func get_by_type(room_type:Room.RoomType) -> Array[Room]:
 	rooms.assign(Game.get_tree().get_nodes_in_group(Group).filter(func(r:Room): return r.room_type == room_type))
 	return rooms
 
+static func get_at_position(pos:Vector2i) -> Room:
+	for room in Game.get_tree().get_nodes_in_group(Group):
+		room = room as Room
+		if room.room_position == pos:
+			return room
+	return null
+
 signal completed
 signal repositioned
-
-var up:Room
-var down:Room
-var left:Room
-var right:Room
+signal move_to_room(Room)
 
 var room_position:Vector2i:
 	set(v):
@@ -32,6 +35,33 @@ var paused = false:
 		for e in get_enemies():
 			e.paused = v
 		paused = v
+
+func on_move_up_pressed():
+	var room = get_neighbor(Vector2i(0, -1))
+	if room:
+		move_to_room.emit(room)
+
+func on_move_right_pressed():
+	var room = get_neighbor(Vector2i(1, 0))
+	if room:
+		move_to_room.emit(room)
+		
+func on_move_down_pressed():
+	var room = get_neighbor(Vector2i(0, 1))
+	if room:
+		move_to_room.emit(room)
+		
+func on_move_left_pressed():
+	var room = get_neighbor(Vector2i(-1, 0))
+	if room:
+		move_to_room.emit(room)
+
+func get_neighbor(relative_pos:Vector2i) -> Room:
+	return Room.get_at_position(room_position + relative_pos)
+
+func show_move_buttons():
+	var move_buttons = %MoveButtons as Control
+	move_buttons.visible = true
 
 func room_global_position() -> Vector2:
 	return Game.size() * Vector2(room_position)
@@ -48,25 +78,6 @@ func set_room_name(n:String):
 	var label = %RoomType
 	label.text = n
 
-func _connect_room(other:Room):
-	if other.room_position.x > room_position.x:
-		right = other
-	elif other.room_position.x < room_position.x:
-		left = other
-	elif other.room_position.y < room_position.y:
-		up = other
-	elif other.room_position.y > room_position.y:
-		down = other
-
-func connect_room(other:Room):
-	_connect_room(other)
-	other._connect_room(self)
-
-func is_neighboring(other:Room) -> bool:
-	var xdelta = abs(room_position.x - other.x)
-	var ydelta = abs(room_position.y - other.y)
-	return xdelta <= 1 && ydelta <= 1
-
 func add_npc(e:NPC):
 	_npcs.append(e)
 	add_child(e)
@@ -79,9 +90,19 @@ func enable():
 		return
 	paused = false
 
+func _update_move_buttons():
+	# show buttons where neighbors exist
+	(%GoUp as Button).visible = get_neighbor(Vector2i(0, -1)) != null
+	(%GoRight as Button).visible = get_neighbor(Vector2i(1, 0)) != null
+	(%GoDown as Button).visible = get_neighbor(Vector2i(0, 1)) != null
+	(%GoLeft as Button).visible = get_neighbor(Vector2i(-1, 0)) != null
+
 func _ready():
 	l.debug("ready")
 	add_to_group(Group)
+	_update_move_buttons()
+	Game.room_added.emit()
+	Game.room_added.connect(_update_move_buttons)
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(_delta):

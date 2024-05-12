@@ -8,6 +8,7 @@ script = ExtResource("1_thlli")
 
 [node name="RoomType" type="Label" parent="."]
 unique_name_in_owner = true
+modulate = Color(1, 1, 1, 0.14902)
 offset_right = 161.0
 offset_bottom = 31.0
 size_flags_horizontal = 4
@@ -16,3 +17,76 @@ theme_override_font_sizes/font_size = 32
 text = "ROOM TYPE"
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="MoveButtons" type="Control" parent="CanvasLayer"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("2_urepf")
+
+[node name="GoUp" type="Button" parent="CanvasLayer/MoveButtons"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -4.0
+offset_right = 4.0
+offset_bottom = 8.0
+grow_horizontal = 2
+text = "Go Up"
+
+[node name="GoRight" type="Button" parent="CanvasLayer/MoveButtons"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -64.0
+offset_top = -14.5
+offset_bottom = 14.5
+grow_horizontal = 0
+grow_vertical = 2
+text = "Go Right"
+
+[node name="GoDown" type="Button" parent="CanvasLayer/MoveButtons"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -32.0
+offset_top = -29.0
+offset_right = 32.0
+grow_horizontal = 2
+grow_vertical = 0
+text = "Go Down"
+
+[node name="GoLeft" type="Button" parent="CanvasLayer/MoveButtons"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_top = -14.5
+offset_right = 64.0
+offset_bottom = 14.5
+grow_vertical = 2
+text = "Go Left
+"
+
+[connection signal="pressed" from="CanvasLayer/MoveButtons/GoUp" to="." method="on_move_up_pressed"]
+[connection signal="pressed" from="CanvasLayer/MoveButtons/GoRight" to="." method="on_move_right_pressed"]
+[connection signal="pressed" from="CanvasLayer/MoveButtons/GoDown" to="." method="on_move_down_pressed"]
+[connection signal="pressed" from="CanvasLayer/MoveButtons/GoLeft" to="." method="on_move_left_pressed"]

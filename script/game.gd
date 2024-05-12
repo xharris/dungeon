@@ -1,15 +1,24 @@
 extends Node2D
 
+var l = Logger.create("game")
+
+signal room_added
+
 var money:int = 0
 var allies:Array[NPC] = []
 var level:int = 1
 var dungeon:Dungeon
 
-func add_ally(item:ShopNPC):
+func delete_node(node:Node):
+	node.get_parent().remove_child(node)
+	node.queue_free()
+
+func hire_ally(item:ShopNPC):
 	var ally = Scenes.npc(item.ability, item.sprite, item.health)
-	ally.global_position = item.global_position
 	allies.append(ally)
 	dungeon.add_child(ally)
+	ally.global_position = item.global_position
+	return ally
 
 func clean():
 	for a in allies:

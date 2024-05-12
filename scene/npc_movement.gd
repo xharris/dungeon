@@ -9,6 +9,7 @@ signal reached_target
 
 @export var debug_draw = false
 var target:Node2D
+var target_position:Vector2
 var target_distance:int:
 	set(v):
 		target_distance = v
@@ -35,6 +36,9 @@ func set_target(t:Node2D):
 		l.debug("set movement target ", t)
 		target = t
 		_check_in_range(true)
+
+func set_target_position(pos:Vector2):
+	target = null
 
 ## Stop movement and clear target
 func reset():

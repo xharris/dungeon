@@ -9,8 +9,12 @@ func shop_npc() -> ShopNPC:
 var _npc = preload("res://scene/npc/npc.tscn")
 func npc(ability:Ability, sprite:NPCSprite, health:Health) -> NPC:
 	var n := _npc.instantiate() as NPC
+	ability.reparent(n)
 	n.ability = ability
+	sprite.reparent(n)
 	n.sprite = sprite
+	n.sprite.position = Vector2.ZERO
+	health.reparent(n)
 	n.health = health
 	return n
 

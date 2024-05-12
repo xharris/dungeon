@@ -13,6 +13,14 @@ func _process(delta):
 	var weapon := %Weapon as Sprite2D
 	weapon.texture = weapon_texture
 
+func happy_jump():
+	var player := %AnimationPlayer as AnimationPlayer
+	player.play("happy_jump")
+
+func eyes_happy():
+	var eyes := %Eyes
+	eyes.animation = "happy"
+	
 func set_animation_speed(speed:float):
 	var player := %AnimationPlayer as AnimationPlayer
 	player.speed_scale = speed
@@ -48,3 +56,4 @@ func walk():
 func stand():
 	var player := %AnimationPlayer as AnimationPlayer
 	player.play("stand")
+

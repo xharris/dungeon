@@ -7,7 +7,7 @@ enum AbilityEffect {Damage, Heal}
 
 var l = Logger.create("ability")
 
-@export var target_type:TargetType
+@export var target_type:TargetType = TargetType.Enemy
 @export var ability_range:AbilityRange
 @export var cooldown:float = 1.0:
 	set(v):
@@ -79,7 +79,8 @@ func start():
 
 func activate():
 	if _times_count < times:
-		repeat_timer.timeout.connect(activate)
+		if !repeat_timer.timeout.is_connected(activate):
+			repeat_timer.timeout.connect(activate)
 		repeat_timer.start(cooldown / times)
 		_times_count += 1
 		l.debug("ability activate (x{times}), range={range}",{ 

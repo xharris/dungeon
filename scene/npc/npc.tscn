@@ -1,6 +1,7 @@
-[gd_scene load_steps=3 format=3 uid="uid://dxkrx1jgqhdd5"]
+[gd_scene load_steps=4 format=3 uid="uid://dxkrx1jgqhdd5"]
 
 [ext_resource type="Script" path="res://scene/npc/npc.gd" id="1_eptj2"]
+[ext_resource type="PackedScene" uid="uid://cjdk07hrdpcjt" path="res://scene/pathfinder.tscn" id="3_stlgf"]
 [ext_resource type="PackedScene" uid="uid://cifjnvbxqh1ga" path="res://scene/npc_movement.tscn" id="4_ys77i"]
 
 [node name="NPC" type="Node2D" node_paths=PackedStringArray("movement")]
@@ -8,3 +9,5 @@ script = ExtResource("1_eptj2")
 movement = NodePath("NPCMovement")
 
 [node name="NPCMovement" parent="." instance=ExtResource("4_ys77i")]
+
+[node name="Pathfinding" parent="." instance=ExtResource("3_stlgf")]

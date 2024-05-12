@@ -1,4 +1,4 @@
-[gd_scene load_steps=27 format=3 uid="uid://7wybiwkp0js2"]
+[gd_scene load_steps=30 format=3 uid="uid://7wybiwkp0js2"]
 
 [ext_resource type="Script" path="res://scene/npc_sprite.gd" id="1_l75hj"]
 [ext_resource type="Texture2D" uid="uid://ca6lfwrj34o36" path="res://image/bird.png" id="1_yy7pk"]
@@ -7,6 +7,7 @@
 [ext_resource type="Texture2D" uid="uid://cjj4ibgb22s58" path="res://image/eyes_closed.png" id="4_td00r"]
 [ext_resource type="Texture2D" uid="uid://dsf1nstuo4u7d" path="res://image/arm.png" id="5_asxfu"]
 [ext_resource type="Texture2D" uid="uid://p851xf00oh71" path="res://image/eyes_squinting.png" id="6_00xek"]
+[ext_resource type="Texture2D" uid="uid://bmmm3oeawj2l4" path="res://image/eyes_happy.png" id="6_a0m2u"]
 
 [sub_resource type="Animation" id="Animation_svm0h"]
 resource_name = "RESET"
@@ -14,7 +15,7 @@ length = 0.001
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("Images/Body:animation")
+tracks/0/path = NodePath("Base/Images/Body:animation")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
@@ -26,7 +27,7 @@ tracks/0/keys = {
 tracks/1/type = "value"
 tracks/1/imported = false
 tracks/1/enabled = true
-tracks/1/path = NodePath("Images:position")
+tracks/1/path = NodePath("Base/Images:position")
 tracks/1/interp = 1
 tracks/1/loop_wrap = true
 tracks/1/keys = {
@@ -38,7 +39,7 @@ tracks/1/keys = {
 tracks/2/type = "value"
 tracks/2/imported = false
 tracks/2/enabled = true
-tracks/2/path = NodePath("Images:rotation")
+tracks/2/path = NodePath("Base/Images:rotation")
 tracks/2/interp = 1
 tracks/2/loop_wrap = true
 tracks/2/keys = {
@@ -50,7 +51,7 @@ tracks/2/keys = {
 tracks/3/type = "value"
 tracks/3/imported = false
 tracks/3/enabled = true
-tracks/3/path = NodePath("Images/Arm:animation")
+tracks/3/path = NodePath("Base/Images/Arm:animation")
 tracks/3/interp = 1
 tracks/3/loop_wrap = true
 tracks/3/keys = {
@@ -62,7 +63,7 @@ tracks/3/keys = {
 tracks/4/type = "value"
 tracks/4/imported = false
 tracks/4/enabled = true
-tracks/4/path = NodePath("Weapon:rotation")
+tracks/4/path = NodePath("Base/Weapon:rotation")
 tracks/4/interp = 1
 tracks/4/loop_wrap = true
 tracks/4/keys = {
@@ -74,7 +75,7 @@ tracks/4/keys = {
 tracks/5/type = "value"
 tracks/5/imported = false
 tracks/5/enabled = true
-tracks/5/path = NodePath("Images/Eyes:animation")
+tracks/5/path = NodePath("Base/Images/Eyes:animation")
 tracks/5/interp = 1
 tracks/5/loop_wrap = true
 tracks/5/keys = {
@@ -89,7 +90,7 @@ resource_name = "attack"
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("Images/Body:animation")
+tracks/0/path = NodePath("Base/Images/Body:animation")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
@@ -101,7 +102,7 @@ tracks/0/keys = {
 tracks/1/type = "value"
 tracks/1/imported = false
 tracks/1/enabled = true
-tracks/1/path = NodePath("Weapon:rotation")
+tracks/1/path = NodePath("Base/Weapon:rotation")
 tracks/1/interp = 1
 tracks/1/loop_wrap = true
 tracks/1/keys = {
@@ -113,7 +114,7 @@ tracks/1/keys = {
 tracks/2/type = "value"
 tracks/2/imported = false
 tracks/2/enabled = true
-tracks/2/path = NodePath("Images/Arm:animation")
+tracks/2/path = NodePath("Base/Images/Arm:animation")
 tracks/2/interp = 1
 tracks/2/loop_wrap = true
 tracks/2/keys = {
@@ -125,7 +126,7 @@ tracks/2/keys = {
 tracks/3/type = "value"
 tracks/3/imported = false
 tracks/3/enabled = true
-tracks/3/path = NodePath("Images/Body:frame")
+tracks/3/path = NodePath("Base/Images/Body:frame")
 tracks/3/interp = 1
 tracks/3/loop_wrap = true
 tracks/3/keys = {
@@ -137,7 +138,7 @@ tracks/3/keys = {
 tracks/4/type = "value"
 tracks/4/imported = false
 tracks/4/enabled = true
-tracks/4/path = NodePath("Images/Eyes:animation")
+tracks/4/path = NodePath("Base/Images/Eyes:animation")
 tracks/4/interp = 1
 tracks/4/loop_wrap = true
 tracks/4/keys = {
@@ -149,7 +150,7 @@ tracks/4/keys = {
 tracks/5/type = "value"
 tracks/5/imported = false
 tracks/5/enabled = true
-tracks/5/path = NodePath("Images:rotation")
+tracks/5/path = NodePath("Base/Images:rotation")
 tracks/5/interp = 1
 tracks/5/loop_wrap = true
 tracks/5/keys = {
@@ -178,7 +179,7 @@ resource_name = "ranged_attack"
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("Weapon:scale")
+tracks/0/path = NodePath("Base/Weapon:scale")
 tracks/0/interp = 2
 tracks/0/loop_wrap = true
 tracks/0/keys = {
@@ -190,7 +191,7 @@ tracks/0/keys = {
 tracks/1/type = "value"
 tracks/1/imported = false
 tracks/1/enabled = true
-tracks/1/path = NodePath("Images/Eyes:animation")
+tracks/1/path = NodePath("Base/Images/Eyes:animation")
 tracks/1/interp = 1
 tracks/1/loop_wrap = true
 tracks/1/keys = {
@@ -202,7 +203,7 @@ tracks/1/keys = {
 tracks/2/type = "value"
 tracks/2/imported = false
 tracks/2/enabled = true
-tracks/2/path = NodePath("Images/Body:animation")
+tracks/2/path = NodePath("Base/Images/Body:animation")
 tracks/2/interp = 1
 tracks/2/loop_wrap = true
 tracks/2/keys = {
@@ -231,7 +232,7 @@ resource_name = "sit"
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("Images/Body:animation")
+tracks/0/path = NodePath("Base/Images/Body:animation")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
@@ -243,7 +244,7 @@ tracks/0/keys = {
 tracks/1/type = "value"
 tracks/1/imported = false
 tracks/1/enabled = true
-tracks/1/path = NodePath("Images:position")
+tracks/1/path = NodePath("Base/Images:position")
 tracks/1/interp = 1
 tracks/1/loop_wrap = true
 tracks/1/keys = {
@@ -259,7 +260,7 @@ length = 0.001
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("Images/Body:animation")
+tracks/0/path = NodePath("Base/Images/Body:animation")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
@@ -271,7 +272,7 @@ tracks/0/keys = {
 tracks/1/type = "value"
 tracks/1/imported = false
 tracks/1/enabled = true
-tracks/1/path = NodePath("Images:position")
+tracks/1/path = NodePath("Base/Images:position")
 tracks/1/interp = 1
 tracks/1/loop_wrap = true
 tracks/1/keys = {
@@ -288,7 +289,7 @@ loop_mode = 1
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("Images:position")
+tracks/0/path = NodePath("Base/Images:position")
 tracks/0/interp = 2
 tracks/0/loop_wrap = true
 tracks/0/keys = {
@@ -300,7 +301,7 @@ tracks/0/keys = {
 tracks/1/type = "value"
 tracks/1/imported = false
 tracks/1/enabled = true
-tracks/1/path = NodePath("Images/Body:frame")
+tracks/1/path = NodePath("Base/Images/Body:frame")
 tracks/1/interp = 1
 tracks/1/loop_wrap = true
 tracks/1/keys = {
@@ -312,7 +313,7 @@ tracks/1/keys = {
 tracks/2/type = "value"
 tracks/2/imported = false
 tracks/2/enabled = true
-tracks/2/path = NodePath("Images/Body:animation")
+tracks/2/path = NodePath("Base/Images/Body:animation")
 tracks/2/interp = 1
 tracks/2/loop_wrap = true
 tracks/2/keys = {
@@ -322,9 +323,74 @@ tracks/2/keys = {
 "values": [&"walk"]
 }
 
+[sub_resource type="Animation" id="Animation_aojgy"]
+resource_name = "happy_jump"
+length = 2.0
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Base/Images/Eyes:animation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [&"happy", &"default"]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Base/Images/Body:animation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [&"walk", &"stand"]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Base/Images/Body:frame")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [1]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("Base/Images/Arm:animation")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0, 2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [&"up", &"down"]
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("Base:position")
+tracks/4/interp = 2
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0, 0.4, 0.9, 1.7, 2),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 0,
+"values": [Vector2(0, 0), Vector2(0, -6), Vector2(0, -10), Vector2(0, -6), Vector2(0, 0)]
+}
+
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_i3ddu"]
 _data = {
 "RESET": SubResource("Animation_svm0h"),
+"happy_jump": SubResource("Animation_aojgy"),
 "melee_attack": SubResource("Animation_ey5i2"),
 "ranged_attack": SubResource("Animation_ong6p"),
 "sit": SubResource("Animation_hcqqm"),
@@ -386,6 +452,10 @@ region = Rect2(0, 0, 32, 32)
 atlas = ExtResource("2_q5f5e")
 region = Rect2(0, 0, 32, 32)
 
+[sub_resource type="AtlasTexture" id="AtlasTexture_t5mhp"]
+atlas = ExtResource("6_a0m2u")
+region = Rect2(0, 0, 32, 32)
+
 [sub_resource type="AtlasTexture" id="AtlasTexture_ifru4"]
 atlas = ExtResource("6_00xek")
 region = Rect2(0, 0, 32, 32)
@@ -406,6 +476,14 @@ animations = [{
 }],
 "loop": true,
 "name": &"default",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_t5mhp")
+}],
+"loop": true,
+"name": &"happy",
 "speed": 5.0
 }, {
 "frames": [{
@@ -455,22 +533,25 @@ libraries = {
 }
 speed_scale = 4.0
 
-[node name="Weapon" type="Sprite2D" parent="."]
+[node name="Base" type="Node2D" parent="."]
+
+[node name="Weapon" type="Sprite2D" parent="Base"]
 unique_name_in_owner = true
 position = Vector2(8, 5)
 texture = ExtResource("2_f24if")
 offset = Vector2(0, -9)
 
-[node name="Images" type="Node2D" parent="."]
+[node name="Images" type="Node2D" parent="Base"]
 unique_name_in_owner = true
 
-[node name="Body" type="AnimatedSprite2D" parent="Images"]
+[node name="Body" type="AnimatedSprite2D" parent="Base/Images"]
 sprite_frames = SubResource("SpriteFrames_et7al")
 animation = &"stand"
 
-[node name="Eyes" type="AnimatedSprite2D" parent="Images"]
+[node name="Eyes" type="AnimatedSprite2D" parent="Base/Images"]
+unique_name_in_owner = true
 sprite_frames = SubResource("SpriteFrames_go8xu")
 
-[node name="Arm" type="AnimatedSprite2D" parent="Images"]
+[node name="Arm" type="AnimatedSprite2D" parent="Base/Images"]
 sprite_frames = SubResource("SpriteFrames_cbrsb")
 animation = &"down"

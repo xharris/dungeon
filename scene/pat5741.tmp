@@ -1,0 +1,18 @@
+[gd_scene load_steps=3 format=3 uid="uid://cjdk07hrdpcjt"]
+
+[ext_resource type="Script" path="res://scene/pathfinder.gd" id="1_ivumr"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_d3ybu"]
+radius = 32.0
+
+[node name="Pathfinder" type="Node2D"]
+script = ExtResource("1_ivumr")
+
+[node name="Area2D" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+unique_name_in_owner = true
+shape = SubResource("CircleShape2D_d3ybu")
+
+[node name="Rays" type="Node2D" parent="."]
+unique_name_in_owner = true

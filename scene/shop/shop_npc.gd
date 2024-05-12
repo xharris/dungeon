@@ -1,6 +1,8 @@
 class_name ShopNPC
 extends Node2D
 
+static var l = Logger.create("shop_npc")
+
 static func sword(npc:ShopNPC):
 	npc.sprite.weapon_texture = load("res://image/sword.png")
 
@@ -15,4 +17,7 @@ func _ready():
 	shop_item.purchased.connect(on_purchased)
 
 func on_purchased():
-	Game.add_ally(self)
+	l.info("ally hired")
+	var ally = Game.hire_ally(self)
+	ally.sprite.happy_jump()
+	Game.delete_node(self)

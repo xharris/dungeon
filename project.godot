@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="dungeon"
-run/main_scene="res://main.tscn"
+run/main_scene="res://test/test_pathfinder.tscn"
 config/features=PackedStringArray("4.2", "GL Compatibility")
 config/icon="res://icon.svg"
 
@@ -26,6 +26,10 @@ window/size/viewport_width=600
 window/size/viewport_height=400
 window/stretch/mode="viewport"
 window/stretch/scale_mode="integer"
+
+[layer_names]
+
+2d_physics/layer_1="pathfinder"
 
 [rendering]
 
