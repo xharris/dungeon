@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="dungeon"
-run/main_scene="res://test/test_pathfinder.tscn"
+run/main_scene="res://main.tscn"
 config/features=PackedStringArray("4.2", "GL Compatibility")
 config/icon="res://icon.svg"
 
@@ -19,6 +19,7 @@ config/icon="res://icon.svg"
 
 Scenes="*res://script/scenes.gd"
 Game="*res://script/game.gd"
+PathfinderRegion="*res://script/pathfinder_region.gd"
 
 [display]
 

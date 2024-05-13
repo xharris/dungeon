@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=3 uid="uid://crij1dm6k4t1r"]
+[gd_scene load_steps=8 format=3 uid="uid://crij1dm6k4t1r"]
 
 [ext_resource type="Script" path="res://test/pathfinder_npc.gd" id="1_01nh7"]
 [ext_resource type="PackedScene" uid="uid://cjdk07hrdpcjt" path="res://scene/pathfinder.tscn" id="1_sg432"]
@@ -6,51 +6,73 @@
 [ext_resource type="Texture2D" uid="uid://4ihdrgp7j5of" path="res://image/key.png" id="3_jaoof"]
 [ext_resource type="PackedScene" uid="uid://04qr6bpgbpkm" path="res://test/pathfinder_obstacle.tscn" id="5_yqwck"]
 
+[sub_resource type="CircleShape2D" id="CircleShape2D_ff2mr"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_2uxvw"]
+
 [node name="TestPathfinder" type="Node2D"]
 
-[node name="NPC" type="Node2D" parent="." node_paths=PackedStringArray("pathfinder")]
-position = Vector2(68, 173)
-script = ExtResource("1_01nh7")
-pathfinder = NodePath("Pathfinder")
-
-[node name="NPCSprite" parent="NPC" instance=ExtResource("2_2ke5v")]
-
-[node name="Pathfinder" parent="NPC" instance=ExtResource("1_sg432")]
-draw_debug = true
-layer = "npc"
-avoid = Array[String](["box"])
-
 [node name="Key" type="Node2D" parent="."]
-position = Vector2(546, 196)
+position = Vector2(406, 224)
 
 [node name="Pathfinder" parent="Key" instance=ExtResource("1_sg432")]
-draw_debug = null
-is_static = true
-layer = "key"
+target_position = Vector2(406, 224)
 
 [node name="Sprite2D" type="Sprite2D" parent="Key"]
 texture = ExtResource("3_jaoof")
 
-[node name="Box" parent="." instance=ExtResource("5_yqwck")]
+[node name="Boxes" type="Node2D" parent="."]
+position = Vector2(-140, 28)
+
+[node name="Box" parent="Boxes" instance=ExtResource("5_yqwck")]
 position = Vector2(225, 250)
 
-[node name="Box2" parent="." instance=ExtResource("5_yqwck")]
+[node name="Box2" parent="Boxes" instance=ExtResource("5_yqwck")]
 position = Vector2(250, 192)
 
-[node name="Box3" parent="." instance=ExtResource("5_yqwck")]
+[node name="Box3" parent="Boxes" instance=ExtResource("5_yqwck")]
 position = Vector2(273, 134)
 
-[node name="Box4" parent="." instance=ExtResource("5_yqwck")]
+[node name="Box4" parent="Boxes" instance=ExtResource("5_yqwck")]
 position = Vector2(406, 19)
 
-[node name="Box5" parent="." instance=ExtResource("5_yqwck")]
+[node name="Box5" parent="Boxes" instance=ExtResource("5_yqwck")]
 position = Vector2(442, 67)
 
-[node name="Box6" parent="." instance=ExtResource("5_yqwck")]
-position = Vector2(441, 128)
+[node name="Box6" parent="Boxes" instance=ExtResource("5_yqwck")]
+position = Vector2(436, 124)
 
-[node name="Box7" parent="." instance=ExtResource("5_yqwck")]
+[node name="Box7" parent="Boxes" instance=ExtResource("5_yqwck")]
 position = Vector2(419, 184)
 
-[node name="Box8" parent="." instance=ExtResource("5_yqwck")]
+[node name="Box8" parent="Boxes" instance=ExtResource("5_yqwck")]
 position = Vector2(388, 236)
+
+[node name="Box9" parent="Boxes" instance=ExtResource("5_yqwck")]
+position = Vector2(602, 183)
+
+[node name="NPC" type="Node2D" parent="." node_paths=PackedStringArray("pathfinder")]
+position = Vector2(18, 195)
+script = ExtResource("1_01nh7")
+pathfinder = NodePath("Pathfinder")
+
+[node name="Pathfinder" parent="NPC" node_paths=PackedStringArray("target") instance=ExtResource("1_sg432")]
+shape = SubResource("CircleShape2D_ff2mr")
+target = NodePath("../../Key")
+target_position = Vector2(406, 224)
+avoidance_mask = 1
+
+[node name="NPCSprite" parent="NPC" instance=ExtResource("2_2ke5v")]
+
+[node name="Enemy" type="Node2D" parent="." node_paths=PackedStringArray("pathfinder")]
+position = Vector2(354, 298)
+script = ExtResource("1_01nh7")
+pathfinder = NodePath("Pathfinder")
+
+[node name="Pathfinder" parent="Enemy" node_paths=PackedStringArray("target") instance=ExtResource("1_sg432")]
+shape = SubResource("CircleShape2D_2uxvw")
+target = NodePath("../../NPC")
+target_position = Vector2(18, 195)
+avoidance_layer = 1
+
+[node name="NPCSprite" parent="Enemy" instance=ExtResource("2_2ke5v")]

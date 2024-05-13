@@ -17,17 +17,17 @@ class _Logger:
 		return self.level <= l or level <= l
 		
 	func error(msg:Variant, args:Variant = {}):
-		if _is_level(Level.Error):
+		if !Engine.is_editor_hint() and _is_level(Level.Error):
 			push_error("[!] ", _name, " \t", str(msg).format(args))
 			
 	func warn(msg:Variant, args:Variant = {}):
-		if _is_level(Level.Warn):
+		if !Engine.is_editor_hint() and _is_level(Level.Warn):
 			push_warning("[!] ", _name, " \t", str(msg).format(args))
 			
 	func debug(msg:Variant, args:Variant = {}):
-		if _is_level(Level.Debug):
+		if !Engine.is_editor_hint() and _is_level(Level.Debug):
 			print("[?] ", _name, " \t", str(msg).format(args))
 		
 	func info(msg:Variant, args:Variant = {}):
-		if _is_level(Level.Info):
+		if !Engine.is_editor_hint() and _is_level(Level.Info):
 			print("[i] ", _name, " \t", str(msg).format(args))
