@@ -3,6 +3,8 @@ extends Node2D
 var l = Logger.create("game")
 
 signal room_added
+signal pathfinder_added
+signal pathfinder_removed
 
 var money:int = 0
 var allies:Array[NPC] = []

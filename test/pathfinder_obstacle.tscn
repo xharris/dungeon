@@ -6,9 +6,10 @@
 [node name="Box" type="Node2D"]
 position = Vector2(305, 193)
 
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2_i2221")
+
 [node name="Pathfinder" parent="." instance=ExtResource("1_ydwy4")]
 is_static = true
 layer = "box"
-
-[node name="Sprite2D" type="Sprite2D" parent="."]
-texture = ExtResource("2_i2221")
+radius = 20

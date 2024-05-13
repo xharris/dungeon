@@ -9,21 +9,22 @@
 [node name="TestPathfinder" type="Node2D"]
 
 [node name="NPC" type="Node2D" parent="." node_paths=PackedStringArray("pathfinder")]
-position = Vector2(42, 187)
+position = Vector2(68, 173)
 script = ExtResource("1_01nh7")
 pathfinder = NodePath("Pathfinder")
 
-[node name="Pathfinder" parent="NPC" node_paths=PackedStringArray("target") instance=ExtResource("1_sg432")]
+[node name="NPCSprite" parent="NPC" instance=ExtResource("2_2ke5v")]
+
+[node name="Pathfinder" parent="NPC" instance=ExtResource("1_sg432")]
+draw_debug = true
 layer = "npc"
 avoid = Array[String](["box"])
-target = NodePath("../../Key")
-
-[node name="NPCSprite" parent="NPC" instance=ExtResource("2_2ke5v")]
 
 [node name="Key" type="Node2D" parent="."]
 position = Vector2(546, 196)
 
 [node name="Pathfinder" parent="Key" instance=ExtResource("1_sg432")]
+draw_debug = null
 is_static = true
 layer = "key"
 
