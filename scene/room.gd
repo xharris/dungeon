@@ -11,6 +11,7 @@ signal exited
 @export var top_exit:Door
 @export var mid_exit:Door
 @export var bot_exit:Door
+@export var start_direction:Vector2i = Vector2i(1, 0)
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -20,6 +21,7 @@ func _ready():
 	if player && entrances.size():
 		var player_entrance := entrances.pick_random() as Door
 		player.global_position = player_entrance.global_position
+		player.movement.direction = start_direction
 	# close entrances
 	for entrance in entrances:
 		if entrance == null:

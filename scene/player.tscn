@@ -17,6 +17,7 @@ health = NodePath("Health")
 [node name="NPCSprite" parent="." instance=ExtResource("2_du40w")]
 
 [node name="RunMovement" parent="." instance=ExtResource("3_hgcr5")]
+acceleration = 30.0
 
 [node name="Health" parent="." instance=ExtResource("4_jyymw")]
 

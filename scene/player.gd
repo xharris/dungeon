@@ -11,7 +11,8 @@ static var Group = "player"
 
 @export var restrict_velocity_x:bool = false
 @export var restrict_velocity_y:bool = false
-@export var acceleration:float = 110
+@export var acceleration:float = 120
+@export var bounce_factor:float = 4
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -26,16 +27,16 @@ func _process(delta):
 	else:
 		sprite.stand()
 	# face direction
-	if movement.direction < Vector2.ZERO:
+	if movement.direction.x < 0:
 		sprite.face_left()
-	if movement.direction > Vector2.ZERO:
+	if movement.direction.x > 0:
 		sprite.face_right()
 	# hit something damaging
 	hurtbox.position = Vector2.ZERO
 	var collision = hurtbox.move_and_collide(Vector2.ZERO)
 	if collision:
 		var norm = collision.get_normal().round()
-		movement.bounce(norm)
+		movement.knockback(norm * bounce_factor)
 		health.take_damage(1)
 	var vel = movement.velocity
 	if restrict_velocity_x:
