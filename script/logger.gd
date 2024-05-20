@@ -18,15 +18,17 @@ class _Logger:
 		
 	func error(msg:Variant, args:Variant = {}):
 		if !Engine.is_editor_hint() and _is_level(Level.Error):
+			print("[!] ", _name, " \t", str(msg).format(args))
 			push_error("[!] ", _name, " \t", str(msg).format(args))
 			
 	func warn(msg:Variant, args:Variant = {}):
 		if !Engine.is_editor_hint() and _is_level(Level.Warn):
-			push_warning("[!] ", _name, " \t", str(msg).format(args))
+			print("[?] ", _name, " \t", str(msg).format(args))
+			push_warning("[?] ", _name, " \t", str(msg).format(args))
 			
 	func debug(msg:Variant, args:Variant = {}):
 		if !Engine.is_editor_hint() and _is_level(Level.Debug):
-			print("[?] ", _name, " \t", str(msg).format(args))
+			print("[x] ", _name, " \t", str(msg).format(args))
 		
 	func info(msg:Variant, args:Variant = {}):
 		if !Engine.is_editor_hint() and _is_level(Level.Info):

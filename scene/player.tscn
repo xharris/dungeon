@@ -1,0 +1,28 @@
+[gd_scene load_steps=6 format=3 uid="uid://cebjmy0vwy7qt"]
+
+[ext_resource type="Script" path="res://scene/player.gd" id="1_s8ome"]
+[ext_resource type="PackedScene" uid="uid://7wybiwkp0js2" path="res://scene/npc_sprite.tscn" id="2_du40w"]
+[ext_resource type="PackedScene" uid="uid://e8t4nqtej24s" path="res://scene/run_movement.tscn" id="3_hgcr5"]
+[ext_resource type="PackedScene" uid="uid://cv34fv8ahuxer" path="res://scene/health.tscn" id="4_jyymw"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_mtbb4"]
+
+[node name="Player" type="Node2D" node_paths=PackedStringArray("sprite", "movement", "hurtbox", "health")]
+script = ExtResource("1_s8ome")
+sprite = NodePath("NPCSprite")
+movement = NodePath("RunMovement")
+hurtbox = NodePath("Body")
+health = NodePath("Health")
+
+[node name="NPCSprite" parent="." instance=ExtResource("2_du40w")]
+
+[node name="RunMovement" parent="." instance=ExtResource("3_hgcr5")]
+
+[node name="Health" parent="." instance=ExtResource("4_jyymw")]
+
+[node name="Body" type="CharacterBody2D" parent="."]
+collision_mask = 6
+motion_mode = 1
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Body"]
+shape = SubResource("CircleShape2D_mtbb4")

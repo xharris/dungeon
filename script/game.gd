@@ -2,43 +2,55 @@ extends Node2D
 
 var l = Logger.create("game")
 
-signal room_added
-signal pathfinder_added(Pathfinder)
-signal pathfinder_removed(Pathfinder)
+const Easy = "easy"
+const Hard = "hard"
 
-var money:int = 0
-var allies:Array[NPC] = []
+var mode:String
 var level:int = 1
-var dungeon:Dungeon
+var current_room:Node2D
+var visited_rooms:Array[String]
 
-func delete_node(node:Node):
-	node.get_parent().remove_child(node)
-	node.queue_free()
+func get_next_room() -> PackedScene:
+	var possible_rooms:Array[PackedScene] = []
+	# get starter rooms if there's any left
+	if Scenes.starter_rooms.size() > 0:
+		Scenes.starter_rooms.shuffle()
+		return Scenes.starter_rooms.pop_back()
+	# get rooms for current mode
+	var mode_rooms:Array[PackedScene] = []
+	mode_rooms.assign((Scenes.rooms.get(mode) as Dictionary).values())
+	possible_rooms.append_array(mode_rooms)
+	return possible_rooms.pick_random()
 
-func hire_ally(item:ShopNPC):
-	var ally = Scenes.npc(item.ability, item.sprite, item.health)
-	allies.append(ally)
-	dungeon.add_child(ally)
-	ally.global_position = item.global_position
-	return ally
+func go_to_room(next:PackedScene):
+	l.info("load room {path}",{"path":next.resource_path})
+	# load next room
+	var next_room := next.instantiate() as Node2D
+	if !next_room:
+		l.error("could not load room {path}",{"path":next.resource_path})
+	# get player
+	var player:Player
+	if current_room:
+		## TODO there are 2 players for some reason
+		player = current_room.get_tree().get_nodes_in_group(Player.Group).front()
+		player.reparent(next_room)
+	# swap old with new
+	Main.main.add_child(next_room)
+	Main.main.remove_child(current_room)
+	current_room = next_room
+
+func go_to_next_room():
+	var next = get_next_room()
+	go_to_room(next)
 
 func clean():
-	for a in allies:
-		a.get_parent().remove_child(a)
-	allies = []
-	if dungeon:
-		dungeon.get_parent().remove_child(dungeon)
+	for child in get_children():
+		remove_child(child)
 
 func start():
-	level = 1
-	money = 10
-	# create dungeon
-	dungeon = Scenes.dungeon()
+	go_to_room(Scenes.start_room)
 
 func restart():
-	## TODO transition
 	clean()
 	start()
 
-func size() -> Vector2:
-	return get_viewport_rect().size
