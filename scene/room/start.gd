@@ -9,11 +9,8 @@ static var l = Logger.create("start")
 
 var _mode_chosen = false
 var _mode:String = ""
-var _player_x_start = 0
 
 func _ready():
-	_player_x_start = player.global_position.x
-	player.movement.direction.x = -1
 	#player.movement.changed_direction.connect(_on_changed_direction)
 	easy_door.opened.connect(_on_mode_change.bind(Game.Easy))
 	hard_door.opened.connect(_on_mode_change.bind(Game.Hard))
@@ -32,8 +29,8 @@ func _process(delta):
 		player.global_position.y = -m
 	if player.global_position.y < -m:
 		player.global_position.y = vr.size.y + m
-	#var camera = %Camera2D
-	#camera.global_position.x = lerp(camera.global_position.x, player.global_position.x, delta)
+	var camera = %Camera2D
+	camera.global_position = player.global_position # lerp(camera.global_position, player.global_position, delta)
 		
 func _on_room_exited(mode:String):
 	l.info("unlock player")
@@ -48,14 +45,3 @@ func _on_mode_change(mode_name:String):
 func _on_mode_exited_area():
 	l.info("cleared selection")
 	_mode = ""
-
-#func _on_changed_direction():
-	#if _mode == "":
-		#return
-	#l.info("confirm mode")
-	#Game.mode = _mode.to_lower()
-	#player.movement.changed_direction.disconnect(_on_changed_direction)
-	#_mode_chosen = true
-	#player.restrict_velocity_x = false
-	#player.restrict_velocity_y = true
-

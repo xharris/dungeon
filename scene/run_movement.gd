@@ -33,9 +33,6 @@ func knockback(normal:Vector2):
 	velocity = normal
 	_stunned = true
 
-func flip_horizontal():
-	direction.x = -direction.x
-
 func _process(delta):
 	target_velocity = direction * speed_scale
 	if _stunned:

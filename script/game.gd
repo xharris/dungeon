@@ -31,7 +31,6 @@ func go_to_room(next:PackedScene):
 	# get player
 	var player:Player
 	if current_room:
-		## TODO there are 2 players for some reason
 		player = current_room.get_tree().get_nodes_in_group(Player.Group).front()
 		player.reparent(next_room)
 	# swap old with new
@@ -44,8 +43,9 @@ func go_to_next_room():
 	go_to_room(next)
 
 func clean():
-	for child in get_children():
-		remove_child(child)
+	for child in Main.main.get_children():
+		Main.main.remove_child(child)
+	current_room = null
 
 func start():
 	go_to_room(Scenes.start_room)

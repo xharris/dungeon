@@ -11,7 +11,7 @@
 script = ExtResource("1_s8ome")
 sprite = NodePath("NPCSprite")
 movement = NodePath("RunMovement")
-hurtbox = NodePath("Body")
+hurtbox = NodePath("Hurtbox")
 health = NodePath("Health")
 
 [node name="NPCSprite" parent="." instance=ExtResource("2_du40w")]
@@ -20,10 +20,18 @@ health = NodePath("Health")
 acceleration = 30.0
 
 [node name="Health" parent="." instance=ExtResource("4_jyymw")]
+remaining = 3
+total = 3
 
-[node name="Body" type="CharacterBody2D" parent="."]
-collision_mask = 6
+[node name="Hurtbox" type="CharacterBody2D" parent="."]
+collision_mask = 2
 motion_mode = 1
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Body"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox"]
+shape = SubResource("CircleShape2D_mtbb4")
+
+[node name="PlayerDetection" type="CharacterBody2D" parent="."]
+collision_mask = 4
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PlayerDetection"]
 shape = SubResource("CircleShape2D_mtbb4")

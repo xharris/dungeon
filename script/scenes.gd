@@ -9,5 +9,6 @@ var rooms:Dictionary = {
 }
 
 var starter_rooms:Array[PackedScene] = [
-	preload("res://scene/room/spike_s.tscn")
+	preload("res://scene/room/spike_s.tscn"),
+	preload("res://scene/room/s_block.tscn"),
 ]

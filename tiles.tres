@@ -1,8 +1,9 @@
-[gd_resource type="TileSet" load_steps=7 format=3 uid="uid://calu5ulig4lvf"]
+[gd_resource type="TileSet" load_steps=9 format=3 uid="uid://calu5ulig4lvf"]
 
 [ext_resource type="Texture2D" uid="uid://cqr0cd3yng06c" path="res://image/spikes.png" id="1_7exky"]
 [ext_resource type="Texture2D" uid="uid://dtwry6kedkwn4" path="res://image/spike.png" id="2_7l6l8"]
 [ext_resource type="Texture2D" uid="uid://oxsnd8pjq0al" path="res://image/wall.png" id="3_01fk2"]
+[ext_resource type="Texture2D" uid="uid://k0o32gg5ifpq" path="res://image/exterior_wall.png" id="4_sufyt"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_4jhwh"]
 texture = ExtResource("1_7exky")
@@ -217,13 +218,9 @@ texture = ExtResource("3_01fk2")
 3:0/1/physics_layer_0/angular_velocity = 0.0
 3:0/1/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 3:0/1/terrains_peering_bit/right_side = 0
-3:0/1/terrains_peering_bit/bottom_right_corner = 0
 3:0/1/terrains_peering_bit/bottom_side = 0
-3:0/1/terrains_peering_bit/bottom_left_corner = 0
 3:0/1/terrains_peering_bit/left_side = 0
-3:0/1/terrains_peering_bit/top_left_corner = 0
 3:0/1/terrains_peering_bit/top_side = 0
-3:0/1/terrains_peering_bit/top_right_corner = 0
 4:0/next_alternative_id = 5
 4:0/0 = 0
 4:0/0/physics_layer_0/linear_velocity = Vector2(0, 0)
@@ -281,6 +278,53 @@ texture = ExtResource("3_01fk2")
 5:0/1/physics_layer_0/angular_velocity = 0.0
 5:0/1/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_4jc4c"]
+texture = ExtResource("4_sufyt")
+2:0/0 = 0
+2:0/0/terrain_set = 0
+2:0/0/terrain = 2
+2:0/0/physics_layer_0/linear_velocity = Vector2(0, 0)
+2:0/0/physics_layer_0/angular_velocity = 0.0
+2:0/0/terrains_peering_bit/bottom_side = 2
+2:0/0/terrains_peering_bit/left_side = 2
+0:0/0 = 0
+0:0/0/terrain_set = 0
+0:0/0/terrain = 2
+0:0/0/physics_layer_0/linear_velocity = Vector2(0, 0)
+0:0/0/physics_layer_0/angular_velocity = 0.0
+0:0/0/terrains_peering_bit/right_side = 2
+0:0/0/terrains_peering_bit/bottom_side = 2
+1:0/0 = 0
+1:0/0/terrain_set = 0
+1:0/0/terrain = 2
+1:0/0/physics_layer_0/linear_velocity = Vector2(0, 0)
+1:0/0/physics_layer_0/angular_velocity = 0.0
+1:0/0/terrains_peering_bit/right_side = 2
+1:0/0/terrains_peering_bit/bottom_side = 2
+1:0/0/terrains_peering_bit/left_side = 2
+0:1/0 = 0
+0:1/0/terrain_set = 0
+0:1/0/terrain = 2
+0:1/0/physics_layer_0/linear_velocity = Vector2(0, 0)
+0:1/0/physics_layer_0/angular_velocity = 0.0
+0:1/0/terrains_peering_bit/right_side = 2
+0:1/0/terrains_peering_bit/top_side = 2
+1:1/0 = 0
+1:1/0/terrain_set = 0
+1:1/0/terrain = 2
+1:1/0/physics_layer_0/linear_velocity = Vector2(0, 0)
+1:1/0/physics_layer_0/angular_velocity = 0.0
+1:1/0/terrains_peering_bit/right_side = 2
+1:1/0/terrains_peering_bit/left_side = 2
+1:1/0/terrains_peering_bit/top_side = 2
+2:1/0 = 0
+2:1/0/terrain_set = 0
+2:1/0/terrain = 2
+2:1/0/physics_layer_0/linear_velocity = Vector2(0, 0)
+2:1/0/physics_layer_0/angular_velocity = 0.0
+2:1/0/terrains_peering_bit/left_side = 2
+2:1/0/terrains_peering_bit/top_side = 2
+
 [resource]
 physics_layer_0/collision_layer = 2
 physics_layer_0/collision_mask = 0
@@ -289,9 +333,12 @@ terrain_set_0/terrain_0/name = "wall"
 terrain_set_0/terrain_0/color = Color(0.329412, 0.431373, 0.478431, 1)
 terrain_set_0/terrain_1/name = "spike"
 terrain_set_0/terrain_1/color = Color(0.741176, 0.741176, 0.741176, 1)
+terrain_set_0/terrain_2/name = "outside wall"
+terrain_set_0/terrain_2/color = Color(0.14902, 0.196078, 0.219608, 1)
 sources/0 = SubResource("TileSetAtlasSource_4jhwh")
 sources/1 = SubResource("TileSetAtlasSource_73iew")
 sources/2 = SubResource("TileSetAtlasSource_y3ony")
+sources/4 = SubResource("TileSetAtlasSource_4jc4c")
 metadata/_better_terrain = {
 "decoration": ["Decoration", Color(0.411765, 0.411765, 0.411765, 1), 3, [], {
 "path": "res://addons/better-terrain/icons/Decoration.svg"

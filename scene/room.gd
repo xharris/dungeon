@@ -21,6 +21,9 @@ func _ready():
 	if player && entrances.size():
 		var player_entrance := entrances.pick_random() as Door
 		player.global_position = player_entrance.global_position
+	# initial player direction
+	if player:
+		l.info(start_direction)
 		player.movement.direction = start_direction
 	# close entrances
 	for entrance in entrances:
