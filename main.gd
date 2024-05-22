@@ -5,4 +5,3 @@ static var main:Main
 
 func _ready():
 	Main.main = self
-	Game.start()

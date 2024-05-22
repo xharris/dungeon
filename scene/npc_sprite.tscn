@@ -1,4 +1,4 @@
-[gd_scene load_steps=30 format=3 uid="uid://7wybiwkp0js2"]
+[gd_scene load_steps=31 format=3 uid="uid://7wybiwkp0js2"]
 
 [ext_resource type="Script" path="res://scene/npc_sprite.gd" id="1_l75hj"]
 [ext_resource type="Texture2D" uid="uid://ca6lfwrj34o36" path="res://image/bird.png" id="1_yy7pk"]
@@ -147,6 +147,57 @@ tracks/4/keys = {
 "transitions": PackedFloat32Array(1, 1, 1, 1, 1),
 "update": 0,
 "values": [Vector2(0, 0), Vector2(0, -6), Vector2(0, -10), Vector2(0, -6), Vector2(0, 0)]
+}
+
+[sub_resource type="Animation" id="Animation_ojo2o"]
+resource_name = "knocked_back"
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Base/Images/Eyes:animation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.8),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [&"squinting", &"default"]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Base/Images/Arm:animation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.8),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [&"up", &"down"]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Base/Images/Body:animation")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.8),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [&"walk", &"stand"]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("Base/Images/Body:frame")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0, 0.8),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [1, 1]
 }
 
 [sub_resource type="Animation" id="Animation_ey5i2"]
@@ -391,6 +442,7 @@ tracks/2/keys = {
 _data = {
 "RESET": SubResource("Animation_svm0h"),
 "happy_jump": SubResource("Animation_aojgy"),
+"knocked_back": SubResource("Animation_ojo2o"),
 "melee_attack": SubResource("Animation_ey5i2"),
 "ranged_attack": SubResource("Animation_ong6p"),
 "sit": SubResource("Animation_hcqqm"),
@@ -537,21 +589,28 @@ speed_scale = 4.0
 
 [node name="Weapon" type="Sprite2D" parent="Base"]
 unique_name_in_owner = true
+visible = false
+light_mask = 0
 position = Vector2(8, 5)
 texture = ExtResource("2_f24if")
 offset = Vector2(0, -9)
 
 [node name="Images" type="Node2D" parent="Base"]
 unique_name_in_owner = true
+light_mask = 0
 
 [node name="Body" type="AnimatedSprite2D" parent="Base/Images"]
+light_mask = 0
 sprite_frames = SubResource("SpriteFrames_et7al")
 animation = &"stand"
 
 [node name="Eyes" type="AnimatedSprite2D" parent="Base/Images"]
 unique_name_in_owner = true
+light_mask = 0
 sprite_frames = SubResource("SpriteFrames_go8xu")
 
 [node name="Arm" type="AnimatedSprite2D" parent="Base/Images"]
+unique_name_in_owner = true
+light_mask = 0
 sprite_frames = SubResource("SpriteFrames_cbrsb")
 animation = &"down"

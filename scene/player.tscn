@@ -1,18 +1,27 @@
-[gd_scene load_steps=6 format=3 uid="uid://cebjmy0vwy7qt"]
+[gd_scene load_steps=9 format=3 uid="uid://cebjmy0vwy7qt"]
 
 [ext_resource type="Script" path="res://scene/player.gd" id="1_s8ome"]
 [ext_resource type="PackedScene" uid="uid://7wybiwkp0js2" path="res://scene/npc_sprite.tscn" id="2_du40w"]
 [ext_resource type="PackedScene" uid="uid://e8t4nqtej24s" path="res://scene/run_movement.tscn" id="3_hgcr5"]
+[ext_resource type="PackedScene" uid="uid://di0uwhswi84xa" path="res://scene/circle_shadow.tscn" id="3_tomlp"]
 [ext_resource type="PackedScene" uid="uid://cv34fv8ahuxer" path="res://scene/health.tscn" id="4_jyymw"]
+[ext_resource type="PackedScene" uid="uid://dpdp4dennduhi" path="res://scene/radial_light.tscn" id="6_yy4et"]
+[ext_resource type="PackedScene" uid="uid://dhyni0aemvyeo" path="res://scene/screen_wrap.tscn" id="7_p1iwj"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_mtbb4"]
 
-[node name="Player" type="Node2D" node_paths=PackedStringArray("sprite", "movement", "hurtbox", "health")]
+[node name="Player" type="Node2D" node_paths=PackedStringArray("sprite", "movement", "hurtbox", "health", "radial_light") groups=["player"]]
 script = ExtResource("1_s8ome")
 sprite = NodePath("NPCSprite")
 movement = NodePath("RunMovement")
 hurtbox = NodePath("Hurtbox")
 health = NodePath("Health")
+radial_light = NodePath("RadialLight")
+
+[node name="CircleShadow" parent="." instance=ExtResource("3_tomlp")]
+position = Vector2(0, 11)
+scale = Vector2(1, 0.5)
+radius = 7.0
 
 [node name="NPCSprite" parent="." instance=ExtResource("2_du40w")]
 
@@ -35,3 +44,8 @@ collision_mask = 4
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="PlayerDetection"]
 shape = SubResource("CircleShape2D_mtbb4")
+
+[node name="RadialLight" parent="." instance=ExtResource("6_yy4et")]
+
+[node name="ScreenWrap" parent="." node_paths=PackedStringArray("parent") instance=ExtResource("7_p1iwj")]
+parent = NodePath("..")

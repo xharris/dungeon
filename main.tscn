@@ -1,6 +1,19 @@
-[gd_scene load_steps=2 format=3 uid="uid://dug3qkic0kw1p"]
+[gd_scene load_steps=4 format=3 uid="uid://dug3qkic0kw1p"]
 
 [ext_resource type="Script" path="res://main.gd" id="1_fvypm"]
+[ext_resource type="PackedScene" uid="uid://cebjmy0vwy7qt" path="res://scene/player.tscn" id="2_o0tla"]
+[ext_resource type="PackedScene" uid="uid://chtuncdsaw1r6" path="res://scene/door.tscn" id="3_bo1bt"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_fvypm")
+
+[node name="Player" parent="." instance=ExtResource("2_o0tla")]
+position = Vector2(178, 82)
+disable_restart_on_death = true
+
+[node name="Door" parent="." instance=ExtResource("3_bo1bt")]
+position = Vector2(176, 96)
+is_open = true
+next_room = 1
+type = 1
+destroy_on_use = true

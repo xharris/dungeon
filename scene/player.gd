@@ -8,16 +8,18 @@ static var Group = "player"
 @export var movement:RunMovement
 @export var hurtbox:CharacterBody2D
 @export var health:Health
+@export var radial_light:Light2D
 
 @export var restrict_velocity_x:bool = false
 @export var restrict_velocity_y:bool = false
 @export var acceleration:float = 120
 @export var bounce_factor:float = 4
+@export var disable_restart_on_death = false
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	add_to_group(Group)
 	health.died.connect(_on_health_died)
+	movement.knockback_finished.connect(_on_movement_knockback_finished)
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
@@ -37,6 +39,7 @@ func _process(delta):
 	if collision:
 		var norm = collision.get_normal().round()
 		movement.knockback(norm * bounce_factor)
+		sprite.knocked_back()
 		health.take_damage(1)
 	var vel = movement.velocity
 	if restrict_velocity_x:
@@ -45,5 +48,11 @@ func _process(delta):
 		vel.y = 0
 	global_position += vel * delta * acceleration
 
+func _on_movement_knockback_finished():
+	sprite.eyes_default()
+	sprite.arm_down()
+
 func _on_health_died():
+	if disable_restart_on_death:
+		return
 	Game.restart()

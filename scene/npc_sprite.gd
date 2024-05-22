@@ -30,9 +30,21 @@ func play(animation_name:String):
 	var player := %AnimationPlayer as AnimationPlayer
 	player.play(animation_name)
 
+func knocked_back():
+	var player := %AnimationPlayer as AnimationPlayer
+	player.play("knocked_back")
+
 func happy_jump():
 	var player := %AnimationPlayer as AnimationPlayer
 	player.play("happy_jump")
+
+func eyes_default():
+	var eyes := %Eyes
+	eyes.animation = "default"
+
+func arm_down():
+	var arm := %Arm
+	arm.animation = "down"
 
 func eyes_happy():
 	var eyes := %Eyes

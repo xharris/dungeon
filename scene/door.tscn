@@ -33,7 +33,7 @@ animations = [{
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_g26ds"]
 
-[node name="Door" type="Node2D"]
+[node name="Door" type="Node2D" groups=["door"]]
 script = ExtResource("1_lkr7g")
 
 [node name="Sprite2D" type="AnimatedSprite2D" parent="."]

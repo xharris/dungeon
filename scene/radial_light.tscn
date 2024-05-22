@@ -1,0 +1,17 @@
+[gd_scene load_steps=3 format=3 uid="uid://dpdp4dennduhi"]
+
+[sub_resource type="Gradient" id="Gradient_mrr8c"]
+offsets = PackedFloat32Array(0, 0.498753, 0.725686)
+colors = PackedColorArray(1, 1, 1, 0.494118, 1, 1, 1, 0.0666667, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_4wkkl"]
+gradient = SubResource("Gradient_mrr8c")
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+
+[node name="RadialLight" type="PointLight2D"]
+energy = 5.0
+blend_mode = 2
+shadow_enabled = true
+texture = SubResource("GradientTexture2D_4wkkl")
+texture_scale = 6.92
