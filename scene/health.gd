@@ -14,7 +14,7 @@ signal died
 	set(v):
 		remaining = v
 		if remaining <= 0:
-			l.info("died")
+			l.debug("died")
 			died.emit()
 		_update_remaining_hearts()
 @export var total:int = 5:
@@ -49,6 +49,9 @@ func reset():
 	remaining = total
 
 func take_damage(amt:int):
-	l.info("took damage {amt}",{"amt":-amt})
+	l.debug("took damage {amt}",{"amt":-amt})
 	remaining -= amt
+	var at = Scenes.action_text(self, str(-amt), Palette.Red300)
+	at.velocity = Vector2([-1,1].pick_random() * 0.1, -2)
+	at.gravity = Vector2(0, 0.1)
 	damaged.emit(amt)

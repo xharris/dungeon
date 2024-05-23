@@ -1,0 +1,30 @@
+[gd_scene load_steps=6 format=3 uid="uid://shdv1vc2jqtp"]
+
+[ext_resource type="Script" path="res://scene/little_knight.gd" id="1_eni8b"]
+[ext_resource type="PackedScene" uid="uid://c8odst1veicut" path="res://scene/little_knight_sprite.tscn" id="1_spc82"]
+[ext_resource type="PackedScene" uid="uid://vt743a1ll27r" path="res://scene/chase_movement.tscn" id="2_bc3sv"]
+[ext_resource type="PackedScene" uid="uid://cp6nina6v12lv" path="res://scene/knockback_timer.tscn" id="4_pq5xl"]
+[ext_resource type="PackedScene" uid="uid://d1vf4t3axklkg" path="res://scene/hitbox.tscn" id="5_27a11"]
+
+[node name="LittleKnight" type="Node2D" node_paths=PackedStringArray("chase", "sprite", "knockback")]
+script = ExtResource("1_eni8b")
+chase = NodePath("ChaseMovement")
+sprite = NodePath("LittleKnightSprite")
+knockback = NodePath("KnockbackTimer")
+
+[node name="LittleKnightSprite" parent="." instance=ExtResource("1_spc82")]
+
+[node name="ChaseMovement" parent="." instance=ExtResource("2_bc3sv")]
+detect_radius = 176
+acceleration = 50.0
+
+[node name="KnockbackTimer" parent="." node_paths=PackedStringArray("body") instance=ExtResource("4_pq5xl")]
+bounce_factor = 350.0
+body = NodePath("../Hitbox")
+
+[node name="Hitbox" parent="." instance=ExtResource("5_27a11")]
+collision_layer = 2
+
+[node name="CollisionShape2D" type="CollisionPolygon2D" parent="Hitbox"]
+position = Vector2(-1, -4)
+polygon = PackedVector2Array(-37, -11, -29, 4, -12, 6, -9, 3, -21, -11)

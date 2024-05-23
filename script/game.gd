@@ -2,6 +2,9 @@ extends Node2D
 
 var l = Logger.create("game")
 
+const PLAYER_SPEED = 120
+const LITTLE_KNIGHT_SPEED = 60
+
 enum Mode {Normal, Random}
 
 var dev = true

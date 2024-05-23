@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://cp6nina6v12lv"]
+
+[ext_resource type="Script" path="res://scene/knockback_timer.gd" id="1_2a3jp"]
+
+[node name="KnockbackTimer" type="Node2D"]
+script = ExtResource("1_2a3jp")

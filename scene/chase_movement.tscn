@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://vt743a1ll27r"]
+
+[ext_resource type="Script" path="res://scene/chase_movement.gd" id="1_4cdom"]
+
+[node name="ChaseMovement" type="Node2D"]
+script = ExtResource("1_4cdom")
