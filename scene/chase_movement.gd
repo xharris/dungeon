@@ -3,7 +3,7 @@ extends Node2D
 class_name ChaseMovement
 
 @export var target_group:String = "player"
-@export var detect_radius:int = 80:
+@export var detect_radius:int = 100:
 	set(v):
 		detect_radius = v
 		queue_redraw()
@@ -36,4 +36,6 @@ func _process(delta):
 	velocity = velocity.lerp(target_velocity, delta * acceleration)
 	
 func _draw():
+	if !Engine.is_editor_hint():
+		return
 	draw_arc(Vector2.ZERO, detect_radius, 0, deg_to_rad(360), 32, Color.RED, 1)

@@ -26,6 +26,6 @@ next_room = 2
 
 [node name="Exit" parent="." instance=ExtResource("3_ej0ly")]
 position = Vector2(224, 96)
-next_room = 1
+next_room = 4
 type = 1
 start_direction = Vector2i(-1, 0)

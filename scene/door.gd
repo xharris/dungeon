@@ -60,7 +60,8 @@ func _on_area_2d_body_entered(body):
 		# go to next room
 		var prev_room = Game.current_room_name
 		var room = Game.go_to_room(next_room, player)
-		
+		if !room:
+			l.error("Room not found! {next_room}", {"next_room":Scenes.RoomName.find_key(next_room)})
 		var matching_door:Door
 		for other in room.get_all_doors():
 			if other.type != type and (other.next_room == prev_room or other.next_room == Scenes.RoomName.None):

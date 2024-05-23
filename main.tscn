@@ -9,7 +9,6 @@ script = ExtResource("1_fvypm")
 
 [node name="Player" parent="." instance=ExtResource("2_o0tla")]
 position = Vector2(178, 82)
-disable_restart_on_death = true
 
 [node name="Door" parent="." instance=ExtResource("3_bo1bt")]
 position = Vector2(176, 96)

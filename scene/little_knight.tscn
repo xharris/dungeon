@@ -15,7 +15,6 @@ knockback = NodePath("KnockbackTimer")
 [node name="LittleKnightSprite" parent="." instance=ExtResource("1_spc82")]
 
 [node name="ChaseMovement" parent="." instance=ExtResource("2_bc3sv")]
-detect_radius = 176
 acceleration = 50.0
 
 [node name="KnockbackTimer" parent="." node_paths=PackedStringArray("body") instance=ExtResource("4_pq5xl")]

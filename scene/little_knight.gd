@@ -15,6 +15,9 @@ func _on_target_detected():
 	chase.enabled = false
 	sprite.jump()
 	sprite.animation_player.animation_finished.connect(_on_animation_finished, CONNECT_ONE_SHOT)
+	var at = Scenes.action_text(self, "!", Palette.Yellow700)
+	at.global_position.y -= 24
+	at.velocity = Vector2(0, -0.05)
 
 func _on_animation_finished(anim_name:String):
 	chase.enabled = true
