@@ -1,8 +1,33 @@
-[gd_scene load_steps=4 format=3 uid="uid://dug3qkic0kw1p"]
+[gd_scene load_steps=6 format=3 uid="uid://dug3qkic0kw1p"]
 
 [ext_resource type="Script" path="res://main.gd" id="1_fvypm"]
 [ext_resource type="PackedScene" uid="uid://cebjmy0vwy7qt" path="res://scene/player.tscn" id="2_o0tla"]
 [ext_resource type="PackedScene" uid="uid://chtuncdsaw1r6" path="res://scene/door.tscn" id="3_bo1bt"]
+[ext_resource type="Shader" path="res://shader/vhs_crt.gdshader" id="4_fqaeg"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_5lcle"]
+shader = ExtResource("4_fqaeg")
+shader_parameter/overlay = true
+shader_parameter/scanlines_opacity = 0.0
+shader_parameter/scanlines_width = 0.0
+shader_parameter/grille_opacity = 0.0
+shader_parameter/resolution = Vector2(240, 160)
+shader_parameter/pixelate = false
+shader_parameter/roll = false
+shader_parameter/roll_speed = 1.0
+shader_parameter/roll_size = 0.0
+shader_parameter/roll_variation = 1.8
+shader_parameter/distort_intensity = 0.05
+shader_parameter/noise_opacity = 0.4
+shader_parameter/noise_speed = 5.0
+shader_parameter/static_noise_intensity = 0.014
+shader_parameter/aberration = 4.75e-08
+shader_parameter/brightness = 1.0
+shader_parameter/discolor = false
+shader_parameter/warp_amount = 0.1
+shader_parameter/clip_warp = false
+shader_parameter/vignette_intensity = 0.0
+shader_parameter/vignette_opacity = 0.0
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_fvypm")
@@ -16,3 +41,21 @@ is_open = true
 next_room = 1
 type = 1
 destroy_on_use = true
+
+[node name="Control" type="Control" parent="."]
+z_index = 999
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="ColorRect" type="ColorRect" parent="Control"]
+material = SubResource("ShaderMaterial_5lcle")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = 440.0
+offset_bottom = 280.0
+grow_horizontal = 2
+grow_vertical = 2

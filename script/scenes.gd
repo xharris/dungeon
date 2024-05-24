@@ -1,13 +1,18 @@
 extends Node
 
 var l = Logger.create("scenes")
-enum RoomName {None, Start, SBlock, SpikeS, OneLittleKnight}
+enum RoomName {
+	None, Start, SBlock, SpikeS, OneLittleKnight,
+	SpikeField, MovingSpikePillars,
+}
 
 var rooms:Dictionary = {
 	RoomName.Start: preload("res://scene/room/start.tscn"),
 	RoomName.SBlock: preload("res://scene/room/s_block.tscn"),
 	RoomName.SpikeS: preload("res://scene/room/spike_s.tscn"),
 	RoomName.OneLittleKnight: preload("res://scene/room/one_little_knight.tscn"),
+	RoomName.SpikeField: preload("res://scene/room/spike_field.tscn"),
+	RoomName.MovingSpikePillars: preload("res://scene/room/moving_spike_pillar.tscn"),
 }
 
 func get_room_name(room:Node2D) -> RoomName:

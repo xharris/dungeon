@@ -1,0 +1,14 @@
+[gd_scene load_steps=3 format=3 uid="uid://dj7g4f50sbhr4"]
+
+[ext_resource type="PackedScene" uid="uid://cmoaaopvrxtno" path="res://scene/room.tscn" id="1_buroa"]
+[ext_resource type="PackedScene" uid="uid://chtuncdsaw1r6" path="res://scene/door.tscn" id="2_k8qth"]
+
+[node name="MovingSpikePillar" type="Node2D"]
+
+[node name="Room" parent="." instance=ExtResource("1_buroa")]
+
+[node name="Entrance" parent="." instance=ExtResource("2_k8qth")]
+position = Vector2(64, 64)
+
+[node name="Exit" parent="." instance=ExtResource("2_k8qth")]
+position = Vector2(432, 272)
