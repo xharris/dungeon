@@ -4,6 +4,8 @@ local circleui = require 'lib.circleui'
 local ctrl = require 'lib.controls'
 local lang = require 'lib.i18n'
 local lume = require 'ext.lume'
+local zone = require 'zones'
+local color = require 'lib.color'
 
 lang.set('en', {
     slash = 'Slash',
@@ -25,7 +27,11 @@ local DEFAULT_STATE = {
     ---@type string?
     current_event = nil,
     is_game_over = false,
+    ---@type 'forest'|'space'|'volcano'
+    current_zone = 'forest'
 }
+
+local IMG = {}
 
 local state = lume.clone(DEFAULT_STATE)
 
@@ -104,6 +110,7 @@ end
 
 -- clears the current game and starts a new one
 local function start_game()
+    zone.set{IMG.forest, IMG.space, IMG.volcano} -- , IMG.volcano}
     entity.remove_all()
     state = lume.clone(DEFAULT_STATE)
     entity.add{class='warrior', group='player', abilities={'slash'}, cooldowns={}, items={}, health=const.INITIAL_PLAYER_HEALTH}
@@ -111,12 +118,17 @@ local function start_game()
 end
 
 function love.load()
+    IMG.forest = love.graphics.newImage('assets/forest.jpg')
+    IMG.space = love.graphics.newImage('assets/space.jpg')
+    IMG.volcano = love.graphics.newImage('assets/volcano.jpg')
+
     start_game()
 end
 
 function love.update(dt)
     ctrl:update()
     entity.update()
+    zone.update(dt)
 
     local combat_entities = entity.find('abilities', 'cooldowns', 'health')
     local no_enemies_left = true
@@ -192,6 +204,15 @@ function love.update(dt)
 end
 
 function love.draw()
+    local gw, gh = love.graphics.getDimensions()
+    local font = love.graphics.getFont()
+
+    zone.draw(function (i)
+        color.set(color.MUI.WHITE)
+        local w = font:getWidth('ZONE '..tostring(i)) / 2
+        love.graphics.print('ZONE '..tostring(i), (gw / 2), gh / 2)
+    end)
+
     -- select the next dungeon room to enter
     if state.next_room_choices then
         local choice = circleui.select('next_room_choice', state.next_room_choices)
