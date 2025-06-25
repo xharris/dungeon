@@ -108,9 +108,13 @@ local function heal(e, amt)
     e.health = math.min(e.health + 5, const.INITIAL_PLAYER_HEALTH)
 end
 
+---@type ZonesSetValue[]
+local zones = {}
+
 -- clears the current game and starts a new one
 local function start_game()
-    zone.set{IMG.forest, IMG.space, IMG.volcano} -- , IMG.volcano}
+    zone.set{zones[1]}
+
     entity.remove_all()
     state = lume.clone(DEFAULT_STATE)
     entity.add{class='warrior', group='player', abilities={'slash'}, cooldowns={}, items={}, health=const.INITIAL_PLAYER_HEALTH}
@@ -121,14 +125,33 @@ function love.load()
     IMG.forest = love.graphics.newImage('assets/forest.jpg')
     IMG.space = love.graphics.newImage('assets/space.jpg')
     IMG.volcano = love.graphics.newImage('assets/volcano.jpg')
+    IMG.tiny_pixel_hero = love.graphics.newImage('assets/tinypixelhero.jpg')
+
+    local zone_images = {IMG.forest, IMG.volcano, IMG.space, IMG.tiny_pixel_hero}
+    for i, img in ipairs(zone_images) do
+        table.insert(zones, {id=i, image=img})
+    end
 
     start_game()
 end
 
 function love.update(dt)
+    zone.update(dt)
+
     ctrl:update()
     entity.update()
-    zone.update(dt)
+
+    if ctrl:pressed 'zone_1' then
+        zone.set{zones[1]}
+    elseif ctrl:pressed 'zone_2' then
+        zone.set{zones[1], zones[2]}
+    elseif ctrl:pressed 'zone_3' then
+        zone.set{zones[1], zones[2], zones[3]}
+    elseif ctrl:pressed 'zone_4' then
+        zone.set{zones[1], zones[2], zones[3], zones[4]}
+    elseif ctrl:pressed 'zone_5' then
+        zone.set{zones[1]}
+    end
 
     local combat_entities = entity.find('abilities', 'cooldowns', 'health')
     local no_enemies_left = true

@@ -10,27 +10,62 @@ local lume = require 'ext.lume'
 ---@field angle2 number
 
 ---@class Zone
+---@field id any
 ---@field image any
 ---@field transform? any
 ---@field render ZoneRender
 ---@field render_target ZoneRender
+---@field remove boolean
+---@field replace_with? Zone replace this zone with a different zone 
 
 ---@type Zone[]
 local zones = {}
 
+---@type number[]
+local angles = {}
 local radius = 0
 local t = 0
 
 M.transition_duration = 20000
 
----@param images any[]
-function M.set(images)
-    zones = {}
+local function calc_angles()
+    local out = {}
+    local n = #zones
+
+    local arc_size = 360 / #(lume.filter(zones, function (z)
+        return z.remove == false
+    end))
+    local a2 = 270
+    local a1 = 270 - arc_size
+
+    local z = 1
+    for i = 0, ((n - 1) * 2), 2 do
+        if not zones[z].remove then
+            out[i + 1] = a1
+            out[i + 2] = a2
+
+            a2 = a1
+            a1 = a2 - arc_size
+        end
+        z = z + 1
+    end
+
+    return out
+end
+
+---@class ZonesSetValue
+---@field id number
+---@field image any love.Image
+
+---@param values ZonesSetValue[]
+function M.set(values)
+    ---@type Zone[]
+    local new_zones = {}
     local gw, gh = love.graphics.getDimensions()
     radius = math.sqrt((gw ^ 2) + (gh ^ 2))
-    
-    for _, image in ipairs(images) do
-        local w, h = image:getDimensions()
+
+    for i, value in ipairs(values) do
+        local w, h = value.image:getDimensions()
         local tform = love.math.newTransform()
         local scale = math.abs(gw - w) > math.abs(gh - h) and gh / h or gw / w
 
@@ -41,31 +76,53 @@ function M.set(images)
 
         ---@type Zone
         local zone = {
-            image = image,
+            id = value.id,
+            image = value.image,
             transform = tform,
-            render = {angle1=0,angle2=0,ox=0,oy=0},
+            render = {angle1=-90,angle2=-90,ox=0,oy=0},
             render_target = {angle1=0,angle2=0,ox=0,oy=0},
+            remove = false,
         }
-        table.insert(zones, zone)
+
+        if zones[i] then
+            new_zones[i] = zones[i]
+            new_zones[i].remove = false
+            if zones[i].id ~= value.id then
+                new_zones[i].replace_with = zone
+            end
+        else
+            new_zones[i] = zone
+        end
     end
 
+    -- add removed zones
+    for i = #new_zones + 1, #zones do
+        new_zones[i] = zones[i]
+        new_zones[i].remove = true
+    end
+
+    zones = new_zones
+
     -- set starting/target render values
-    local len = #zones
-    local arc_size = 360 / len
+    angles = calc_angles()
     local angle1, angle2 = 0, 0
     for i, zone in ipairs(zones) do
-        angle1, angle2 = ((i - 1) * arc_size), (i * arc_size)
+        local idx1, idx2 = ((i - 1) * 2) + 1, ((i - 1) * 2) + 2
+        angle1, angle2 = angles[idx1], angles[idx2]
 
         local render_target = zone.render_target
-        render_target.angle1 = angle1
-        render_target.angle2 = angle2
-
         local render = zone.render
-        render.angle1 = 0
-        render.angle2 = i == 1 and 360 or 0
+
+        if not zone.remove then
+            render_target.angle1 = angle1
+            render_target.angle2 = angle2
+        else
+            render_target.angle1 = -90
+            render_target.angle2 = -90
+        end
 
         -- TODO angles don't look right
-        log.debug(i, 'from', render.angle1, render.angle2, 'to', angle1, angle2)
+        -- log.debug(i, 'from', render.angle1, render.angle2, 'to', render_target.angle1, render_target.angle2)
     end
 
     t = 0
@@ -77,7 +134,7 @@ function M.update(dt)
     local d = M.transition_duration
     local gw, gh = love.graphics.getDimensions()
 
-    if t < d then 
+    if t < d then
         for i, zone in ipairs(zones) do
             local render = zone.render
             local render_target = zone.render_target
@@ -85,8 +142,15 @@ function M.update(dt)
             render.angle1 = lume.lerp(render.angle1, render_target.angle1, t / d)
             render.angle2 = lume.lerp(render.angle2, render_target.angle2, t / d)
             local _
-            render.ox, _ = lume.vector(math.rad((render.angle2 + render.angle1) / 2), gw / 2)
-            _, render.oy = lume.vector(math.rad((render.angle2 + render.angle1) / 2), gh / 2)
+            if render_target.angle1 == -90 and render_target.angle2 == 270 then
+                render_target.ox, render_target.oy = 0, 0
+            else
+                render_target.ox, _ = lume.vector(math.rad((render.angle2 + render.angle1) / 2), gw / 2)
+                _, render_target.oy = lume.vector(math.rad((render.angle2 + render.angle1) / 2), gh / 2)
+            end
+
+            render.ox = lume.lerp(render.ox, render_target.ox, t / d)
+            render.oy = lume.lerp(render.oy, render_target.oy, t / d)
         end
     end
 end
