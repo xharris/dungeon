@@ -17,6 +17,10 @@ function M.set(rgb, a)
     love.graphics.setColor(color)
 end
 
+function M.reset()
+    love.graphics.setColor(M.MUI.WHITE)
+end
+
 M.MUI = {
     WHITE = {1, 1, 1},
     BLACK = {0, 0, 0},

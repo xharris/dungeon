@@ -6,6 +6,7 @@ local lang = require 'lib.i18n'
 local lume = require 'ext.lume'
 local zone = require 'zones'
 local color = require 'lib.color'
+local render = require 'render'
 
 lang.set('en', {
     slash = 'Slash',
@@ -32,6 +33,7 @@ local DEFAULT_STATE = {
 }
 
 local IMG = {}
+local ZONES = {}
 
 local state = lume.clone(DEFAULT_STATE)
 
@@ -108,16 +110,28 @@ local function heal(e, amt)
     e.health = math.min(e.health + 5, const.INITIAL_PLAYER_HEALTH)
 end
 
----@type ZonesSetValue[]
-local zones = {}
-
 -- clears the current game and starts a new one
 local function start_game()
-    zone.set{zones[1]}
+    local gw, gh = love.graphics.getDimensions()
 
     entity.remove_all()
+    render.reset()
     state = lume.clone(DEFAULT_STATE)
-    entity.add{class='warrior', group='player', abilities={'slash'}, cooldowns={}, items={}, health=const.INITIAL_PLAYER_HEALTH}
+
+    local player = entity.add{class='warrior', group='player', abilities={'slash'}, cooldowns={}, items={}, health=const.INITIAL_PLAYER_HEALTH}
+    local zone_id = 'entity-'..tostring(player._id)
+    player.zone_id = zone_id
+    zone.set{
+        {id=zone_id, image=IMG.forest}
+    }
+    render.set_collection(zone_id)
+    render.add{
+        text = 'zone1',
+        x = gw / 2,
+        y = gh / 2,
+    }
+    render.set_collection()
+    
     start_combat()
 end
 
@@ -126,18 +140,21 @@ function love.load()
     IMG.space = love.graphics.newImage('assets/space.jpg')
     IMG.volcano = love.graphics.newImage('assets/volcano.jpg')
     IMG.tiny_pixel_hero = love.graphics.newImage('assets/tinypixelhero.jpg')
+    IMG.ohmydungeon_v11 = love.graphics.newImage('assets/ohmydungeon_v1.1.png')
+    IMG.ohmydungeon_v11:setFilter('linear', 'nearest')
 
-    local zone_images = {IMG.forest, IMG.volcano, IMG.space, IMG.tiny_pixel_hero}
-    for i, img in ipairs(zone_images) do
-        table.insert(zones, {id=i, image=img})
-    end
+    ZONES.forest = {
+        id = ''
+    } --[[@as ZonesSetValue]]
+
+    render.load()
 
     start_game()
 end
 
 function love.update(dt)
+    render.update(dt)
     zone.update(dt)
-
     ctrl:update()
     entity.update()
 
@@ -230,11 +247,13 @@ function love.draw()
     local gw, gh = love.graphics.getDimensions()
     local font = love.graphics.getFont()
 
-    zone.draw(function (i)
-        color.set(color.MUI.WHITE)
-        local w = font:getWidth('ZONE '..tostring(i)) / 2
-        love.graphics.print('ZONE '..tostring(i), (gw / 2), gh / 2)
+    zone.draw(function (_, zone_id)
+        render.set_collection(zone_id)
+        render.draw()
     end)
+
+    render.set_collection()
+    render.draw()
 
     -- select the next dungeon room to enter
     if state.next_room_choices then

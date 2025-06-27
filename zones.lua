@@ -54,7 +54,7 @@ local function calc_angles()
 end
 
 ---@class ZonesSetValue
----@field id number
+---@field id any
 ---@field image any love.Image
 
 ---@param values ZonesSetValue[]
@@ -111,7 +111,6 @@ function M.set(values)
         angle1, angle2 = angles[idx1], angles[idx2]
 
         local render_target = zone.render_target
-        local render = zone.render
 
         if not zone.remove then
             render_target.angle1 = angle1
@@ -120,9 +119,12 @@ function M.set(values)
             render_target.angle1 = -90
             render_target.angle2 = -90
         end
-
-        -- TODO angles don't look right
-        -- log.debug(i, 'from', render.angle1, render.angle2, 'to', render_target.angle1, render_target.angle2)
+        if render_target.angle1 == -90 and render_target.angle2 == 270 then
+            render_target.ox, render_target.oy = 0, 0
+        else
+            render_target.ox, _ = lume.vector(math.rad((render_target.angle1 + render_target.angle2) / 2), gw / 2)
+            _, render_target.oy = lume.vector(math.rad((render_target.angle1 + render_target.angle2) / 2), gh / 2)
+        end
     end
 
     t = 0
@@ -141,13 +143,6 @@ function M.update(dt)
 
             render.angle1 = lume.lerp(render.angle1, render_target.angle1, t / d)
             render.angle2 = lume.lerp(render.angle2, render_target.angle2, t / d)
-            local _
-            if render_target.angle1 == -90 and render_target.angle2 == 270 then
-                render_target.ox, render_target.oy = 0, 0
-            else
-                render_target.ox, _ = lume.vector(math.rad((render.angle2 + render.angle1) / 2), gw / 2)
-                _, render_target.oy = lume.vector(math.rad((render.angle2 + render.angle1) / 2), gh / 2)
-            end
 
             render.ox = lume.lerp(render.ox, render_target.ox, t / d)
             render.oy = lume.lerp(render.oy, render_target.oy, t / d)
@@ -155,7 +150,7 @@ function M.update(dt)
     end
 end
 
----@param fn? fun(i:number) draw inside the stencil
+---@param fn? fun(i:number, id:any) draw inside the stencil
 function M.draw(fn)
     local gw, gh = love.graphics.getDimensions()
     love.graphics.push('all')
@@ -172,7 +167,7 @@ function M.draw(fn)
         if fn then
             love.graphics.push('all')
             love.graphics.translate(render.ox / 2, render.oy / 2)
-            fn(i)
+            fn(i, zone.id)
             love.graphics.pop()
         end
         zone.transform:translate(-render.ox, -render.oy)

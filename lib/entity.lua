@@ -15,6 +15,7 @@ function M.add(e)
     id = id + 1
     e._id = id
     table.insert(entities, e)
+    return e
 end
 
 function M.all()

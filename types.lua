@@ -6,6 +6,7 @@
 ---@field class? string
 ---@field group? 'player'|'enemy'
 ---@field items? string[]
+---@field zone_id? any id of the zone this entity 'owns'
 
 ---@class Ability
 ---@field damage number
