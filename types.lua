@@ -6,7 +6,8 @@
 ---@field class? string
 ---@field group? 'player'|'enemy'
 ---@field items? string[]
----@field zone_id? any id of the zone this entity 'owns'
+---@field zone_id? any id of the zone this entity is in
+---@field render_character? any id of character sprite renderable
 
 ---@class Ability
 ---@field damage number

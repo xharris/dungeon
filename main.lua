@@ -7,6 +7,9 @@ local lume = require 'ext.lume'
 local zone = require 'zones'
 local color = require 'lib.color'
 local render = require 'render'
+local zones  = require 'zones'
+
+-- render.DEBUG = true
 
 lang.set('en', {
     slash = 'Slash',
@@ -33,7 +36,6 @@ local DEFAULT_STATE = {
 }
 
 local IMG = {}
-local ZONES = {}
 
 local state = lume.clone(DEFAULT_STATE)
 
@@ -67,9 +69,32 @@ local function randomize_next_event()
     state.next_event = lume.randomchoice(lume.keys(events))
 end
 
-local function start_combat()
+---@param zone_id? any
+local function start_combat(zone_id)
+    local gw, gh = love.graphics.getDimensions()
     state.in_combat = true
-    entity.add{class='goblin', group='enemy', abilities={'slash'}, cooldowns={}, items={}, health=6}
+    
+    local enemy = entity.add{
+        class='goblin', 
+        group='enemy', 
+        abilities={'slash'}, 
+        cooldowns={}, items={}, health=6,
+        zone_id = zone_id
+    }
+    
+    if zone_id then
+        render.set_collection(zone_id)
+    end
+    enemy.render_character = render.add{
+        tex = IMG.ohmydungeon_v11,
+        frames = {{x=48, y=144, w=16, h=16}},
+        current_frame = 1,
+        x = gw * 2/3, y = gh / 2,
+        ox = 8, oy = 8,
+        sx = -2, sy = 2,
+    }
+    render.set_collection()
+    
     randomize_next_event()
 end
 
@@ -119,20 +144,25 @@ local function start_game()
     state = lume.clone(DEFAULT_STATE)
 
     local player = entity.add{class='warrior', group='player', abilities={'slash'}, cooldowns={}, items={}, health=const.INITIAL_PLAYER_HEALTH}
+
+    -- add player zone
     local zone_id = 'entity-'..tostring(player._id)
     player.zone_id = zone_id
-    zone.set{
-        {id=zone_id, image=IMG.forest}
-    }
+    zone.set{{id=zone_id, image=IMG.forest}}
+
+    -- add player sprite
     render.set_collection(zone_id)
-    render.add{
-        text = 'zone1',
-        x = gw / 2,
-        y = gh / 2,
+    player.render_character = render.add{
+        tex = IMG.ohmydungeon_v11,
+        frames = {{x=0, y=144, w=16, h=16}},
+        current_frame = 1,
+        x = gw / 3, y = gh / 2,
+        ox = 8, oy = 8,
+        sx = 2, sy = 2,
     }
     render.set_collection()
-    
-    start_combat()
+
+    start_combat(zone_id)
 end
 
 function love.load()
@@ -142,12 +172,20 @@ function love.load()
     IMG.tiny_pixel_hero = love.graphics.newImage('assets/tinypixelhero.jpg')
     IMG.ohmydungeon_v11 = love.graphics.newImage('assets/ohmydungeon_v1.1.png')
     IMG.ohmydungeon_v11:setFilter('linear', 'nearest')
-
-    ZONES.forest = {
-        id = ''
-    } --[[@as ZonesSetValue]]
+    IMG.dk_items = love.graphics.newImage('assets/( D&K ) Items V.2.png')
+    IMG.dk_items:setFilter('linear', 'nearest')
 
     render.load()
+
+    render.signals.on(render.SIGNALS.easing_done, 
+        ---@param id any
+        ---@param r Renderable
+        function (id, r)
+            if r.tag == 'projectile-arrow' then
+                render.remove(id)
+            end
+        end
+    )
 
     start_game()
 end
@@ -157,18 +195,6 @@ function love.update(dt)
     zone.update(dt)
     ctrl:update()
     entity.update()
-
-    if ctrl:pressed 'zone_1' then
-        zone.set{zones[1]}
-    elseif ctrl:pressed 'zone_2' then
-        zone.set{zones[1], zones[2]}
-    elseif ctrl:pressed 'zone_3' then
-        zone.set{zones[1], zones[2], zones[3]}
-    elseif ctrl:pressed 'zone_4' then
-        zone.set{zones[1], zones[2], zones[3], zones[4]}
-    elseif ctrl:pressed 'zone_5' then
-        zone.set{zones[1]}
-    end
 
     local combat_entities = entity.find('abilities', 'cooldowns', 'health')
     local no_enemies_left = true
@@ -225,6 +251,27 @@ function love.update(dt)
                             end
                         end
 
+                        if e.render_character and target.render_character then
+                            -- draw projectile
+                            local r_id, r = render.add{
+                                tex = IMG.dk_items,
+                                frames = {{x=160, y=128, w=16, h=16}},
+                                current_frame = 1,
+                                copy_transform = e.render_character,
+                                tag = 'projectile-arrow',
+                            }
+                            -- ease towards target
+                            render.move_to(r_id, e.render_character, target.render_character, {
+                                duration = 500
+                            })
+                            -- zone drawing offset
+                            local zone = zones.get(e.zone_id)
+                            if zone then
+                                r.x = r.x + zone.render.ox
+                                r.y = r.y + zone.render.oy
+                            end
+                        end
+
                         -- target takes damage
                         target.health = target.health - damage
                         e.cooldowns[ability_name] = ability.cooldown
@@ -244,9 +291,6 @@ function love.update(dt)
 end
 
 function love.draw()
-    local gw, gh = love.graphics.getDimensions()
-    local font = love.graphics.getFont()
-
     zone.draw(function (_, zone_id)
         render.set_collection(zone_id)
         render.draw()

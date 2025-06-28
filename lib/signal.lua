@@ -4,6 +4,8 @@ local signals = {}
 
 function M.create(prefix)
     return {
+        ---@param name string
+        ---@param fn function
         on = function(name, fn)
             local key = prefix.."."..name
             if not signals[key] then
@@ -11,6 +13,8 @@ function M.create(prefix)
             end
             table.insert(signals[key], fn)
         end,
+        ---@param name string
+        ---@param ... any
         emit = function (name, ...)
             local key = prefix.."."..name
             if not signals[key] then

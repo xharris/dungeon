@@ -53,6 +53,14 @@ local function calc_angles()
     return out
 end
 
+function M.get(id)
+    for _, zone in ipairs(zones) do
+        if zone.id == id then
+            return zone
+        end
+    end
+end
+
 ---@class ZonesSetValue
 ---@field id any
 ---@field image any love.Image
@@ -63,6 +71,8 @@ function M.set(values)
     local new_zones = {}
     local gw, gh = love.graphics.getDimensions()
     radius = math.sqrt((gw ^ 2) + (gh ^ 2))
+
+    local no_animate = #zones == 0 and #values == 1
 
     for i, value in ipairs(values) do
         local w, h = value.image:getDimensions()
@@ -111,6 +121,7 @@ function M.set(values)
         angle1, angle2 = angles[idx1], angles[idx2]
 
         local render_target = zone.render_target
+        local render = zone.render
 
         if not zone.remove then
             render_target.angle1 = angle1
@@ -119,6 +130,12 @@ function M.set(values)
             render_target.angle1 = -90
             render_target.angle2 = -90
         end
+
+        if i == 1 and no_animate then
+            render.angle1 = render_target.angle1
+            render.angle2 = render_target.angle2
+        end
+    
         if render_target.angle1 == -90 and render_target.angle2 == 270 then
             render_target.ox, render_target.oy = 0, 0
         else
@@ -150,29 +167,45 @@ function M.update(dt)
     end
 end
 
+local stencil = function(game_w, game_h, radius, render)
+    return function ()
+        love.graphics.setColor(1, 1, 1, 1)
+        love.graphics.arc('fill', game_w / 2, game_h / 2, radius, math.rad(render.angle1), math.rad(render.angle2), 60)
+    end
+end
+
 ---@param fn? fun(i:number, id:any) draw inside the stencil
 function M.draw(fn)
     local gw, gh = love.graphics.getDimensions()
+
     love.graphics.push('all')
-    for i, zone in ipairs(zones) do
+    love.graphics.setColor(1, 1, 1, 1)
+
+    -- draw backgrounds
+    for _, zone in ipairs(zones) do
         local render = zone.render
-        love.graphics.stencil(function()
-            love.graphics.setColor(1, 1, 1, 1)
-            love.graphics.arc('fill', gw / 2, gh / 2, radius, math.rad(render.angle1), math.rad(render.angle2), 60)
-        end, "replace", 1)
+        love.graphics.stencil(stencil(gw, gh, radius, render), "replace", 1)
         love.graphics.setStencilTest("greater", 0)
-        love.graphics.setColor(1, 1, 1, 1)
         zone.transform:translate(render.ox, render.oy)
         love.graphics.draw(zone.image, zone.transform)
+        zone.transform:translate(-render.ox, -render.oy)
+        love.graphics.setStencilTest()
+    end
+
+    -- draw zone contents
+    for i, zone in ipairs(zones) do
+        local render = zone.render
         if fn then
+            love.graphics.stencil(stencil(gw, gh, radius, render), "replace", 1)
+            love.graphics.setStencilTest("greater", 0)
             love.graphics.push('all')
             love.graphics.translate(render.ox / 2, render.oy / 2)
             fn(i, zone.id)
             love.graphics.pop()
+            love.graphics.setStencilTest()
         end
-        zone.transform:translate(-render.ox, -render.oy)
-        love.graphics.setStencilTest()
     end
+
     love.graphics.pop()
 end
 

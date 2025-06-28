@@ -15,3 +15,11 @@ https://craftpix.net/
 4 {180, 270, 90, 180, 0, 90, -90, 0} 90
 
 5 {} 72
+
+## Zones shader idea
+
+- break background with circles
+  - start shaders
+  - draw backgrounds with stencils
+  - end shaders
+  - draw zone contents with stencils
