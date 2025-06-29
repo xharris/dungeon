@@ -458,7 +458,9 @@ function lume.keys(t)
   return rtn
 end
 
-
+---@generic T table
+---@param t T
+---@return T
 function lume.clone(t)
   local rtn = {}
   for k, v in pairs(t) do rtn[k] = v end

@@ -5,6 +5,7 @@ local lume = require 'ext.lume'
 local color = require 'lib.color'
 local log = require 'lib.log'
 local signal = require 'lib.signal'
+local easing = require 'lib.easing'
 
 ---@alias RenderableEaseFn 'linear'|'ease_in_out_sine'
 
@@ -18,10 +19,10 @@ local signal = require 'lib.signal'
 
 ---@class Renderable
 ---@field id? string
----@field tag? any arbitrary value that does nothing
+---@field data? table arbitrary value that does nothing
 ---@field tex? any love.Texture
 ---@field text? string
----@field frames? {x:number, y:number, w:number,h:number,}[]
+---@field frames? {x:number, y:number, w:number, h:number}[]
 ---@field current_frame? number
 ---@field copy_transform? any id of renderable with transform that should be copied
 ---@field x? number
@@ -38,15 +39,6 @@ local cos = math.cos
 local pi = math.pi
 local max = math.max
 local min = math.min
-
-local EASING = {
-    linear = function(x)
-        return x
-    end,
-    ease_in_out_sine = function(x)
-        return -(cos(pi * x) - 1) / 2
-    end
-}
 
 local DEFAULT_COLLECTION = '_default'
 M.DEBUG = false
@@ -95,7 +87,6 @@ function M.add(t)
         t.r = t.r or r.r
         t.ox = t.ox or r.ox
         t.oy = t.oy or r.ox
-        log.debug(t)
     end
     return t.id, t
 end
@@ -196,7 +187,7 @@ function M.update(dt)
                 -- easing
                 if r._easing then
                     for property, ease in pairs(r._easing) do
-                        local fn = EASING[ease.ease_fn]
+                        local fn = easing[ease.ease_fn]
                         ease._t = ease._t + (dt * 1000)
                         local ratio = min(1, max(0, fn(ease._t / ease.duration)))
                         r[property] = ease.a + ((ease.b - ease.a) * ratio)

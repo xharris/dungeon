@@ -16,5 +16,8 @@ return baton.new{
         zone_3 = {'key:3'},
         zone_4 = {'key:4'},
         zone_5 = {'key:5'},
+        dialog_prev_choice = {'key:up'},
+        dialog_next_choice = {'key:down'},
+        dialog_select = {'key:space'}
     }
 }

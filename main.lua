@@ -8,6 +8,7 @@ local zone = require 'zones'
 local color = require 'lib.color'
 local render = require 'render'
 local zones  = require 'zones'
+local dialog = require 'dialog'
 
 -- render.DEBUG = true
 
@@ -21,8 +22,6 @@ local const = {
 }
 
 local DEFAULT_STATE = {
-    ---@type Room[]?
-    next_room_choices = nil,
     shop_items = nil,
     in_combat = false,
     money = 0,
@@ -58,7 +57,10 @@ local items = {
 local events = {
     medic = {
         prompt = 'A wandering medic would like to heal your injuries. Accept the heal for $5?',
-        choices = {'yes', 'no'},
+        choices = {
+            {id='yes', text='Sure'},
+            {id='no', text='No thanks'}
+        },
         result_choice = 'yes',
         result_type = 'heal',
         cost = 5,
@@ -107,7 +109,12 @@ local function enter_event()
     state.current_event = state.next_event
     local event = events[state.current_event] --[[@as RoomEvent?]]
     assert(event, "event not found")
-    log.info(event.prompt)
+
+    dialog.add{
+        text = event.prompt,
+        choices = event.choices,
+    }
+
     randomize_next_event()
 end
 
@@ -126,7 +133,15 @@ local function get_player()
 end
 
 local function generate_room_choices()
-    state.next_room_choices = {'combat', 'shop', 'rest', 'event'}
+    dialog.add{
+        text = "What next?",
+        choices = {
+            {id='event', text='Enter the mysterious door'},
+            {id='rest', text='Rest for a bit'},
+            {id='shop', text='Approach the nearby shop'},
+            {id='combat', text='Enter the open door'}
+        }
+    }
 end
 
 ---@param e Entity
@@ -176,13 +191,19 @@ function love.load()
     IMG.dk_items:setFilter('linear', 'nearest')
 
     render.load()
-
-    render.signals.on(render.SIGNALS.easing_done, 
+    render.signals.on(render.SIGNALS.easing_done,
         ---@param id any
         ---@param r Renderable
         function (id, r)
-            if r.tag == 'projectile-arrow' then
-                render.remove(id)
+            local data = r.data
+            if data then
+                if data.projectile == 'arrow' then
+                    local target = entity.get(data.target)
+                    assert(target, 'projectile target not found')
+                    -- target takes damage
+                    target.health = target.health - data.damage
+                    render.remove(id)
+                end
             end
         end
     )
@@ -195,6 +216,64 @@ function love.update(dt)
     zone.update(dt)
     ctrl:update()
     entity.update()
+    dialog.update(dt)
+    
+    -- dialog controls
+    if ctrl:pressed 'dialog_prev_choice' then
+        dialog.prev_choice()
+    end
+    if ctrl:pressed 'dialog_next_choice' then
+        dialog.next_choice()
+    end
+    if ctrl:pressed 'dialog_select' then
+        ---@type Room
+        local choice_id = dialog.selected_choice()
+
+        -- select the next dungeon room to enter
+        if choice_id == 'combat' then
+            start_combat()
+        elseif choice_id == 'shop' then
+            enter_shop()
+        elseif choice_id == 'event' then
+            enter_event()
+        elseif choice_id == 'rest' then
+            -- heal and move on to next room
+            local player = get_player()
+            heal(player, 10)
+            generate_room_choices()
+        end
+
+        -- event choice
+        if state.current_event and events[state.current_event] then
+            local event = events[state.current_event] --[[@as RoomEvent]]
+            for _, choice in ipairs(event.choices) do
+                if event.result_choice == choice.id and choice_id == event.result_choice then
+                    if state.money < (event.cost or 0) then
+                        -- can't afford it
+                        dialog.add{
+                            text="You didn't have enough money and decided to leave"
+                        }
+                    elseif event.result_type == 'heal' then
+                        -- receive a heal
+                        dialog.add{
+                            text="You were healed 5 hp for $"..tostring(event.cost)
+                        }
+                        local player = get_player()
+                        heal(player, 10)
+                        state.money = state.money - event.cost
+                    end
+                else
+                    dialog.add{
+                        text="You decided to leave",
+                    }
+                end
+                end_event()
+                generate_room_choices()
+            end
+        end
+
+        dialog.next_dialog()
+    end
 
     local combat_entities = entity.find('abilities', 'cooldowns', 'health')
     local no_enemies_left = true
@@ -202,6 +281,8 @@ function love.update(dt)
     for _, e in ipairs(combat_entities) do
         -- dead
         if e.health <= 0 then
+            -- remove sprite
+            render.remove(e.render_character)
             if e.group == 'player' then
                 log.info("player died")
                 -- player died
@@ -258,7 +339,11 @@ function love.update(dt)
                                 frames = {{x=160, y=128, w=16, h=16}},
                                 current_frame = 1,
                                 copy_transform = e.render_character,
-                                tag = 'projectile-arrow',
+                                data = {
+                                    projectile = 'arrow',
+                                    target = target._id,
+                                    damage = damage
+                                }
                             }
                             -- ease towards target
                             render.move_to(r_id, e.render_character, target.render_character, {
@@ -272,8 +357,7 @@ function love.update(dt)
                             end
                         end
 
-                        -- target takes damage
-                        target.health = target.health - damage
+                        -- put it on cooldown
                         e.cooldowns[ability_name] = ability.cooldown
                     end
                 end
@@ -298,30 +382,7 @@ function love.draw()
 
     render.set_collection()
     render.draw()
-
-    -- select the next dungeon room to enter
-    if state.next_room_choices then
-        local choice = circleui.select('next_room_choice', state.next_room_choices)
-        if choice then
-            log.info("selected", choice)
-            state.next_room_choices = nil
-            if choice == 'combat' then
-                start_combat()
-            end
-            if choice == 'shop' then
-                enter_shop()
-            end
-            if choice == 'event' then
-                enter_event()
-            end
-            if choice == 'rest' then
-                -- heal and move on to next room
-                local player = get_player()
-                heal(player, 10)
-                generate_room_choices()
-            end
-        end
-    end
+    dialog.draw()
 
     -- player is shopping
     if state.shop_items then
@@ -335,35 +396,6 @@ function love.draw()
             -- TODO remove
             -- move on to next room after purchasing
             generate_room_choices()
-        end
-    end
-
-    -- player is in event
-    if state.current_event then
-        local event = events[state.current_event] --[[@as RoomEvent?]]
-        assert(event, "event not found")
-        local choice = circleui.select('event', event.choices)
-        if choice then
-            local player = get_player()
-            if choice == event.result_choice then
-                if state.money < (event.cost or 0) then
-                    -- can't afford it
-                    log.info("You didn't have enough money and decided to leave")
-                    end_event()
-                    generate_room_choices()
-                elseif event.result_type == 'heal' then
-                    -- receive a heal
-                    log.info("You were healed 5 hp for $"..tostring(event.cost))
-                    heal(player, 10)
-                    state.money = state.money - event.cost
-                    end_event()
-                    generate_room_choices()
-                end
-            else
-                log.info("You decided to leave")
-                end_event()
-                generate_room_choices()
-            end
         end
     end
 

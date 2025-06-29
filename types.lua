@@ -21,7 +21,7 @@
 ---@class RoomEvent
 ---@field is_unknown? boolean
 ---@field prompt string
----@field choices string[]
+---@field choices DialogChoice[]
 ---@field result_choice string which choice will give the player the `result`
 ---@field result_type 'gain_item'|'lose_item'|'combat'|'heal'
 ---@field result_data any

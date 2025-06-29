@@ -5,6 +5,9 @@ local lume = require 'ext.lume'
 ---@type Entity[]
 local entities = {}
 
+---@type table<number, Entity>
+local entity_map = {}
+
 ---@type table<string, boolean>
 local deleted = {}
 
@@ -15,7 +18,13 @@ function M.add(e)
     id = id + 1
     e._id = id
     table.insert(entities, e)
+    entity_map[e._id] = e
     return e
+end
+
+---@param id number
+function M.get(id)
+    return entity_map[id]
 end
 
 function M.all()
