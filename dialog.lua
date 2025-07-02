@@ -2,6 +2,8 @@ local M = {}
 
 local log = require "lib.log"
 local easing = require 'lib.easing'
+local lume = require 'ext.lume'
+local printc = require 'lib.printc'
 
 local min = math.min
 local max = math.max
@@ -12,92 +14,166 @@ local MARGIN = 10
 local PADDING = 10
 local SEP = 2
 
+M.NEXT_DIALOG_COOLDOWN = 1000
+M.IMAGE_ONLY_CHOICES = 7
+
+M.margin = {0, 0, 0, 0} -- TODO?
+M.sep = {10, 10}
+M.padding = {0, 0, 0, 0}
+
 ---@class DialogChoice
 ---@field id string
----@field text string
+---@field texts? PrintcText[]
+---@field image? any love.Image TODO
+---@field image_frames? {x:number, y:number, w:number, h:number}[] TODO
 
 ---@class DialogOptions
----@field text string
+---@field texts? PrintcText[]
 ---@field duration? number
 ---@field choices? DialogChoice[]
 ---@field clear_on_choice? boolean
+---@field _choices_have_images? boolean TODO 1 row of squares with left/right arrows for overflow, up/down to skip to next 'section'
 ---@field _choice_index? number
----@field _char_index? number
----@field _text? string
+---@field _text_len? number
+---@field _char_limit? number
 ---@field _t? number
-
----@type table<string, string[]>
-local text_characters = {}
 
 ---@type DialogOptions[]
 local instances = {}
+local quad
+local next_dialog_cooldown = M.NEXT_DIALOG_COOLDOWN
 
----@param text string
+---@param texts PrintcText[]
 ---@param y number
----@param opts {margin?:number, padding?:number, selected?:boolean}
-local function draw_box_with_text(text, y, opts)
+---@param limit number
+---@param opts {margin?:number, padding?:number, selected?:boolean, char_limit?:number}
+local function draw_box_with_text(texts, y, limit, opts)
+    texts = texts or {{text=' '}}
     opts = opts or {}
     local margin = opts.margin or 0
     local padding = opts.padding or 0
 
-    local font = love.graphics.getFont()
+    -- local font = love.graphics.getFont()
     local gw = love.graphics.getPixelWidth()
     local w = gw - (2 * margin) - (2 * padding)
-    local h = math.ceil(font:getWidth(text) / w) * font:getHeight()
+    local h = printc.height(texts, margin + padding, limit) + (2 * padding)
 
     -- box
     love.graphics.setColor(0, 0, 0, 0.8)
-    love.graphics.rectangle('fill', margin, y, w + (2 * padding), h + (2 * padding))
-    
+    love.graphics.rectangle('fill', margin, y, w + (2 * padding), h)
+
     -- text
     love.graphics.setColor(1, 1, 1, 1.0)
-    love.graphics.printf(text, margin + padding, y + padding, w)
+    printc.draw(texts, margin + padding, y + padding, w, opts.char_limit)
 
     -- selected?
     if opts.selected then
         love.graphics.setLineWidth(2)
         love.graphics.setColor(1, 1, 1, 0.9)
-        love.graphics.rectangle('line', margin, y, w + (2 * padding), h + (2 * padding))
+        love.graphics.rectangle('line', margin, y, w + (2 * padding), h)
     end
 
-    return h + (2 * padding) + SEP
+    return h + (2 * padding)
+end
+
+---@param text_changed boolean?
+local function reset_first(text_changed)
+    local v = instances[1]
+    if v then
+        v._t = v._t or 0
+        v.duration = v.duration or 1000
+        v.texts = v.texts or {}
+        v._text_len = printc.len(v.texts)
+        v._choice_index = 1
+        v.clear_on_choice = v.clear_on_choice ~= nil and v.clear_on_choice or true
+        v._choices_have_images = false
+        v.duration = v.duration or 0
+        v._char_limit = v._char_limit or 0
+
+        if v.choices then
+            local choice = v._choice_index and v.choices[v._choice_index]
+            if choice and choice.texts then
+                v.texts = choice.texts
+                v._text_len = printc.len(v.texts)
+            end
+            
+            for _, choice in ipairs(v.choices) do
+                if choice.image then
+                    v._choices_have_images = true
+                    break
+                end
+            end
+        end
+
+        if text_changed then
+            v._t = 0
+            v._char_limit = 0
+        end
+
+        if v._text_len == 0 then
+            v._t = v.duration
+        end
+
+        if v.duration <= 0 then
+            v._char_limit = v._text_len
+        end
+    end
 end
 
 ---@param v DialogOptions
 function M.add(v)
-    v._t = 0
-    v._char_index = 0
-    v._text = ''
-    v.duration = v.duration or 1000
-    v.text = v.text or ''
-    v._choice_index = 1
-    v.clear_on_choice = v.clear_on_choice ~= nil and v.clear_on_choice or true
+    if not quad then
+        quad = love.graphics.newQuad(0, 0, 1, 1, 1, 1)
+    end
     table.insert(instances, v)
+    M.set(v, #instances)
+end
+
+---@param v DialogOptions
+---@param i? number
+function M.set(v, i)
+    i = i or 1
+    local chosen = instances[i]
+    if chosen then
+        instances[i] = lume.merge(chosen, v)
+        instances[i].texts = v.texts or chosen.texts
+        reset_first(not printc.equal(chosen.texts, v.texts))
+    end
 end
 
 function M.prev_choice()
     local first = instances[1]
-    if first and first.choices then
-        first._choice_index = first._choice_index - 1
+    if not first then
+        return
     end
+    first._choice_index = first._choice_index - 1
     if first._choice_index <= 0 then
         first._choice_index = #first.choices
+    end
+    local choice = first.choices[first._choice_index]
+    if choice and choice.texts then
+        M.set({texts=choice.texts})
     end
 end
 
 function M.next_choice()
     local first = instances[1]
-    if first and first.choices then
-        first._choice_index = first._choice_index + 1
+    if not first then
+        return
     end
+    first._choice_index = first._choice_index + 1
     if first._choice_index > #first.choices then
         first._choice_index = 1
+    end
+    local choice = first.choices[first._choice_index]
+    if choice and choice.texts then
+        M.set({texts=choice.texts})
     end
 end
 
 function M.selected_choice()
     local first = instances[1]
-    if first.choices and first._choice_index then
+    if first and first.choices and first._choice_index then
         local choice = first.choices[first._choice_index]
         if choice then
             return choice.id
@@ -105,42 +181,89 @@ function M.selected_choice()
     end
 end
 
-function M.next_dialog()
-    if #instances > 0 then
-        table.remove(instances, 1)
+---@param force? boolean
+function M.next_dialog(force)
+    if not force and next_dialog_cooldown > 0 then
+        return
     end
+    if #instances > 0 then
+        ---@type DialogOptions?
+        local removed = table.remove(instances, 1)
+        local first = instances[1]
+        next_dialog_cooldown = M.NEXT_DIALOG_COOLDOWN
+        if removed and first then
+            reset_first(not printc.equal(removed.texts, first.texts))
+        end
+    end
+end
+
+function M.has_choices()
+    local first = instances[1]
+    return first and first.choices and #first.choices > 0
+end
+
+function M.has_image_choices()
+    local first = instances[1]
+    return first and first._choices_have_images
 end
 
 ---@param dt number
 function M.update(dt)
-    for _, instance in ipairs(instances) do
-        if instance._char_index < str_len(instance.text) then
-            local ratio = easing.ease_in_out_sine(instance._t / instance.duration)
-            local idx = ceil(min(str_len(instance.text), str_len(instance.text) * ratio))
-            if instance._t < instance.duration then
-                instance._t = instance._t + (dt * 1000)
-                instance._text = instance.text:sub(1, idx)
-            end
-        end
+    if next_dialog_cooldown > 0 then
+        next_dialog_cooldown = next_dialog_cooldown - (dt * 1000)
+    end
+    local first = instances[1]
+    local len = first._text_len
+    if first and len and first._char_limit < len then
+        local ratio = easing.ease_in_out_sine(first._t / first.duration)
+        first._char_limit = ceil(min(len, len * ratio))
+    end
+    if first._t <= first.duration then
+        first._t = first._t + (dt * 1000)
     end
 end
 
 function M.draw()
     local first = instances[1]
-    if first and str_len(first._text) > 0 then
+    if first then
+        local x = MARGIN
         local y = MARGIN
+        local limit = love.graphics.getWidth() - (2 * MARGIN) - (2 * PADDING)
 
         -- dialog
-        y = y + draw_box_with_text(first._text, y, {margin=MARGIN, padding=PADDING * 2})
+        y = y + draw_box_with_text(first.texts, y, limit, {
+            margin=MARGIN,
+            padding=PADDING,
+            char_limit=first._char_limit
+        }) + M.sep[2]
 
         -- choices
-        if first._t >= first.duration and first.choices and #first.choices > 0 then
-            for i, choice in ipairs(first.choices) do
-                y = y + draw_box_with_text(
-                    choice.text,
-                    y,
-                    {margin=MARGIN, padding=PADDING, selected=i == first._choice_index}
-                )
+        if first.choices and #first.choices > 0 then
+            if first._choices_have_images then
+                local choice_size = (love.graphics.getWidth() - MARGIN - (M.sep[1] * M.IMAGE_ONLY_CHOICES)) / M.IMAGE_ONLY_CHOICES
+                -- draw choices
+                for i = 1, M.IMAGE_ONLY_CHOICES do
+                    -- box
+                    love.graphics.setColor(0, 0, 0, 0.8)
+                    love.graphics.rectangle('fill', x, y, choice_size, choice_size)
+
+                    -- selected?
+                    if i == (first._choice_index % M.IMAGE_ONLY_CHOICES) then
+                        love.graphics.setLineWidth(2)
+                        love.graphics.setColor(1, 1, 1, 0.9)
+                        love.graphics.rectangle('line', x, y, choice_size, choice_size)
+                    end
+
+                    x = x + choice_size + M.sep[1]
+                end
+            elseif first._t >= first.duration then
+                -- draw choices
+                for i, choice in ipairs(first.choices) do
+                    y = y + M.sep[2] + draw_box_with_text(
+                        choice.texts, y, limit,
+                        {margin=MARGIN, padding=PADDING, selected=i == first._choice_index}
+                    )
+                end
             end
         end
     end

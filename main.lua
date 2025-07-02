@@ -14,7 +14,8 @@ local dialog = require 'dialog'
 
 lang.set('en', {
     slash = 'Slash',
-    basic_armor = 'Basic Armor',
+    basic_armor_title = 'Basic Armor',
+    basic_armor_description = 'It does damage',
 })
 
 local const = {
@@ -101,7 +102,27 @@ local function start_combat(zone_id)
 end
 
 local function enter_shop()
-    state.shop_items = lume.keys(items)
+    ---@type DialogChoice[]
+    local choices = {}
+    state.shop_items = {}
+    for id, item in pairs(items) do
+        ---@type DialogChoice
+        local choice = {
+            id = id,
+            image = IMG.dk_items,
+            image_frames = {
+                {x=16, y=64, w=16, h=32},
+            },
+            texts = {
+                {text=id.."_title\n"},
+                {text=id.."_description"},
+            },
+        }
+        table.insert(choices, choice)
+        table.insert(state.shop_items, id)
+    end
+    dialog.add{texts = {{text="Welcome to my store...\nbrah"}}}
+    dialog.add{choices = choices}
     randomize_next_event()
 end
 
@@ -111,7 +132,7 @@ local function enter_event()
     assert(event, "event not found")
 
     dialog.add{
-        text = event.prompt,
+        texts = {{text=event.prompt}},
         choices = event.choices,
     }
 
@@ -136,10 +157,10 @@ local function generate_room_choices()
     dialog.add{
         text = "What next?",
         choices = {
-            {id='event', text='Enter the mysterious door'},
-            {id='rest', text='Rest for a bit'},
-            {id='shop', text='Approach the nearby shop'},
-            {id='combat', text='Enter the open door'}
+            {id='event', texts={{text='Enter the mysterious door'}}},
+            {id='rest', texts={{text='Rest for a bit'}}},
+            {id='shop', texts={{text='Approach the nearby shop'}}},
+            {id='combat', texts={{text='Enter the open door'}}},
         }
     }
 end
@@ -177,7 +198,7 @@ local function start_game()
     }
     render.set_collection()
 
-    start_combat(zone_id)
+    enter_shop()
 end
 
 function love.load()
@@ -217,15 +238,25 @@ function love.update(dt)
     ctrl:update()
     entity.update()
     dialog.update(dt)
-    
+
     -- dialog controls
-    if ctrl:pressed 'dialog_prev_choice' then
-        dialog.prev_choice()
+    if dialog.has_image_choices() then
+        if ctrl:pressed 'left' then
+            dialog.prev_choice()
+        end
+        if ctrl:pressed 'right' then
+            dialog.next_choice()
+        end
+    elseif dialog.has_choices() then
+        if ctrl:pressed 'up' then
+            dialog.prev_choice()
+        end
+        if ctrl:pressed 'down' then
+            dialog.next_choice()
+        end
     end
-    if ctrl:pressed 'dialog_next_choice' then
-        dialog.next_choice()
-    end
-    if ctrl:pressed 'dialog_select' then
+
+    if ctrl:pressed 'select' then
         ---@type Room
         local choice_id = dialog.selected_choice()
 
@@ -251,12 +282,16 @@ function love.update(dt)
                     if state.money < (event.cost or 0) then
                         -- can't afford it
                         dialog.add{
-                            text="You didn't have enough money and decided to leave"
+                            texts={
+                                {text="You didn't have enough money and decided to leave"},
+                            },
                         }
                     elseif event.result_type == 'heal' then
                         -- receive a heal
                         dialog.add{
-                            text="You were healed 5 hp for $"..tostring(event.cost)
+                            texts={
+                                {text="You were healed 5 hp for $"..tostring(event.cost)},
+                            },
                         }
                         local player = get_player()
                         heal(player, 10)
@@ -264,7 +299,9 @@ function love.update(dt)
                     end
                 else
                     dialog.add{
-                        text="You decided to leave",
+                        texts={
+                            text="You decided to leave",
+                        },
                     }
                 end
                 end_event()
@@ -385,19 +422,19 @@ function love.draw()
     dialog.draw()
 
     -- player is shopping
-    if state.shop_items then
-        local choice = circleui.select('shop_items', state.shop_items)
-        if choice and items[choice] then
-            -- buy item
-            log.info("player bought", choice)
-            local player = get_player()
-            table.insert(player.items, choice)
-            lume.remove(state.shop_items, choice)
-            -- TODO remove
-            -- move on to next room after purchasing
-            generate_room_choices()
-        end
-    end
+    -- if state.shop_items then
+    --     local choice = circleui.select('shop_items', state.shop_items)
+    --     if choice and items[choice] then
+    --         -- buy item
+    --         log.info("player bought", choice)
+    --         local player = get_player()
+    --         table.insert(player.items, choice)
+    --         lume.remove(state.shop_items, choice)
+    --         -- TODO remove
+    --         -- move on to next room after purchasing
+    --         generate_room_choices()
+    --     end
+    -- end
 
     -- game over
     if state.is_game_over then

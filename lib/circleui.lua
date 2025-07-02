@@ -98,7 +98,7 @@ function M.select(id, items)
                 item_data.is_hovered = dist < r
                 if item_data.is_hovered then
                     love.graphics.printf(item, font, 0, vsect / 2 - RADIUS, w, 'center')
-                    if ctrl:pressed 'ui_select' then
+                    if ctrl:pressed 'select' then
                         data.selected_item = item
                     end
                 end
@@ -115,7 +115,7 @@ function M.select(id, items)
     if pages > 1 then
         if data.page > 1 and mx > 0 and mx < marginx then
             color.set(color.MUI.WHITE, 1)
-            if ctrl:pressed 'ui_select' then
+            if ctrl:pressed 'select' then
                 data.page = math.max(1, data.page - 1)
             end
         end
@@ -124,7 +124,7 @@ function M.select(id, items)
         -- next page
         if data.page < pages and mx > w - marginx and mx < w then
             color.set(color.MUI.WHITE, 1)
-            if ctrl:pressed 'ui_select' then
+            if ctrl:pressed 'select' then
                 data.page = math.min(pages, data.page + 1)
             end
         end
