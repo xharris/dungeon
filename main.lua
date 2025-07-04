@@ -23,6 +23,7 @@ local const = {
 }
 
 local DEFAULT_STATE = {
+    ---@type string[]?
     shop_items = nil,
     in_combat = false,
     money = 0,
@@ -114,14 +115,14 @@ local function enter_shop()
                 {x=16, y=64, w=16, h=32},
             },
             texts = {
-                {text=id.."_title\n"},
-                {text=id.."_description"},
+                {text=id.."_title\n",color={1,1,1,1}},
+                {text=id.."_description",color={1,1,1,0.75}},
             },
         }
         table.insert(choices, choice)
         table.insert(state.shop_items, id)
     end
-    dialog.add{texts = {{text="Welcome to my store...\nbrah"}}}
+    dialog.add{texts = {{text="Welcome to my store..."}}}
     dialog.add{choices = choices}
     randomize_next_event()
 end
@@ -155,7 +156,7 @@ end
 
 local function generate_room_choices()
     dialog.add{
-        text = "What next?",
+        texts = {{text="Where will you go next?"}},
         choices = {
             {id='event', texts={{text='Enter the mysterious door'}}},
             {id='rest', texts={{text='Rest for a bit'}}},
@@ -168,7 +169,7 @@ end
 ---@param e Entity
 ---@param amt number
 local function heal(e, amt)
-    e.health = math.min(e.health + 5, const.INITIAL_PLAYER_HEALTH)
+    e.health = math.min(e.health + amt, const.INITIAL_PLAYER_HEALTH)
 end
 
 -- clears the current game and starts a new one
@@ -198,7 +199,7 @@ local function start_game()
     }
     render.set_collection()
 
-    enter_shop()
+    start_combat(zone_id)
 end
 
 function love.load()
@@ -257,8 +258,23 @@ function love.update(dt)
     end
 
     if ctrl:pressed 'select' then
-        ---@type Room
+        ---@type Room|string|nil
         local choice_id = dialog.selected_choice()
+
+        if choice_id and state.shop_items and #state.shop_items > 0 then
+            local found_item = false
+            for _, id in ipairs(state.shop_items) do
+                if choice_id == id and items[id] then
+                    found_item = true
+                    break
+                end
+            end
+            assert(found_item, "item "..tostring(choice_id).." not found")
+
+            dialog.add{texts={{text=lang.join("You purchased ", choice_id, ".")}}}
+            local player = get_player()
+            table.insert(player.items, choice_id)
+        end
 
         -- select the next dungeon room to enter
         if choice_id == 'combat' then

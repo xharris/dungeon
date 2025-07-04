@@ -73,7 +73,7 @@ local function draw_box_with_text(texts, y, limit, opts)
         love.graphics.rectangle('line', margin, y, w + (2 * padding), h)
     end
 
-    return h + (2 * padding)
+    return h
 end
 
 ---@param text_changed boolean?
@@ -84,24 +84,24 @@ local function reset_first(text_changed)
         v.duration = v.duration or 1000
         v.texts = v.texts or {}
         v._text_len = printc.len(v.texts)
-        v._choice_index = 1
+        v._choice_index = v._choice_index or 1
         v.clear_on_choice = v.clear_on_choice ~= nil and v.clear_on_choice or true
         v._choices_have_images = false
         v.duration = v.duration or 0
         v._char_limit = v._char_limit or 0
 
         if v.choices then
-            local choice = v._choice_index and v.choices[v._choice_index]
-            if choice and choice.texts then
-                v.texts = choice.texts
-                v._text_len = printc.len(v.texts)
-            end
-            
             for _, choice in ipairs(v.choices) do
                 if choice.image then
                     v._choices_have_images = true
                     break
                 end
+            end
+
+            local choice = v._choice_index and v.choices[v._choice_index]
+            if v._choices_have_images and choice and choice.texts then
+                v.texts = choice.texts
+                v._text_len = printc.len(v.texts)
             end
         end
 
@@ -133,11 +133,11 @@ end
 ---@param i? number
 function M.set(v, i)
     i = i or 1
-    local chosen = instances[i]
-    if chosen then
-        instances[i] = lume.merge(chosen, v)
-        instances[i].texts = v.texts or chosen.texts
-        reset_first(not printc.equal(chosen.texts, v.texts))
+    local found = instances[i]
+    if found then
+        instances[i] = lume.merge(found, v)
+        instances[i].texts = v.texts or found.texts
+        reset_first(not printc.equal(found.texts, v.texts))
     end
 end
 
@@ -151,7 +151,7 @@ function M.prev_choice()
         first._choice_index = #first.choices
     end
     local choice = first.choices[first._choice_index]
-    if choice and choice.texts then
+    if choice and first._choices_have_images and choice.texts then
         M.set({texts=choice.texts})
     end
 end
@@ -166,7 +166,7 @@ function M.next_choice()
         first._choice_index = 1
     end
     local choice = first.choices[first._choice_index]
-    if choice and choice.texts then
+    if choice and first._choices_have_images and choice.texts then
         M.set({texts=choice.texts})
     end
 end
@@ -213,12 +213,12 @@ function M.update(dt)
         next_dialog_cooldown = next_dialog_cooldown - (dt * 1000)
     end
     local first = instances[1]
-    local len = first._text_len
+    local len = first and first._text_len
     if first and len and first._char_limit < len then
         local ratio = easing.ease_in_out_sine(first._t / first.duration)
         first._char_limit = ceil(min(len, len * ratio))
     end
-    if first._t <= first.duration then
+    if first and first._t <= first.duration then
         first._t = first._t + (dt * 1000)
     end
 end

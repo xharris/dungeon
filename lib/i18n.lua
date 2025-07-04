@@ -19,6 +19,16 @@ function M.get(key)
     return texts[key] or key
 end
 
+---@param ... string
+---@return string
+function M.join(...)
+    local str = ""
+    for i = 1, select('#', ...) do
+        str = str .. M.get(select(i, ...))
+    end
+    return str
+end
+
 --- TODO parse full string and replace translatable strings
 ---@param str string
 function M.parse(str)
