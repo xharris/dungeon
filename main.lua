@@ -4,11 +4,12 @@ local circleui = require 'lib.circleui'
 local ctrl = require 'lib.controls'
 local lang = require 'lib.i18n'
 local lume = require 'ext.lume'
-local zone = require 'zones'
 local color = require 'lib.color'
 local render = require 'render'
 local zones  = require 'zones'
 local dialog = require 'dialog'
+local plugin = require 'plugin'
+local itemlib = require 'item'
 
 -- render.DEBUG = true
 
@@ -40,21 +41,6 @@ local IMG = {}
 
 local state = lume.clone(DEFAULT_STATE)
 
----@type table<string, Ability>
-local abilities = {
-    slash = {damage=3, cooldown=1000}
-}
-
----@type table<string, Item>
-local items = {
-    basic_armor = {
-        before_take_damage = function(e, amt)
-            log.info("basic armor reduced damage by 1")
-            return amt - 1
-        end,
-    },
-}
-
 ---@type table<string, RoomEvent>
 local events = {
     medic = {
@@ -79,11 +65,13 @@ local function start_combat(zone_id)
     state.in_combat = true
     
     local enemy = entity.add{
-        class='goblin', 
-        group='enemy', 
-        abilities={'slash'}, 
-        cooldowns={}, items={}, health=6,
-        zone_id = zone_id
+        class='goblin',
+        group='enemy',
+        cooldowns={},
+        items={{id='rusty_sword',data={}}},
+        health=6,
+        zone_id = zone_id,
+        stats = {agi=0, str=3},
     }
     
     if zone_id then
@@ -106,21 +94,18 @@ local function enter_shop()
     ---@type DialogChoice[]
     local choices = {}
     state.shop_items = {}
-    for id, item in pairs(items) do
+    for _, item in pairs(itemlib.all()) do
         ---@type DialogChoice
         local choice = {
-            id = id,
+            id = item.id,
             image = IMG.dk_items,
             image_frames = {
                 {x=16, y=64, w=16, h=32},
             },
-            texts = {
-                {text=id.."_title\n",color={1,1,1,1}},
-                {text=id.."_description",color={1,1,1,0.75}},
-            },
+            texts = item.label,
         }
         table.insert(choices, choice)
-        table.insert(state.shop_items, id)
+        table.insert(state.shop_items, item.id)
     end
     dialog.add{texts = {{text="Welcome to my store..."}}}
     dialog.add{choices = choices}
@@ -159,7 +144,6 @@ local function generate_room_choices()
         texts = {{text="Where will you go next?"}},
         choices = {
             {id='event', texts={{text='Enter the mysterious door'}}},
-            {id='rest', texts={{text='Rest for a bit'}}},
             {id='shop', texts={{text='Approach the nearby shop'}}},
             {id='combat', texts={{text='Enter the open door'}}},
         }
@@ -180,12 +164,20 @@ local function start_game()
     render.reset()
     state = lume.clone(DEFAULT_STATE)
 
-    local player = entity.add{class='warrior', group='player', abilities={'slash'}, cooldowns={}, items={}, health=const.INITIAL_PLAYER_HEALTH}
+    local player = entity.add{
+        class='warrior',
+        group='player',
+        abilities={'slash'},
+        cooldowns={},
+        items={{id='rusty_sword',data={}}},
+        health=const.INITIAL_PLAYER_HEALTH,
+        stats = {agi=0, str=5}
+    }
 
     -- add player zone
     local zone_id = 'entity-'..tostring(player._id)
     player.zone_id = zone_id
-    zone.set{{id=zone_id, image=IMG.forest}}
+    zones.set{{id=zone_id, image=IMG.forest}}
 
     -- add player sprite
     render.set_collection(zone_id)
@@ -212,6 +204,9 @@ function love.load()
     IMG.dk_items = love.graphics.newImage('assets/( D&K ) Items V.2.png')
     IMG.dk_items:setFilter('linear', 'nearest')
 
+    plugin.add(require 'plugins.warrior')
+
+    plugin.load()
     render.load()
     render.signals.on(render.SIGNALS.easing_done,
         ---@param id any
@@ -219,11 +214,29 @@ function love.load()
         function (id, r)
             local data = r.data
             if data then
-                if data.projectile == 'arrow' then
+                if data.type == 'attack' then
+                    local source = entity.get(data.source)
                     local target = entity.get(data.target)
-                    assert(target, 'projectile target not found')
-                    -- target takes damage
-                    target.health = target.health - data.damage
+                    assert(target, 'attack source not found')
+                    assert(target, 'attack target not found')
+
+                    local stats = data.stats --[[@as Stats]]
+                    for _, data in ipairs(source.items) do
+                        local item = itemlib.get_by_id(data.id)
+                        if item and item.modify_stats then
+                            item.modify_stats(stats)
+                        end
+                    end
+
+                    local damage = stats.str
+                    for _, data in ipairs(target.items) do
+                        local item = itemlib.get_by_id(data.id)
+                        if item and item.mitigate_damage then
+                            damage = item.mitigate_damage(target, damage)
+                        end
+                    end
+
+                    target.health = target.health - damage
                     render.remove(id)
                 end
             end
@@ -235,7 +248,7 @@ end
 
 function love.update(dt)
     render.update(dt)
-    zone.update(dt)
+    zones.update(dt)
     ctrl:update()
     entity.update()
     dialog.update(dt)
@@ -264,16 +277,18 @@ function love.update(dt)
         if choice_id and state.shop_items and #state.shop_items > 0 then
             local found_item = false
             for _, id in ipairs(state.shop_items) do
-                if choice_id == id and items[id] then
+                if choice_id == id and plugin.item_by_id(id) then
                     found_item = true
                     break
                 end
             end
             assert(found_item, "item "..tostring(choice_id).." not found")
-
-            dialog.add{texts={{text=lang.join("You purchased ", choice_id, ".")}}}
+            dialog.add{
+                max_time = 2000,
+                texts={{text=lang.join("You purchased ", choice_id, ".")}}
+            }
             local player = get_player()
-            table.insert(player.items, choice_id)
+            table.insert(player.items, {id=choice_id})
         end
 
         -- select the next dungeon room to enter
@@ -352,69 +367,54 @@ function love.update(dt)
                 no_enemies_left = false
             end
 
-            -- use abilities that are off cooldown
-            for _, ability_name in ipairs(e.abilities) do
-                local ability = abilities[ability_name]
-                local cooldown = e.cooldowns[ability_name]
+            local stats = e.stats and lume.clone(e.stats)
+            if not e.attack_timer then
+                e.attack_timer = 0
+            end
+            e.attack_timer = e.attack_timer + (dt * 1000)
 
-                -- on cooldown?
-                if cooldown and cooldown > 0 then
-                    e.cooldowns[ability_name] = cooldown - (dt * 1000)
-                end
-
-                -- ready to use?
-                if not cooldown or cooldown <= 0 then
+            -- attack
+            if stats and e.attack_timer >= 1000 then -- TODO stats.agi modifier
+                e.attack_timer = 0
+            
+                -- process items
+                for _, data in ipairs(e.items) do
+                    -- get target
                     local target --[[@as Entity?]]
                     for _, other in ipairs(combat_entities) do
                         if other._id ~= e._id then
                             target = other
                         end
                     end
-                    if target then
-                        log.info(e.class, 'used', ability_name, 'on', target.class)
-
-                        local damage = ability.damage
-
-                        -- process items
-                        if target.items then
-                            for _, item_name in ipairs(target.items) do
-                                local item = items[item_name]
-                                if item.before_take_damage then
-                                    damage = item.before_take_damage(target, damage)
-                                end
-                            end
-                        end
-
-                        if e.render_character and target.render_character then
-                            -- draw projectile
-                            local r_id, r = render.add{
-                                tex = IMG.dk_items,
-                                frames = {{x=160, y=128, w=16, h=16}},
-                                current_frame = 1,
-                                copy_transform = e.render_character,
-                                data = {
-                                    projectile = 'arrow',
-                                    target = target._id,
-                                    damage = damage
-                                }
+                    if e.render_character and target and target.render_character then
+                        -- animate attack
+                        local r_id, r = render.add{
+                            tex = IMG.dk_items,
+                            frames = {{x=160, y=128, w=16, h=16}},
+                            current_frame = 1,
+                            copy_transform = e.render_character,
+                            data = {
+                                type = 'attack',
+                                source = e._id,
+                                target = target._id,
+                                item = data,
+                                stats = lume.clone(e.stats),
                             }
-                            -- ease towards target
-                            render.move_to(r_id, e.render_character, target.render_character, {
-                                duration = 500
-                            })
-                            -- zone drawing offset
-                            local zone = zones.get(e.zone_id)
-                            if zone then
-                                r.x = r.x + zone.render.ox
-                                r.y = r.y + zone.render.oy
-                            end
+                        }
+                        -- ease towards target
+                        render.move_to(r_id, e.render_character, target.render_character, {
+                            duration = 500
+                        })
+                        -- zone drawing offset
+                        local zone = zones.get(e.zone_id)
+                        if zone then
+                            r.x = r.x + zone.render.ox
+                            r.y = r.y + zone.render.oy
                         end
-
-                        -- put it on cooldown
-                        e.cooldowns[ability_name] = ability.cooldown
                     end
                 end
             end
+
         end
     end
 
@@ -428,7 +428,7 @@ function love.update(dt)
 end
 
 function love.draw()
-    zone.draw(function (_, zone_id)
+    zones.draw(function (_, zone_id)
         render.set_collection(zone_id)
         render.draw()
     end)

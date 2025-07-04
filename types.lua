@@ -1,22 +1,20 @@
 ---@class Entity
 ---@field _id? number
 ---@field health? number
----@field abilities? table<string>
----@field cooldowns? table<string, number>
 ---@field class? string
 ---@field group? 'player'|'enemy'
----@field items? string[]
+---@field items? ItemData[]
 ---@field zone_id? any id of the zone this entity is in
 ---@field render_character? any id of character sprite renderable
+---@field stats? Stats
+---@field attack_timer? number
 
----@class Ability
----@field damage number
----@field cooldown number
+---@class Stats
+---@field str number strength
+----@field int number intelligence
+---@field agi number agility
 
 ---@alias Room 'combat'|'shop'|'rest'|'event'
-
----@class Item
----@field before_take_damage? fun(e:Entity, amt:number): number
 
 ---@class RoomEvent
 ---@field is_unknown? boolean

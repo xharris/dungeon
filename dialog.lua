@@ -8,11 +8,9 @@ local printc = require 'lib.printc'
 local min = math.min
 local max = math.max
 local ceil = math.ceil
-local str_len = string.len
 
 local MARGIN = 10
 local PADDING = 10
-local SEP = 2
 
 M.NEXT_DIALOG_COOLDOWN = 1000
 M.IMAGE_ONLY_CHOICES = 7
@@ -29,9 +27,10 @@ M.padding = {0, 0, 0, 0}
 
 ---@class DialogOptions
 ---@field texts? PrintcText[]
----@field duration? number
+---@field duration? number (ms) animation duration
 ---@field choices? DialogChoice[]
 ---@field clear_on_choice? boolean
+---@field max_time? number (ms) max time to show dialog before calling next_dialog
 ---@field _choices_have_images? boolean TODO 1 row of squares with left/right arrows for overflow, up/down to skip to next 'section'
 ---@field _choice_index? number
 ---@field _text_len? number
@@ -90,6 +89,10 @@ local function reset_first(text_changed)
         v.duration = v.duration or 0
         v._char_limit = v._char_limit or 0
 
+        if v.max_time and v.max_time <= v.duration then
+            v.max_time = v.duration + 500
+        end
+
         if v.choices then
             for _, choice in ipairs(v.choices) do
                 if choice.image then
@@ -100,7 +103,7 @@ local function reset_first(text_changed)
 
             local choice = v._choice_index and v.choices[v._choice_index]
             if v._choices_have_images and choice and choice.texts then
-                v.texts = choice.texts
+                v.texts = choice.texts or {}
                 v._text_len = printc.len(v.texts)
             end
         end
@@ -214,11 +217,16 @@ function M.update(dt)
     end
     local first = instances[1]
     local len = first and first._text_len
+    -- show more characters
     if first and len and first._char_limit < len then
         local ratio = easing.ease_in_out_sine(first._t / first.duration)
         first._char_limit = ceil(min(len, len * ratio))
     end
-    if first and first._t <= first.duration then
+    -- auto-move to next dialog
+    if first and first.max_time and first._t >= first.max_time then
+        M.next_dialog(true)
+    end
+    if first and (first._t <= max(first.duration, first.max_time or 0)) then
         first._t = first._t + (dt * 1000)
     end
 end
