@@ -9,7 +9,8 @@ local render = require 'render'
 local zones  = require 'zones'
 local dialog = require 'dialog'
 local plugin = require 'plugin'
-local itemlib = require 'item'
+local items = require 'items'
+local events = require 'events'
 
 -- render.DEBUG = true
 
@@ -41,24 +42,6 @@ local IMG = {}
 
 local state = lume.clone(DEFAULT_STATE)
 
----@type table<string, RoomEvent>
-local events = {
-    medic = {
-        prompt = 'A wandering medic would like to heal your injuries. Accept the heal for $5?',
-        choices = {
-            {id='yes', text='Sure'},
-            {id='no', text='No thanks'}
-        },
-        result_choice = 'yes',
-        result_type = 'heal',
-        cost = 5,
-    }
-}
-
-local function randomize_next_event()
-    state.next_event = lume.randomchoice(lume.keys(events))
-end
-
 ---@param zone_id? any
 local function start_combat(zone_id)
     local gw, gh = love.graphics.getDimensions()
@@ -67,9 +50,11 @@ local function start_combat(zone_id)
     local enemy = entity.add{
         class='goblin',
         group='enemy',
-        cooldowns={},
         items={{id='rusty_sword',data={}}},
-        health=6,
+        health={
+            current = 6,
+            max = 6,
+        },
         zone_id = zone_id,
         stats = {agi=0, str=3},
     }
@@ -86,15 +71,14 @@ local function start_combat(zone_id)
         sx = -2, sy = 2,
     }
     render.set_collection()
-    
-    randomize_next_event()
+    state.next_event = events.get_random_event()
 end
 
 local function enter_shop()
     ---@type DialogChoice[]
     local choices = {}
     state.shop_items = {}
-    for _, item in pairs(itemlib.all()) do
+    for _, item in pairs(items.all()) do
         ---@type DialogChoice
         local choice = {
             id = item.id,
@@ -109,24 +93,7 @@ local function enter_shop()
     end
     dialog.add{texts = {{text="Welcome to my store..."}}}
     dialog.add{choices = choices}
-    randomize_next_event()
-end
-
-local function enter_event()
-    state.current_event = state.next_event
-    local event = events[state.current_event] --[[@as RoomEvent?]]
-    assert(event, "event not found")
-
-    dialog.add{
-        texts = {{text=event.prompt}},
-        choices = event.choices,
-    }
-
-    randomize_next_event()
-end
-
-local function end_event()
-    state.current_event = nil
+    state.next_event = events.get_random_event()
 end
 
 ---@return Entity
@@ -145,7 +112,7 @@ local function generate_room_choices()
         choices = {
             {id='event', texts={{text='Enter the mysterious door'}}},
             {id='shop', texts={{text='Approach the nearby shop'}}},
-            {id='combat', texts={{text='Enter the open door'}}},
+            {id='combat', texts={{text='Enter the ominous door'}}},
         }
     }
 end
@@ -153,7 +120,7 @@ end
 ---@param e Entity
 ---@param amt number
 local function heal(e, amt)
-    e.health = math.min(e.health + amt, const.INITIAL_PLAYER_HEALTH)
+    e.health.current = math.min(e.health.current + amt, const.INITIAL_PLAYER_HEALTH)
 end
 
 -- clears the current game and starts a new one
@@ -167,10 +134,11 @@ local function start_game()
     local player = entity.add{
         class='warrior',
         group='player',
-        abilities={'slash'},
-        cooldowns={},
         items={{id='rusty_sword',data={}}},
-        health=const.INITIAL_PLAYER_HEALTH,
+        health={
+            current = const.INITIAL_PLAYER_HEALTH,
+            max = const.INITIAL_PLAYER_HEALTH,
+        },
         stats = {agi=0, str=5}
     }
 
@@ -190,6 +158,7 @@ local function start_game()
         sx = 2, sy = 2,
     }
     render.set_collection()
+    state.next_event = events.get_random_event()
 
     start_combat(zone_id)
 end
@@ -204,6 +173,7 @@ function love.load()
     IMG.dk_items = love.graphics.newImage('assets/( D&K ) Items V.2.png')
     IMG.dk_items:setFilter('linear', 'nearest')
 
+    plugin.add(require 'plugins.basic')
     plugin.add(require 'plugins.warrior')
 
     plugin.load()
@@ -222,7 +192,7 @@ function love.load()
 
                     local stats = data.stats --[[@as Stats]]
                     for _, data in ipairs(source.items) do
-                        local item = itemlib.get_by_id(data.id)
+                        local item = items.get_by_id(data.id)
                         if item and item.modify_stats then
                             item.modify_stats(stats)
                         end
@@ -230,18 +200,23 @@ function love.load()
 
                     local damage = stats.str
                     for _, data in ipairs(target.items) do
-                        local item = itemlib.get_by_id(data.id)
+                        local item = items.get_by_id(data.id)
                         if item and item.mitigate_damage then
                             damage = item.mitigate_damage(target, damage)
                         end
                     end
 
-                    target.health = target.health - damage
+                    target.health.current = target.health.current - damage
                     render.remove(id)
                 end
             end
         end
     )
+
+    events.signals.on(events.SIGNALS.on_end, function ()
+        log.debug "event ended"
+        generate_room_choices()
+    end)
 
     start_game()
 end
@@ -252,6 +227,10 @@ function love.update(dt)
     ctrl:update()
     entity.update()
     dialog.update(dt)
+    local player = get_player()
+    if player then
+        events.update(dt, player)
+    end
 
     -- dialog controls
     if dialog.has_image_choices() then
@@ -277,7 +256,7 @@ function love.update(dt)
         if choice_id and state.shop_items and #state.shop_items > 0 then
             local found_item = false
             for _, id in ipairs(state.shop_items) do
-                if choice_id == id and plugin.item_by_id(id) then
+                if choice_id == id and items.get_by_id(id) then
                     found_item = true
                     break
                 end
@@ -296,48 +275,13 @@ function love.update(dt)
             start_combat()
         elseif choice_id == 'shop' then
             enter_shop()
-        elseif choice_id == 'event' then
-            enter_event()
+        elseif choice_id == 'event' and player then
+            events.start_event(state.next_event, player)
         elseif choice_id == 'rest' then
             -- heal and move on to next room
             local player = get_player()
             heal(player, 10)
             generate_room_choices()
-        end
-
-        -- event choice
-        if state.current_event and events[state.current_event] then
-            local event = events[state.current_event] --[[@as RoomEvent]]
-            for _, choice in ipairs(event.choices) do
-                if event.result_choice == choice.id and choice_id == event.result_choice then
-                    if state.money < (event.cost or 0) then
-                        -- can't afford it
-                        dialog.add{
-                            texts={
-                                {text="You didn't have enough money and decided to leave"},
-                            },
-                        }
-                    elseif event.result_type == 'heal' then
-                        -- receive a heal
-                        dialog.add{
-                            texts={
-                                {text="You were healed 5 hp for $"..tostring(event.cost)},
-                            },
-                        }
-                        local player = get_player()
-                        heal(player, 10)
-                        state.money = state.money - event.cost
-                    end
-                else
-                    dialog.add{
-                        texts={
-                            text="You decided to leave",
-                        },
-                    }
-                end
-                end_event()
-                generate_room_choices()
-            end
         end
 
         dialog.next_dialog()
@@ -348,7 +292,7 @@ function love.update(dt)
 
     for _, e in ipairs(combat_entities) do
         -- dead
-        if e.health <= 0 then
+        if e.health.current <= 0 then
             -- remove sprite
             render.remove(e.render_character)
             if e.group == 'player' then

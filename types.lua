@@ -1,6 +1,6 @@
 ---@class Entity
----@field _id? number
----@field health? number
+---@field _id? string
+---@field health? {current:number, max:number}
 ---@field class? string
 ---@field group? 'player'|'enemy'
 ---@field items? ItemData[]
@@ -15,12 +15,3 @@
 ---@field agi number agility
 
 ---@alias Room 'combat'|'shop'|'rest'|'event'
-
----@class RoomEvent
----@field is_unknown? boolean
----@field prompt string
----@field choices DialogChoice[]
----@field result_choice string which choice will give the player the `result`
----@field result_type 'gain_item'|'lose_item'|'combat'|'heal'
----@field result_data any
----@field cost? number

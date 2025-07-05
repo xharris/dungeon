@@ -16,7 +16,7 @@ local id = 0
 ---@param e Entity
 function M.add(e)
     id = id + 1
-    e._id = id
+    e._id = tostring(id)
     table.insert(entities, e)
     entity_map[e._id] = e
     return e
@@ -47,7 +47,7 @@ function M.find(...)
     return found
 end
 
----@param id number
+---@param id string
 function M.remove(id)
     deleted[id] = true
 end

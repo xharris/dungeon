@@ -1,8 +1,8 @@
-local item = require 'item'
+local items = require 'items'
 
 return {
     on_load = function ()
-        item.add{
+        items.add{
             id = 'rusty_sword',
             type = 'weapon',
             label = {
@@ -13,7 +13,7 @@ return {
                 stats.str = stats.str + 3
             end
         }
-        item.add{
+        items.add{
             id = 'chain_vest',
             type = 'armor',
             label = {

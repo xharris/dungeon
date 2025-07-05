@@ -137,7 +137,9 @@ function lume.random(a, b)
   return a + math.random() * (b - a)
 end
 
-
+---@generic T
+---@param t T[]
+---@return T
 function lume.randomchoice(t)
   return t[math.random(#t)]
 end
@@ -450,7 +452,8 @@ function lume.pick(t, ...)
   return rtn
 end
 
-
+---@param t table
+---@return string[]
 function lume.keys(t)
   local rtn = {}
   local iter = getiter(t)
