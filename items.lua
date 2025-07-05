@@ -4,12 +4,13 @@ local M = {}
 ---@field id string
 ---@field type 'weapon'|'armor'|'ring'|'passive'
 ---@field label? PrintcText[]
----@field modify_stats? fun(stats:Stats)
----@field mitigate_damage? fun(src:Entity, damage:number): number
+---@field modify_stats? fun(stats:Stats) modify stats of the user
+---@field mitigate_damage? fun(src:Entity, damage:number): number mitigate damage before an attack lands
+---@field shop_disabled? boolean can appear in the shop
 
 ---@class ItemData
 ---@field id string
----@field data table<string, any>
+---@field data? table<string, any>
 
 ---@type Item[]
 local items = {}

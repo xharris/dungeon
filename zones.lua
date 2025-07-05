@@ -10,7 +10,7 @@ local lume = require 'ext.lume'
 ---@field angle2 number
 
 ---@class Zone
----@field id any
+---@field id string
 ---@field image any
 ---@field transform? any
 ---@field render ZoneRender

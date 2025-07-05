@@ -16,7 +16,7 @@ M.NEXT_DIALOG_COOLDOWN = 1500
 M.IMAGE_ONLY_CHOICES = 7
 
 M.margin = {0, 0, 0, 0} -- TODO?
-M.sep = {10, 10}
+M.sep = {5, 5}
 M.padding = {0, 0, 0, 0}
 
 ---@class DialogChoice

@@ -1,6 +1,6 @@
 ---@class Entity
 ---@field _id? string
----@field health? {current:number, max:number}
+---@field health? Health
 ---@field name? string
 ---@field group? 'player'|'enemy'
 ---@field items? ItemData[]
@@ -9,6 +9,10 @@
 ---@field stats? Stats
 ---@field attack_timer? number
 ---@field money? number
+
+---@class Health
+---@field current number
+---@field max number
 
 ---@class Stats
 ---@field str number strength

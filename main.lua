@@ -12,6 +12,7 @@ local plugin = require 'plugin'
 local items = require 'items'
 local events = require 'events'
 local char = require 'character'
+local combat = require 'combat'
 
 -- render.DEBUG = true
 
@@ -22,7 +23,6 @@ local const = {
 local DEFAULT_STATE = {
     ---@type string[]?
     shop_items = nil,
-    in_combat = false,
     ---@type string?
     next_event = nil,
     ---@type string?
@@ -36,53 +36,24 @@ local IMG = {}
 
 local state = lume.clone(DEFAULT_STATE)
 
----@param zone_id? any
-local function start_combat(zone_id)
-    local gw, gh = love.graphics.getDimensions()
-    state.in_combat = true
-    
-    local enemy = entity.add{
-        group='enemy',
-        name='Goblin',
-        items={{id='rusty_sword',data={}}},
-        health={
-            current = 6,
-            max = 6,
-        },
-        zone_id = zone_id,
-        stats = {agi=0, str=3},
-    }
-    
-    if zone_id then
-        render.set_collection(zone_id)
-    end
-    enemy.render_character = render.add{
-        tex = IMG.ohmydungeon_v11,
-        frames = {{x=48, y=144, w=16, h=16}},
-        current_frame = 1,
-        x = gw * 2/3, y = gh / 2,
-        ox = 8, oy = 8,
-        sx = -2, sy = 2,
-    }
-    render.set_collection()
-end
-
 local function enter_shop()
     ---@type DialogChoice[]
     local choices = {}
     state.shop_items = {}
     for _, item in pairs(items.all()) do
-        ---@type DialogChoice
-        local choice = {
-            id = item.id,
-            image = IMG.dk_items,
-            image_frames = {
-                {x=16, y=64, w=16, h=32},
-            },
-            texts = item.label,
-        }
-        table.insert(choices, choice)
-        table.insert(state.shop_items, item.id)
+        if not item.shop_disabled then
+            ---@type DialogChoice
+            local choice = {
+                id = item.id,
+                image = IMG.dk_items,
+                image_frames = {
+                    {x=16, y=64, w=16, h=32},
+                },
+                texts = item.label,
+            }
+            table.insert(choices, choice)
+            table.insert(state.shop_items, item.id)
+        end
     end
     dialog.add{texts = {{text="Welcome to my store..."}}}
     dialog.add{choices = choices}
@@ -146,7 +117,7 @@ local function start_game()
     render.set_collection()
     state.next_event = events.get_random_event()
 
-    start_combat(zone_id)
+    combat.start(zone_id)
 end
 
 function love.load()
@@ -162,20 +133,24 @@ function love.load()
     plugin.add(require 'plugins.basic')
     plugin.add(require 'plugins.warrior')
 
+    combat.load()
     plugin.load()
     render.load()
+
     render.signals.on(render.SIGNALS.easing_done,
         ---@param id any
         ---@param r Renderable
         function (id, r)
             local data = r.data
             if data then
+                -- attack animation
                 if data.type == 'attack' then
                     local source = entity.get(data.source)
                     local target = entity.get(data.target)
                     assert(target, 'attack source not found')
                     assert(target, 'attack target not found')
 
+                    -- get modified character stats
                     local stats = data.stats --[[@as Stats]]
                     for _, data in ipairs(source.items) do
                         local item = items.get_by_id(data.id)
@@ -184,6 +159,7 @@ function love.load()
                         end
                     end
 
+                    -- calculate damage the attack will do
                     local damage = stats.str
                     for _, data in ipairs(target.items) do
                         local item = items.get_by_id(data.id)
@@ -192,7 +168,7 @@ function love.load()
                         end
                     end
 
-                    target.health.current = target.health.current - damage
+                    char.add_health(target, -damage)
                     render.remove(id)
                 end
             end
@@ -205,6 +181,11 @@ function love.load()
         generate_room_choices()
     end)
 
+    combat.signals.on(combat.SIGNALS.on_end, function ()
+        log.debug "combat ended"
+        generate_room_choices()
+    end)
+
     start_game()
 end
 
@@ -214,6 +195,7 @@ function love.update(dt)
     ctrl:update()
     entity.update()
     dialog.update(dt)
+    combat.update(dt)
     local player = get_player()
     if player then
         events.update(dt, player)
@@ -258,7 +240,7 @@ function love.update(dt)
 
         -- select the next dungeon room to enter
         if choice_id == 'combat' then
-            start_combat()
+            combat.start()
         elseif choice_id == 'shop' then
             enter_shop()
         elseif choice_id == 'event' and player then
@@ -268,86 +250,11 @@ function love.update(dt)
         dialog.next_dialog()
     end
 
-    local combat_entities = entity.find('abilities', 'cooldowns', 'health')
-    local no_enemies_left = true
-
-    for _, e in ipairs(combat_entities) do
-        -- dead
-        if e.health.current <= 0 then
-            -- remove sprite
-            render.remove(e.render_character)
-            if e.group == 'player' then
-                log.info("player died")
-                -- player died
-                if not state.is_game_over then
-                    log.info("game over. try again?")
-                    state.is_game_over = true
-                end
-            else
-                log.info(e.name or e._id, "died")
-                entity.remove(e._id)
-            end
-        else
-            if e.group == 'enemy' then
-                no_enemies_left = false
-            end
-
-            local stats = e.stats and lume.clone(e.stats)
-            if not e.attack_timer then
-                e.attack_timer = 0
-            end
-            e.attack_timer = e.attack_timer + (dt * 1000)
-
-            -- attack
-            if stats and e.attack_timer >= 1000 then -- TODO stats.agi modifier
-                e.attack_timer = 0
-            
-                -- process items
-                for _, data in ipairs(e.items) do
-                    -- get target
-                    local target --[[@as Entity?]]
-                    for _, other in ipairs(combat_entities) do
-                        if other._id ~= e._id then
-                            target = other
-                        end
-                    end
-                    if e.render_character and target and target.render_character then
-                        -- animate attack
-                        local r_id, r = render.add{
-                            tex = IMG.dk_items,
-                            frames = {{x=160, y=128, w=16, h=16}},
-                            current_frame = 1,
-                            copy_transform = e.render_character,
-                            data = {
-                                type = 'attack',
-                                source = e._id,
-                                target = target._id,
-                                item = data,
-                                stats = lume.clone(e.stats),
-                            }
-                        }
-                        -- ease towards target
-                        render.move_to(r_id, e.render_character, target.render_character, {
-                            duration = 500
-                        })
-                        -- zone drawing offset
-                        local zone = zones.get(e.zone_id)
-                        if zone then
-                            r.x = r.x + zone.render.ox
-                            r.y = r.y + zone.render.oy
-                        end
-                    end
-                end
-            end
-
-        end
-    end
-
-    -- combat over
-    if player and no_enemies_left and state.in_combat then
-        char.add_money(player, 10)
-        state.in_combat = false
-        generate_room_choices()
+    -- player died
+    if player and player.health.current <= 0 and not state.is_game_over then
+        log.info("player died")
+        render.remove(player.render_character)
+        state.is_game_over = true
     end
 end
 

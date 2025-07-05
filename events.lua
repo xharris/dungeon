@@ -75,6 +75,7 @@ function M.start_event(id, e)
     if log.error_if(state.current_event == nil, "event not found:", id) then
         return false
     end
+    log.info("start event", id)
     state.current_event.on_start(e)
     return true
 end
@@ -82,6 +83,7 @@ end
 function M.end_event()
     if state.current_event then
         M.signals.emit(M.SIGNALS.on_end)
+        state.current_event = nil
     end
 end
 
