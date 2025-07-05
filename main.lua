@@ -15,12 +15,6 @@ local char = require 'character'
 
 -- render.DEBUG = true
 
-lang.set('en', {
-    slash = 'Slash',
-    basic_armor_title = 'Basic Armor',
-    basic_armor_description = 'It does damage',
-})
-
 local const = {
     INITIAL_PLAYER_HEALTH = 20
 }
@@ -94,14 +88,14 @@ local function enter_shop()
     dialog.add{choices = choices}
 end
 
----@return Entity
+---@return Entity?
 local function get_player()
     for _, e in ipairs(entity.find('group')) do
         if e.group == 'player' then
             return e
         end
     end
-    error("player not found")
+    log.error("player not found")
 end
 
 local function generate_room_choices()
@@ -113,12 +107,6 @@ local function generate_room_choices()
             {id='combat', texts={{text='Enter the ominous door'}}},
         }
     }
-end
-
----@param e Entity
----@param amt number
-local function heal(e, amt)
-    e.health.current = math.min(e.health.current + amt, const.INITIAL_PLAYER_HEALTH)
 end
 
 -- clears the current game and starts a new one
@@ -252,7 +240,7 @@ function love.update(dt)
         ---@type Room|string|nil
         local choice_id = dialog.selected_choice()
 
-        if choice_id and state.shop_items and #state.shop_items > 0 then
+        if player and choice_id and state.shop_items and #state.shop_items > 0 then
             local found_item = false
             for _, id in ipairs(state.shop_items) do
                 if choice_id == id and items.get_by_id(id) then
@@ -265,7 +253,6 @@ function love.update(dt)
                 max_time = 2000,
                 texts={{text=lang.join("You purchased ", choice_id, ".")}}
             }
-            local player = get_player()
             table.insert(player.items, {id=choice_id})
         end
 
@@ -276,11 +263,6 @@ function love.update(dt)
             enter_shop()
         elseif choice_id == 'event' and player then
             events.start_event(state.next_event, player)
-        elseif choice_id == 'rest' then
-            -- heal and move on to next room
-            local player = get_player()
-            heal(player, 10)
-            generate_room_choices()
         end
 
         dialog.next_dialog()

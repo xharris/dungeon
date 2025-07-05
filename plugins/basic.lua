@@ -16,6 +16,9 @@ local MEDIC_TIPS = {
 
 return {
     on_load = function()
+        -- TODO rest event
+
+
         events.add{
             id = 'medic',
             on_start = function(e)
@@ -70,7 +73,7 @@ return {
                             -- give money
                             dialog.add{texts={
                                 {text="You tip the kind medic "},
-                                {text="$"..tostring(MEDIC_TIP_AMOUNT), color=color.MUI.GREEN_500},
+                                {text="$"..tostring(tip), color=color.MUI.GREEN_500},
                                 {text="."}
                             }}
                             dialog.add{texts={{text="Thanks! Be seeing you..."}}}
