@@ -12,7 +12,7 @@ local ceil = math.ceil
 local MARGIN = 10
 local PADDING = 10
 
-M.NEXT_DIALOG_COOLDOWN = 1000
+M.NEXT_DIALOG_COOLDOWN = 1500
 M.IMAGE_ONLY_CHOICES = 7
 
 M.margin = {0, 0, 0, 0} -- TODO?
@@ -176,7 +176,7 @@ end
 
 function M.selected_choice()
     local first = instances[1]
-    if first and first.choices and first._choice_index then
+    if first and first.choices and first._choice_index and first._t >= first.duration then
         local choice = first.choices[first._choice_index]
         if choice then
             return choice.id
@@ -186,17 +186,31 @@ end
 
 ---@param force? boolean
 function M.next_dialog(force)
-    if not force and next_dialog_cooldown > 0 then
+    local first = instances[1]
+    if not first then
+        -- no dialog
         return
     end
-    if #instances > 0 then
-        ---@type DialogOptions?
-        local removed = table.remove(instances, 1)
-        local first = instances[1]
+    if not force and first and first._t < first.duration then
+        -- skip prompt animation
+        log.debug("skip dialog animation")
+        first._t = first.duration
+        next_dialog_cooldown = 0
+        return
+    end
+    if not force and next_dialog_cooldown > 0 then
+        log.debug("next_dialog on cooldown")
+        return
+    end
+    ---@type DialogOptions?
+    local removed = table.remove(instances, 1)
+    if first then
+        -- move to next dialog
         next_dialog_cooldown = M.NEXT_DIALOG_COOLDOWN
-        if removed and first then
-            reset_first(not printc.equal(removed.texts, first.texts))
-        end
+    end
+    if first and removed then
+        -- reset animations and stuff if dialogs are different
+        reset_first(not printc.equal(removed.texts, first.texts))
     end
 end
 
@@ -208,6 +222,10 @@ end
 function M.has_image_choices()
     local first = instances[1]
     return first and first._choices_have_images
+end
+
+function M.is_in_progress()
+    return #instances > 0
 end
 
 ---@param dt number

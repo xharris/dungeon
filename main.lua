@@ -11,6 +11,7 @@ local dialog = require 'dialog'
 local plugin = require 'plugin'
 local items = require 'items'
 local events = require 'events'
+local char = require 'character'
 
 -- render.DEBUG = true
 
@@ -28,7 +29,6 @@ local DEFAULT_STATE = {
     ---@type string[]?
     shop_items = nil,
     in_combat = false,
-    money = 0,
     ---@type string?
     next_event = nil,
     ---@type string?
@@ -48,8 +48,8 @@ local function start_combat(zone_id)
     state.in_combat = true
     
     local enemy = entity.add{
-        class='goblin',
         group='enemy',
+        name='Goblin',
         items={{id='rusty_sword',data={}}},
         health={
             current = 6,
@@ -71,7 +71,6 @@ local function start_combat(zone_id)
         sx = -2, sy = 2,
     }
     render.set_collection()
-    state.next_event = events.get_random_event()
 end
 
 local function enter_shop()
@@ -93,7 +92,6 @@ local function enter_shop()
     end
     dialog.add{texts = {{text="Welcome to my store..."}}}
     dialog.add{choices = choices}
-    state.next_event = events.get_random_event()
 end
 
 ---@return Entity
@@ -132,8 +130,8 @@ local function start_game()
     state = lume.clone(DEFAULT_STATE)
 
     local player = entity.add{
-        class='warrior',
         group='player',
+        name='Player',
         items={{id='rusty_sword',data={}}},
         health={
             current = const.INITIAL_PLAYER_HEALTH,
@@ -215,6 +213,7 @@ function love.load()
 
     events.signals.on(events.SIGNALS.on_end, function ()
         log.debug "event ended"
+        state.next_event = events.get_random_event()
         generate_room_choices()
     end)
 
@@ -303,7 +302,7 @@ function love.update(dt)
                     state.is_game_over = true
                 end
             else
-                log.info(e.class, "died")
+                log.info(e.name or e._id, "died")
                 entity.remove(e._id)
             end
         else
@@ -363,9 +362,8 @@ function love.update(dt)
     end
 
     -- combat over
-    if no_enemies_left and state.in_combat then
-        log.info("player gained $10")
-        state.money = state.money + 10
+    if player and no_enemies_left and state.in_combat then
+        char.add_money(player, 10)
         state.in_combat = false
         generate_room_choices()
     end
@@ -380,21 +378,6 @@ function love.draw()
     render.set_collection()
     render.draw()
     dialog.draw()
-
-    -- player is shopping
-    -- if state.shop_items then
-    --     local choice = circleui.select('shop_items', state.shop_items)
-    --     if choice and items[choice] then
-    --         -- buy item
-    --         log.info("player bought", choice)
-    --         local player = get_player()
-    --         table.insert(player.items, choice)
-    --         lume.remove(state.shop_items, choice)
-    --         -- TODO remove
-    --         -- move on to next room after purchasing
-    --         generate_room_choices()
-    --     end
-    -- end
 
     -- game over
     if state.is_game_over then

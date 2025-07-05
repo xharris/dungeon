@@ -24,7 +24,8 @@ end
 M.MUI = {
     WHITE = {1, 1, 1},
     BLACK = {0, 0, 0},
-    GREY_900 = {M.hex2rgba('#212121')}
+    GREY_900 = {M.hex2rgba('#212121')},
+    GREEN_500 = {M.hex2rgba('##4CAF50')},
 }
 
 return M

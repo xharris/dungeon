@@ -62,6 +62,9 @@ M.SIGNALS = {
     easing_done = 'render_ease_done'
 }
 
+---All new renderables will be added to the specified collection. 
+---When calling draw or other methods, only renderables in the 
+---currently set collection will be used.
 ---@param id? any
 function M.set_collection(id)
     id = id or DEFAULT_COLLECTION

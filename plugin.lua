@@ -1,5 +1,13 @@
 local M = {}
 
+-- TODO
+-- local api = {
+--     events = require 'events',
+--     dialog = require 'dialog',
+--     color = require 'lib.color',
+--     char = require 'character',
+-- }
+
 ---@class PluginOptions
 ---@field on_load fun()
 

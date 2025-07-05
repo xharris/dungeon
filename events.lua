@@ -17,6 +17,7 @@ local signal = require 'lib.signal'
 
 ---@class Event
 ---@field id string
+---@field disabled? boolean
 ---@field on_start fun(e:Entity)
 ---@field on_update? fun(dt:number, e:Entity)
 
@@ -40,13 +41,27 @@ function M.add(t)
     if log.warn_if(events[t.id], "duplicate event ids:", t.id) then
         return
     end
-    table.insert(events, t)
+    events[t.id] = t
 end
 
+function M.disable(id)
+    if log.warn_if(not events[id], "event not found:", id) then
+        return
+    end
+    events[id].disabled = true
+end
+
+---@return string? id
 function M.get_random_event()
-    local event_keys = lume.keys(events)
-    local rand = lume.randomchoice(event_keys)
-    return rand
+    ---@type string[]
+    local possible_events = {}
+    for key, event in pairs(events) do
+        if not event.disabled then
+            table.insert(possible_events, key)
+        end
+    end
+    log.warn_if(#possible_events == 0, "no events left to pick from randomly")
+    return lume.randomchoice(possible_events)
 end
 
 ---@param id string
