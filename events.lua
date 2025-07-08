@@ -1,25 +1,16 @@
 local M = {}
 
 local log = require 'lib.log'
-local entity = require 'lib.entity'
 local lume = require 'ext.lume'
 local signal = require 'lib.signal'
-
----@class EventLegacy
----@field id string
----@field is_unknown? boolean
----@field prompt PrintcText[]
----@field choices DialogChoice[]
----@field result_choice string which choice will give the player the `result`
----@field result_type 'gain_item'|'lose_item'|'combat'|'heal'
----@field result_data any
----@field cost? number
 
 ---@class Event
 ---@field id string
 ---@field disabled? boolean
+---@field only_zones? string[] only allow this event to happen in specified zones
 ---@field on_start fun(e:Entity)
 ---@field on_update? fun(dt:number, e:Entity)
+---@field cooldown? number TODO how many events until this event can appear again?
 
 M.signals = signal.create 'events'
 M.SIGNALS = {
@@ -51,12 +42,17 @@ function M.disable(id)
     events[id].disabled = true
 end
 
+---@param zone_id? string
 ---@return string? id
-function M.get_random_event()
+function M.get_random_event(zone_id)
     ---@type string[]
     local possible_events = {}
     for key, event in pairs(events) do
-        if not event.disabled then
+        local correct_zone =
+            (zone_id and not event.only_zones) or
+            (not zone_id and not event.only_zones) or
+            (zone_id and event.only_zones and lume.find(event.only_zones, zone_id))
+        if not event.disabled and correct_zone then
             table.insert(possible_events, key)
         end
     end

@@ -191,7 +191,10 @@ function M.next_dialog(force)
         -- no dialog
         return
     end
-    if not force and first and first._t < first.duration then
+    local has_animation = first.duration and first.duration > 0
+    local is_animation_finished = first.duration and first._t and first._t >= first.duration
+    
+    if not force and first and has_animation and not is_animation_finished then
         -- skip prompt animation
         log.debug("skip dialog animation")
         first._t = first.duration
@@ -204,9 +207,14 @@ function M.next_dialog(force)
     end
     ---@type DialogOptions?
     local removed = table.remove(instances, 1)
+    first = instances[1]
     if first then
         -- move to next dialog
         next_dialog_cooldown = M.NEXT_DIALOG_COOLDOWN
+        local duration = first.duration
+        if duration and duration > 0 then
+            next_dialog_cooldown = min(duration, M.NEXT_DIALOG_COOLDOWN)
+        end
     end
     if first and removed then
         -- reset animations and stuff if dialogs are different

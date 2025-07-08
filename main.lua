@@ -6,58 +6,31 @@ local lang = require 'lib.i18n'
 local lume = require 'ext.lume'
 local color = require 'lib.color'
 local render = require 'render'
-local zones  = require 'zones'
+local screens  = require 'screens'
 local dialog = require 'dialog'
 local plugin = require 'plugin'
 local items = require 'items'
 local events = require 'events'
 local char = require 'character'
 local combat = require 'combat'
+local shop = require 'shop'
+local dungeon = require 'dungeon'
+local assets = require 'assets.index'
+local images = require 'lib.images'
 
--- render.DEBUG = true
+render.DEBUG = true
 
 local const = {
-    INITIAL_PLAYER_HEALTH = 20
+    INITIAL_PLAYER_HEALTH = 100
 }
 
 local DEFAULT_STATE = {
-    ---@type string[]?
-    shop_items = nil,
     ---@type string?
     next_event = nil,
-    ---@type string?
-    current_event = nil,
     is_game_over = false,
-    ---@type 'forest'|'space'|'volcano'
-    current_zone = 'forest'
 }
 
-local IMG = {}
-
 local state = lume.clone(DEFAULT_STATE)
-
-local function enter_shop()
-    ---@type DialogChoice[]
-    local choices = {}
-    state.shop_items = {}
-    for _, item in pairs(items.all()) do
-        if not item.shop_disabled then
-            ---@type DialogChoice
-            local choice = {
-                id = item.id,
-                image = IMG.dk_items,
-                image_frames = {
-                    {x=16, y=64, w=16, h=32},
-                },
-                texts = item.label,
-            }
-            table.insert(choices, choice)
-            table.insert(state.shop_items, item.id)
-        end
-    end
-    dialog.add{texts = {{text="Welcome to my store..."}}}
-    dialog.add{choices = choices}
-end
 
 ---@return Entity?
 local function get_player()
@@ -69,14 +42,24 @@ local function get_player()
     log.error("player not found")
 end
 
-local function generate_room_choices()
+local function show_room_choices()
+    ---@type DialogChoice[]
+    local choices = {}
+    log.debug(dungeon.get_next_rooms())
+    for _, room in ipairs(dungeon.get_next_rooms()) do
+        local room_type = dungeon.rooms.get_type(room.id)
+        if room_type then
+            ---@type DialogChoice
+            local choice = {
+                id=room.id,
+                texts={{text=room_type}}
+            }
+            table.insert(choices, choice)
+        end
+    end
     dialog.add{
         texts = {{text="Where will you go next?"}},
-        choices = {
-            {id='event', texts={{text='Enter the mysterious door'}}},
-            {id='shop', texts={{text='Approach the nearby shop'}}},
-            {id='combat', texts={{text='Enter the ominous door'}}},
-        }
+        choices = choices
     }
 end
 
@@ -100,14 +83,21 @@ local function start_game()
     }
 
     -- add player zone
-    local zone_id = 'entity-'..tostring(player._id)
-    player.zone_id = zone_id
-    zones.set{{id=zone_id, image=IMG.forest}}
+    local screen_id = 'entity-'..tostring(player._id)
+    player.screen_id = screen_id
+
+    -- enter a zone
+    local next_zones = dungeon.get_next_zones()
+    local rand_zone = lume.randomchoice(next_zones)
+    dungeon.enter_zone(rand_zone, player)
+    screens.set{{id=screen_id, image=dungeon.get_background_image()}}
 
     -- add player sprite
-    render.set_collection(zone_id)
+    render.set_collection(screen_id)
     player.render_character = render.add{
-        tex = IMG.ohmydungeon_v11,
+        tex = images.get{
+            path = assets.ohmydungeon_v11,
+        },
         frames = {{x=0, y=144, w=16, h=16}},
         current_frame = 1,
         x = gw / 3, y = gh / 2,
@@ -117,73 +107,28 @@ local function start_game()
     render.set_collection()
     state.next_event = events.get_random_event()
 
-    combat.start(zone_id)
+    combat.start(screen_id)
 end
 
 function love.load()
-    IMG.forest = love.graphics.newImage('assets/forest.jpg')
-    IMG.space = love.graphics.newImage('assets/space.jpg')
-    IMG.volcano = love.graphics.newImage('assets/volcano.jpg')
-    IMG.tiny_pixel_hero = love.graphics.newImage('assets/tinypixelhero.jpg')
-    IMG.ohmydungeon_v11 = love.graphics.newImage('assets/ohmydungeon_v1.1.png')
-    IMG.ohmydungeon_v11:setFilter('linear', 'nearest')
-    IMG.dk_items = love.graphics.newImage('assets/( D&K ) Items V.2.png')
-    IMG.dk_items:setFilter('linear', 'nearest')
+    plugin.add(require 'plugins.basic_events')
+    plugin.add(require 'plugins.forest_zone')
+    plugin.add(require 'plugins.warrior_class')
 
-    plugin.add(require 'plugins.basic')
-    plugin.add(require 'plugins.warrior')
-
+    shop.load()
     combat.load()
     plugin.load()
     render.load()
 
-    render.signals.on(render.SIGNALS.easing_done,
-        ---@param id any
-        ---@param r Renderable
-        function (id, r)
-            local data = r.data
-            if data then
-                -- attack animation
-                if data.type == 'attack' then
-                    local source = entity.get(data.source)
-                    local target = entity.get(data.target)
-                    assert(target, 'attack source not found')
-                    assert(target, 'attack target not found')
-
-                    -- get modified character stats
-                    local stats = data.stats --[[@as Stats]]
-                    for _, data in ipairs(source.items) do
-                        local item = items.get_by_id(data.id)
-                        if item and item.modify_stats then
-                            item.modify_stats(stats)
-                        end
-                    end
-
-                    -- calculate damage the attack will do
-                    local damage = stats.str
-                    for _, data in ipairs(target.items) do
-                        local item = items.get_by_id(data.id)
-                        if item and item.mitigate_damage then
-                            damage = item.mitigate_damage(target, damage)
-                        end
-                    end
-
-                    char.add_health(target, -damage)
-                    render.remove(id)
-                end
-            end
-        end
-    )
-
     events.signals.on(events.SIGNALS.on_end, function ()
         log.debug "event ended"
         state.next_event = events.get_random_event()
-        generate_room_choices()
+        show_room_choices()
     end)
 
     combat.signals.on(combat.SIGNALS.on_end, function ()
         log.debug "combat ended"
-        generate_room_choices()
+        show_room_choices()
     end)
 
     start_game()
@@ -191,11 +136,13 @@ end
 
 function love.update(dt)
     render.update(dt)
-    zones.update(dt)
+    screens.update(dt)
     ctrl:update()
     entity.update()
     dialog.update(dt)
     combat.update(dt)
+    
+
     local player = get_player()
     if player then
         events.update(dt, player)
@@ -222,30 +169,46 @@ function love.update(dt)
         ---@type Room|string|nil
         local choice_id = dialog.selected_choice()
 
-        if player and choice_id and state.shop_items and #state.shop_items > 0 then
-            local found_item = false
-            for _, id in ipairs(state.shop_items) do
-                if choice_id == id and items.get_by_id(id) then
-                    found_item = true
-                    break
-                end
-            end
-            assert(found_item, "item "..tostring(choice_id).." not found")
-            dialog.add{
-                max_time = 2000,
-                texts={{text=lang.join("You purchased ", choice_id, ".")}}
-            }
-            table.insert(player.items, {id=choice_id})
+        if choice_id then
+            log.debug('selected choice:', choice_id)
+        end
+
+        if player and choice_id and shop.buy_item(player, choice_id) then
+            shop.leave()
         end
 
         -- select the next dungeon room to enter
-        if choice_id == 'combat' then
-            combat.start()
-        elseif choice_id == 'shop' then
-            enter_shop()
-        elseif choice_id == 'event' and player then
-            events.start_event(state.next_event, player)
+        if choice_id and dungeon.rooms.get_by_id(choice_id) then
+            local room = dungeon.move_to_room(choice_id)
+            local room_type = room and dungeon.rooms.get_type(room.id)
+            if room and room_type then
+                log.info("move to room:", room.id, ", type:", room_type)
+
+                if room_type == 'combat' then
+                    combat.start()
+                elseif room_type == 'shop' then
+                    shop.enter()
+                elseif room_type == 'event' and player then
+                    local zone = dungeon.current_zone()
+                    assert(zone, "could not get current zone")
+                    local event = events.get_random_event(zone.id)
+                    assert(event, "could not pick random event in current zone")
+                    events.start_event(event, player)
+                end
+            end
         end
+
+        -- if room == 'combat' then
+        --     combat.start()
+        -- elseif room == 'shop' then
+        --     shop.enter()
+        -- elseif room == 'event' and player then
+        --     local zone = dungeon.current_zone()
+        --     assert(zone, "could not get current zone")
+        --     local event = events.get_random_event(zone.id)
+        --     assert(event, "could not pick random event in current zone")
+        --     events.start_event(event, player)
+        -- end
 
         dialog.next_dialog()
     end
@@ -259,7 +222,7 @@ function love.update(dt)
 end
 
 function love.draw()
-    zones.draw(function (_, zone_id)
+    screens.draw(function (_, zone_id)
         render.set_collection(zone_id)
         render.draw()
     end)

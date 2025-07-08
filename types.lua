@@ -4,7 +4,7 @@
 ---@field name? string
 ---@field group? 'player'|'enemy'
 ---@field items? ItemData[]
----@field zone_id? any id of the zone this entity is in
+---@field screen_id? any id of the screen this entity is in
 ---@field render_character? any id of character sprite renderable
 ---@field stats? Stats
 ---@field attack_timer? number

@@ -7,6 +7,8 @@ local M = {}
 ---@field modify_stats? fun(stats:Stats) modify stats of the user
 ---@field mitigate_damage? fun(src:Entity, damage:number): number mitigate damage before an attack lands
 ---@field shop_disabled? boolean can appear in the shop
+---@field starter_item? boolean player can start the game with this item
+---@field image? Image
 
 ---@class ItemData
 ---@field id string

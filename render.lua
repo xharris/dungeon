@@ -22,7 +22,7 @@ local easing = require 'lib.easing'
 ---@field data? table arbitrary value that does nothing
 ---@field tex? any love.Texture
 ---@field text? string
----@field frames? {x:number, y:number, w:number, h:number}[]
+---@field frames? RenderableFrame[]
 ---@field current_frame? number
 ---@field copy_transform? any id of renderable with transform that should be copied
 ---@field x? number
@@ -34,6 +34,12 @@ local easing = require 'lib.easing'
 ---@field oy? number
 ---@field _remove? boolean
 ---@field _easing? table<string, RenderableEasing>
+
+---@class RenderableFrame
+---@field x number
+---@field y number
+---@field w number
+---@field h number
 
 local cos = math.cos
 local pi = math.pi

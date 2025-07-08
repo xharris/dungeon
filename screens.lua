@@ -2,6 +2,7 @@ local M = {}
 
 local log = require 'lib.log'
 local lume = require 'ext.lume'
+local images = require 'lib.images'
 
 ---@class ZoneRender
 ---@field ox number
@@ -63,7 +64,7 @@ end
 
 ---@class ZonesSetValue
 ---@field id any
----@field image any love.Image
+---@field image? Image love.Image
 
 ---@param values ZonesSetValue[]
 function M.set(values)
@@ -75,33 +76,36 @@ function M.set(values)
     local no_animate = #zones == 0 and #values == 1
 
     for i, value in ipairs(values) do
-        local w, h = value.image:getDimensions()
-        local tform = love.math.newTransform()
-        local scale = math.abs(gw - w) > math.abs(gh - h) and gh / h or gw / w
+        if value.image then
+            local img = images.get(value.image)
+            local w, h = img:getDimensions()
+            local tform = love.math.newTransform()
+            local scale = math.abs(gw - w) > math.abs(gh - h) and gh / h or gw / w
 
-        -- center
-        local offx, offy = math.abs(gw - (w * scale)), math.abs(gh - (h * scale))
-        tform:translate(-offx/2, -offy/2)
-        tform:scale(scale)
+            -- center
+            local offx, offy = math.abs(gw - (w * scale)), math.abs(gh - (h * scale))
+            tform:translate(-offx/2, -offy/2)
+            tform:scale(scale)
 
-        ---@type Zone
-        local zone = {
-            id = value.id,
-            image = value.image,
-            transform = tform,
-            render = {angle1=-90,angle2=-90,ox=0,oy=0},
-            render_target = {angle1=0,angle2=0,ox=0,oy=0},
-            remove = false,
-        }
+            ---@type Zone
+            local zone = {
+                id = value.id,
+                image = img,
+                transform = tform,
+                render = {angle1=-90,angle2=-90,ox=0,oy=0},
+                render_target = {angle1=0,angle2=0,ox=0,oy=0},
+                remove = false,
+            }
 
-        if zones[i] then
-            new_zones[i] = zones[i]
-            new_zones[i].remove = false
-            if zones[i].id ~= value.id then
-                new_zones[i].replace_with = zone
+            if zones[i] then
+                new_zones[i] = zones[i]
+                new_zones[i].remove = false
+                if zones[i].id ~= value.id then
+                    new_zones[i].replace_with = zone
+                end
+            else
+                new_zones[i] = zone
             end
-        else
-            new_zones[i] = zone
         end
     end
 

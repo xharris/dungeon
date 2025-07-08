@@ -25,10 +25,6 @@ end
 ---@param v number can be negative to lose health
 ---@return boolean ok
 function M.add_health(e, v)
-    if e.health.current <= 0 or e.health.current >= e.health.max then
-        log.info(e.name, "health:", tostring(e.health.current).."/"..tostring(e.health.max))
-        return false
-    end
     log.info(e.name, v >= 0 and "gain" or "lose", v, "health")
     e.health.current = max(0, min(e.health.max, e.health.current + v))
     return true
