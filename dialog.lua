@@ -191,6 +191,26 @@ function M.next_dialog(force)
         -- no dialog
         return
     end
+
+    local _next_dialog = function ()
+        ---@type DialogOptions?
+        local removed = table.remove(instances, 1)
+        first = instances[1]
+        if first then
+            -- move to next dialog
+            next_dialog_cooldown = M.NEXT_DIALOG_COOLDOWN
+            local duration = first.duration
+            if duration and duration > 0 then
+                next_dialog_cooldown = min(duration, M.NEXT_DIALOG_COOLDOWN)
+            end
+            log.debug('next dialog', next_dialog_cooldown, duration, M.NEXT_DIALOG_COOLDOWN)
+        end
+        if first and removed then
+            -- reset animations and stuff if dialogs are different
+            reset_first(not printc.equal(removed.texts, first.texts))
+        end
+    end
+
     local has_animation = first.duration and first.duration > 0
     local is_animation_finished = first.duration and first._t and first._t >= first.duration
     
@@ -201,25 +221,18 @@ function M.next_dialog(force)
         next_dialog_cooldown = 0
         return
     end
+
+    if not force and first and has_animation and is_animation_finished then
+        _next_dialog()
+        return
+    end
+
     if not force and next_dialog_cooldown > 0 then
         log.debug("next_dialog on cooldown")
         return
     end
-    ---@type DialogOptions?
-    local removed = table.remove(instances, 1)
-    first = instances[1]
-    if first then
-        -- move to next dialog
-        next_dialog_cooldown = M.NEXT_DIALOG_COOLDOWN
-        local duration = first.duration
-        if duration and duration > 0 then
-            next_dialog_cooldown = min(duration, M.NEXT_DIALOG_COOLDOWN)
-        end
-    end
-    if first and removed then
-        -- reset animations and stuff if dialogs are different
-        reset_first(not printc.equal(removed.texts, first.texts))
-    end
+    
+    _next_dialog()
 end
 
 function M.has_choices()

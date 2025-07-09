@@ -2,6 +2,7 @@ local M = {}
 
 -- local render = require 'render'
 local log = require 'lib.log'
+local entity = require 'lib.entity'
 
 local abs = math.abs
 local min = math.min
@@ -28,6 +29,21 @@ function M.add_health(e, v)
     log.info(e.name, v >= 0 and "gain" or "lose", v, "health")
     e.health.current = max(0, min(e.health.max, e.health.current + v))
     return true
+end
+
+---@return Entity?
+function M.get_player()
+    for _, e in ipairs(entity.find('group')) do
+        if e.group == 'player' then
+            return e
+        end
+    end
+    log.error("player not found")
+end
+
+---@param player_id string
+function M.get_screen_id(player_id)
+    return 'entity-'..tostring(player_id)
 end
 
 return M

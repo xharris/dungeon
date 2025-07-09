@@ -4,12 +4,14 @@ local lume = require 'ext.lume'
 local log = require 'lib.log'
 local images = require 'lib.images'
 local screens = require 'screens'
+local signal = require 'lib.signal'
 
----@alias DungeonRoomType 'combat'|'shop'|'rest'|'event'
+---@alias DungeonRoomType 'combat'|'shop'|'rest'|'event'|'rift'
 
 ---@class DungeonRoom
 ---@field id string
 ---@field doors? string[] list of room ids
+---@field zones? string[] (rift_room) specify which zones this rift can go to
 ---@field types? DungeonRoomType[] choose a room type from the list
 ---@field combat_enemy_types? CombatEnemyType[]
 ---@field _type? DungeonRoomType
@@ -38,7 +40,18 @@ local current_room
 ---@type table<string, DungeonZone>
 local zones = {}
 
+M.signals = signal.create 'dungeon'
+M.SIGNALS = {
+    enter_zone = 'enter_zone'
+}
+
 M.rooms = {}
+
+---@type DungeonRoom
+M.rooms.RIFT = {
+    id = '_rift_room',
+    _type = 'rift',
+}
 
 ---@return DungeonRoom?
 function M.rooms.get_by_id(id)
@@ -103,10 +116,15 @@ function M.enter_zone(zone_id, player)
     -- set starting room
     current_room = lume.randomchoice(spawn_rooms)
 
+    M.signals.emit(M.SIGNALS.enter_zone, zone)
+
     return true
 end
 
 function M.get_next_zones()
+    if current_room and current_room._type == 'rift' and current_room.zones and #current_room.zones > 0 then
+        return current_room.zones
+    end
     return lume.keys(zones)
 end
 
@@ -121,8 +139,9 @@ function M.get_next_rooms()
     local doors = current_room.doors or {}
     if current_room.rift_room and #doors == 0 then
         -- move to rift next
-        return {} -- TODO add 'rift' room type?
+        return lume.clone(M.rooms.RIFT)
     end
+    log.warn_if(current_room.rift_room and #doors > 0, "rift room ignored, room:", current_room.id, ", doors:", #doors)
     ---@type DungeonRoom[]
     local out = {}
     for _, r in ipairs(doors) do
@@ -131,7 +150,7 @@ function M.get_next_rooms()
             table.insert(out, room)
         end
     end
-    log.error("no doors found, room:", current_room.id, ", zone:", current_zone.id)
+    log.error_if(#out == 0, "no doors found, room:", current_room.id, ", zone:", current_zone.id)
     return out
 end
 

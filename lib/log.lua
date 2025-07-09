@@ -4,12 +4,25 @@ local lume = require 'ext.lume'
 ---@type string?
 M.error = nil
 
+---@param header string?
+---@param ... string|number
+local function _print(header, ...)
+    header = header or ""
+    local args = {...}
+    for i, str in ipairs(args) do
+        args[i] = lume.serialize(str)
+    end
+    local out = table.concat(args, ' ')
+    print(header, out)
+    return header.." "..out
+end
+
 function M.info(...)
-    print("[INFO]", ...)
+    _print("[INFO]", ...)
 end
 
 function M.warn(...)
-    print("[WARN]", ...)
+    _print("[WARN]", ...)
 end
 
 --- returns true if statment is printed
@@ -18,7 +31,7 @@ end
 ---@return boolean
 function M.warn_if(stmt, ...)
     if stmt then
-        print("[WARN]", ...)
+        M.warn(...)
         return true
     end
     return false
@@ -30,20 +43,14 @@ end
 ---@return boolean
 function M.error_if(stmt, ...)
     if stmt then
-        print("[ERR]", ...)
-        M.error = table.concat({...}, " ")
+        M.error = _print("[ERR]", ...)
         return true
     end
     return false
 end
 
 function M.debug(...)
-    local args = {...}
-    for i, str in ipairs(args) do
-        args[i] = lume.serialize(str)
-    end
-    local out = table.concat(args, ' ')
-    print("[DEBUG]", out)
+    _print("[DEBUG]", ...)
 end
 
 return M

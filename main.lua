@@ -2,14 +2,11 @@ local entity = require 'lib.entity'
 local log = require 'lib.log'
 local circleui = require 'lib.circleui'
 local ctrl = require 'lib.controls'
-local lang = require 'lib.i18n'
 local lume = require 'ext.lume'
-local color = require 'lib.color'
 local render = require 'render'
 local screens  = require 'screens'
 local dialog = require 'dialog'
 local plugin = require 'plugin'
-local items = require 'items'
 local events = require 'events'
 local char = require 'character'
 local combat = require 'combat'
@@ -25,28 +22,52 @@ local const = {
 }
 
 local DEFAULT_STATE = {
-    ---@type string?
-    next_event = nil,
+    ---@type string[]?
+    next_zones = nil,
     is_game_over = false,
 }
 
 local state = lume.clone(DEFAULT_STATE)
 
----@return Entity?
-local function get_player()
-    for _, e in ipairs(entity.find('group')) do
-        if e.group == 'player' then
-            return e
-        end
+local function show_rift_choices()
+    state.next_zones = dungeon.get_next_zones()
+    ---@type DialogChoice[]
+    local choices = {}
+    for _, zone in ipairs(state.next_zones) do
+        table.insert(choices, {
+            id = zone,
+            texts = {{text=zone}},
+        } --[[@as DialogChoice]])
     end
-    log.error("player not found")
+    dialog.add{
+        texts={{text="A rift has opened"}},
+        choices=choices,
+    }
+    log.debug('next zones:', state.next_zones)
 end
 
 local function show_room_choices()
     ---@type DialogChoice[]
     local choices = {}
-    log.debug(dungeon.get_next_rooms())
-    for _, room in ipairs(dungeon.get_next_rooms()) do
+    local next_rooms = dungeon.get_next_rooms()
+    local current_room = dungeon.rooms.current()
+
+    local is_current_room_rift = current_room and current_room.rift_room
+    local next_room_has_rift = false
+    for _, room in ipairs(next_rooms) do
+        if room.rift_room then
+            next_room_has_rift = true
+            break
+        end
+    end
+
+    if is_current_room_rift or next_room_has_rift then
+        show_rift_choices()
+        return
+    end
+    
+    log.debug('next rooms:', next_rooms)
+    for _, room in ipairs(next_rooms) do
         local room_type = dungeon.rooms.get_type(room.id)
         if room_type then
             ---@type DialogChoice
@@ -83,10 +104,10 @@ local function start_game()
     }
 
     -- add player zone
-    local screen_id = 'entity-'..tostring(player._id)
-    player.screen_id = screen_id
+    player.screen_id = char.get_screen_id(player._id)
 
     -- enter a zone
+    local screen_id = player.screen_id
     local next_zones = dungeon.get_next_zones()
     local rand_zone = lume.randomchoice(next_zones)
     dungeon.enter_zone(rand_zone, player)
@@ -105,9 +126,6 @@ local function start_game()
         sx = 2, sy = 2,
     }
     render.set_collection()
-    state.next_event = events.get_random_event()
-
-    combat.start(screen_id)
 end
 
 function love.load()
@@ -122,12 +140,15 @@ function love.load()
 
     events.signals.on(events.SIGNALS.on_end, function ()
         log.debug "event ended"
-        state.next_event = events.get_random_event()
         show_room_choices()
     end)
 
     combat.signals.on(combat.SIGNALS.on_end, function ()
         log.debug "combat ended"
+        show_room_choices()
+    end)
+
+    dungeon.signals.on(dungeon.SIGNALS.enter_zone, function ()
         show_room_choices()
     end)
 
@@ -143,7 +164,7 @@ function love.update(dt)
     combat.update(dt)
     
 
-    local player = get_player()
+    local player = char.get_player()
     if player then
         events.update(dt, player)
     end
@@ -173,8 +194,16 @@ function love.update(dt)
             log.debug('selected choice:', choice_id)
         end
 
+        -- buy an item and leave the shop
         if player and choice_id and shop.buy_item(player, choice_id) then
             shop.leave()
+        end
+
+        -- select next zone
+        if player and choice_id and state.next_zones and lume.find(state.next_zones, choice_id) then
+            dungeon.enter_zone(choice_id, player)
+            state.next_zones = nil
+            screens.get(player.screen_id).image = dungeon.get_background_image()
         end
 
         -- select the next dungeon room to enter
@@ -184,7 +213,21 @@ function love.update(dt)
             if room and room_type then
                 log.info("move to room:", room.id, ", type:", room_type)
 
-                if room_type == 'combat' then
+                if room_type == 'rift' then
+                    state.next_zones = dungeon.get_next_zones()
+                    ---@type DialogChoice[]
+                    local choices = {}
+                    for _, zone in ipairs(state.next_zones) do
+                        table.insert(choices, {
+                            id = zone,
+                            texts = {{text=zone}},
+                        } --[[@as DialogChoice]])
+                    end
+                    dialog.add{
+                        texts={{text="A rift has opened"}},
+                        choices=choices,
+                    }
+                elseif room_type == 'combat' then
                     combat.start()
                 elseif room_type == 'shop' then
                     shop.enter()
@@ -197,18 +240,6 @@ function love.update(dt)
                 end
             end
         end
-
-        -- if room == 'combat' then
-        --     combat.start()
-        -- elseif room == 'shop' then
-        --     shop.enter()
-        -- elseif room == 'event' and player then
-        --     local zone = dungeon.current_zone()
-        --     assert(zone, "could not get current zone")
-        --     local event = events.get_random_event(zone.id)
-        --     assert(event, "could not pick random event in current zone")
-        --     events.start_event(event, player)
-        -- end
 
         dialog.next_dialog()
     end

@@ -4,23 +4,23 @@ local log = require 'lib.log'
 local lume = require 'ext.lume'
 local images = require 'lib.images'
 
----@class ZoneRender
+---@class ScreenRender
 ---@field ox number
 ---@field oy number
 ---@field angle1 number
 ---@field angle2 number
 
----@class Zone
+---@class Screen
 ---@field id string
----@field image any
+---@field image? Image
 ---@field transform? any
----@field render ZoneRender
----@field render_target ZoneRender
+---@field render ScreenRender
+---@field render_target ScreenRender
 ---@field remove boolean
----@field replace_with? Zone replace this zone with a different zone 
+---@field replace_with? Screen replace this instance with a different instance 
 
----@type Zone[]
-local zones = {}
+---@type Screen[]
+local instances = {}
 
 ---@type number[]
 local angles = {}
@@ -31,9 +31,9 @@ M.transition_duration = 20000
 
 local function calc_angles()
     local out = {}
-    local n = #zones
+    local n = #instances
 
-    local arc_size = 360 / #(lume.filter(zones, function (z)
+    local arc_size = 360 / #(lume.filter(instances, function (z)
         return z.remove == false
     end))
     local a2 = 270
@@ -41,7 +41,7 @@ local function calc_angles()
 
     local z = 1
     for i = 0, ((n - 1) * 2), 2 do
-        if not zones[z].remove then
+        if not instances[z].remove then
             out[i + 1] = a1
             out[i + 2] = a2
 
@@ -54,26 +54,27 @@ local function calc_angles()
     return out
 end
 
+---@param id string
 function M.get(id)
-    for _, zone in ipairs(zones) do
-        if zone.id == id then
-            return zone
+    for _, instance in ipairs(instances) do
+        if instance.id == id then
+            return instance
         end
     end
 end
 
----@class ZonesSetValue
+---@class InstancesSetValue
 ---@field id any
 ---@field image? Image love.Image
 
----@param values ZonesSetValue[]
+---@param values InstancesSetValue[]
 function M.set(values)
-    ---@type Zone[]
-    local new_zones = {}
+    ---@type Screen[]
+    local new_instances = {}
     local gw, gh = love.graphics.getDimensions()
     radius = math.sqrt((gw ^ 2) + (gh ^ 2))
 
-    local no_animate = #zones == 0 and #values == 1
+    local no_animate = #instances == 0 and #values == 1
 
     for i, value in ipairs(values) do
         if value.image then
@@ -87,47 +88,47 @@ function M.set(values)
             tform:translate(-offx/2, -offy/2)
             tform:scale(scale)
 
-            ---@type Zone
-            local zone = {
+            ---@type Screen
+            local instance = {
                 id = value.id,
-                image = img,
+                image = value.image,
                 transform = tform,
                 render = {angle1=-90,angle2=-90,ox=0,oy=0},
                 render_target = {angle1=0,angle2=0,ox=0,oy=0},
                 remove = false,
             }
 
-            if zones[i] then
-                new_zones[i] = zones[i]
-                new_zones[i].remove = false
-                if zones[i].id ~= value.id then
-                    new_zones[i].replace_with = zone
+            if instances[i] then
+                new_instances[i] = instances[i]
+                new_instances[i].remove = false
+                if instances[i].id ~= value.id then
+                    new_instances[i].replace_with = instance
                 end
             else
-                new_zones[i] = zone
+                new_instances[i] = instance
             end
         end
     end
 
-    -- add removed zones
-    for i = #new_zones + 1, #zones do
-        new_zones[i] = zones[i]
-        new_zones[i].remove = true
+    -- add removed instances
+    for i = #new_instances + 1, #instances do
+        new_instances[i] = instances[i]
+        new_instances[i].remove = true
     end
 
-    zones = new_zones
+    instances = new_instances
 
     -- set starting/target render values
     angles = calc_angles()
     local angle1, angle2 = 0, 0
-    for i, zone in ipairs(zones) do
+    for i, instance in ipairs(instances) do
         local idx1, idx2 = ((i - 1) * 2) + 1, ((i - 1) * 2) + 2
         angle1, angle2 = angles[idx1], angles[idx2]
 
-        local render_target = zone.render_target
-        local render = zone.render
+        local render_target = instance.render_target
+        local render = instance.render
 
-        if not zone.remove then
+        if not instance.remove then
             render_target.angle1 = angle1
             render_target.angle2 = angle2
         else
@@ -158,9 +159,9 @@ function M.update(dt)
     local gw, gh = love.graphics.getDimensions()
 
     if t < d then
-        for i, zone in ipairs(zones) do
-            local render = zone.render
-            local render_target = zone.render_target
+        for i, instance in ipairs(instances) do
+            local render = instance.render
+            local render_target = instance.render_target
 
             render.angle1 = lume.lerp(render.angle1, render_target.angle1, t / d)
             render.angle2 = lume.lerp(render.angle2, render_target.angle2, t / d)
@@ -186,25 +187,28 @@ function M.draw(fn)
     love.graphics.setColor(1, 1, 1, 1)
 
     -- draw backgrounds
-    for _, zone in ipairs(zones) do
-        local render = zone.render
-        love.graphics.stencil(stencil(gw, gh, radius, render), "replace", 1)
-        love.graphics.setStencilTest("greater", 0)
-        zone.transform:translate(render.ox, render.oy)
-        love.graphics.draw(zone.image, zone.transform)
-        zone.transform:translate(-render.ox, -render.oy)
-        love.graphics.setStencilTest()
+    for _, instance in ipairs(instances) do
+        if instance.image then
+            local img = images.get(instance.image)
+            local render = instance.render
+            love.graphics.stencil(stencil(gw, gh, radius, render), "replace", 1)
+            love.graphics.setStencilTest("greater", 0)
+            instance.transform:translate(render.ox, render.oy)
+            love.graphics.draw(img, instance.transform)
+            instance.transform:translate(-render.ox, -render.oy)
+            love.graphics.setStencilTest()
+        end
     end
 
-    -- draw zone contents
-    for i, zone in ipairs(zones) do
-        local render = zone.render
+    -- draw instance contents
+    for i, instance in ipairs(instances) do
+        local render = instance.render
         if fn then
             love.graphics.stencil(stencil(gw, gh, radius, render), "replace", 1)
             love.graphics.setStencilTest("greater", 0)
             love.graphics.push('all')
             love.graphics.translate(render.ox / 2, render.oy / 2)
-            fn(i, zone.id)
+            fn(i, instance.id)
             love.graphics.pop()
             love.graphics.setStencilTest()
         end
