@@ -37,7 +37,6 @@ return {
         combat.add_enemy{
             id = 'goblin',
             items = {{id='big_stick'}},
-            health = {current=40, max=40},
             stats = {agi=1, str=1, int=0},
             image = {
                 path = assets.dk_items,
@@ -53,7 +52,6 @@ return {
 
         events.add{
             id = 'cozy_cabin',
-            only_zones = {'forest'},
             rarity = "rare",
             on_start = function (e)
                 dialog.add{
@@ -105,6 +103,7 @@ return {
         dungeon.add_zone{
             id = 'forest',
             enemies = {'goblin'},
+            events = {'cozy_cabin', 'collect_sticks', 'lost_kid', 'combat_assist'},
             default_background_image = {
                 path = assets.forest,
             },

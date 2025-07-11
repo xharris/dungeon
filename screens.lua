@@ -3,6 +3,7 @@ local M = {}
 local log = require 'lib.log'
 local lume = require 'ext.lume'
 local images = require 'lib.images'
+local signal = require 'lib.signal'
 
 ---@class ScreenRender
 ---@field ox number
@@ -18,6 +19,8 @@ local images = require 'lib.images'
 ---@field render_target ScreenRender
 ---@field remove boolean
 ---@field replace_with? Screen replace this instance with a different instance 
+---@field ox number
+---@field oy number
 
 ---@type Screen[]
 local instances = {}
@@ -28,6 +31,11 @@ local radius = 0
 local t = 0
 
 M.transition_duration = 20000
+
+M.signals = signal.create 'screens'
+M.SIGNALS = {
+    on_change = 'on_change'
+}
 
 local function calc_angles()
     local out = {}
@@ -63,6 +71,10 @@ function M.get(id)
     end
 end
 
+function M.all()
+    return instances
+end
+
 ---@class InstancesSetValue
 ---@field id any
 ---@field image? Image love.Image
@@ -96,6 +108,8 @@ function M.set(values)
                 render = {angle1=-90,angle2=-90,ox=0,oy=0},
                 render_target = {angle1=0,angle2=0,ox=0,oy=0},
                 remove = false,
+                ox = 0,
+                oy = 0,
             }
 
             if instances[i] then
@@ -150,16 +164,35 @@ function M.set(values)
     end
 
     t = 0
+    M.signals.emit(M.SIGNALS.on_change)
+end
+
+---@param screen_id? string
+function M.rect(screen_id)
+    local ox, oy = 0, 0
+    if screen_id then
+        local screen = M.get(screen_id)
+        ox = screen.ox
+        oy = screen.oy
+    end
+    local w, h = love.graphics.getDimensions()
+    if #instances > 1 then
+        return (w/4) + ox, oy, w / 2, h
+    end
+    return ox, oy, w, h
+end
+
+function M.count()
+    return #instances
 end
 
 ---@param dt number
 function M.update(dt)
     t = t + (dt * 1000)
     local d = M.transition_duration
-    local gw, gh = love.graphics.getDimensions()
 
     if t < d then
-        for i, instance in ipairs(instances) do
+        for _, instance in ipairs(instances) do
             local render = instance.render
             local render_target = instance.render_target
 
@@ -168,6 +201,8 @@ function M.update(dt)
 
             render.ox = lume.lerp(render.ox, render_target.ox, t / d)
             render.oy = lume.lerp(render.oy, render_target.oy, t / d)
+            instance.ox = render.ox
+            instance.oy = render.oy
         end
     end
 end

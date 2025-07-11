@@ -24,6 +24,7 @@ local signal = require 'lib.signal'
 
 ---@class DungeonZone
 ---@field id string
+---@field events string[] list of events that can occur
 ---@field enemies string[] list of enemy ids that can spawn
 ---@field setup_rooms fun(ctx:DungeonSetupRoomsCtx, e:Entity)
 ---@field default_background_image? Image

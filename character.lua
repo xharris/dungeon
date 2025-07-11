@@ -4,7 +4,10 @@ local M = {}
 local log = require 'lib.log'
 local entity = require 'lib.entity'
 local lume = require 'ext.lume'
-local const= require 'const'
+local const = require 'const'
+local ctrl = require 'lib.controls'
+local render = require 'render'
+local screens = require 'screens'
 
 local abs = math.abs
 local min = math.min
@@ -82,9 +85,39 @@ function M.add_escort_client(escort_id, client)
     return true
 end
 
+function M.arrange()
+    local screen_x, _, w, _ = screens.rect()
+    local player = M.get_player()
+
+    local ally_x = (0.25 * w) + screen_x
+    local enemy_x = (0.75 * w) + screen_x
+    log.debug('arrange w:', w, ', ally_x:', ally_x, ', enemy_x:', enemy_x)
+
+    if player then
+        player.x = ally_x
+        log.debug('player x:', player.x)
+        ally_x = ally_x - 64
+    end
+
+    for _, e in ipairs(entity.all()) do
+        if not player or e._id ~= player._id then
+            if e.gravity == 'ally' then
+                e.x = ally_x
+                log.debug('ally x:', e.x)
+                ally_x = ally_x - 64
+            end
+            if e.group == 'enemy' then
+                e.x = enemy_x
+                log.debug('enemy x:', e.x)
+                enemy_x = enemy_x + 64
+            end
+        end
+    end
+end
+
 ---@param v Entity?
 function M.create(v)
-    return entity.add(lume.extend(
+    local e = entity.add(lume.extend(
         {
             group = 'player',
             name = 'Player',
@@ -96,13 +129,42 @@ function M.create(v)
             stats = {agi=1, str=1, int=1},
             money = 0,
             x = 0,
-            y = 0,
+            y = const.FLOOR_Y,
             floor_y = const.FLOOR_Y,
-            gravity = 0.8,
-            velocity_y = 0,
+            gravity = 700,
+            vy = 0,
         } --[[@as Entity]],
         v or {}
     ))
+    M.arrange()
+    return e
+end
+
+---@param dt number
+function M.update(dt)
+    for _, e in ipairs(entity.all()) do
+        -- character physics
+        if e.x and e.y and e.gravity and e.floor_y and e.vy then
+            -- gravity
+            if e.y < e.floor_y then
+                e.vy = e.vy + e.gravity * dt
+            else
+                e.vy = min(0, e.vy)
+            end
+            e.y = e.y + e.vy * dt
+        end
+
+        if ctrl:pressed 'up' then
+            e.vy = -300
+        end
+
+        -- character rendering
+        if e.render_character then
+            local r = render.get(e.render_character)
+            r.x = e.x
+            r.y = e.y
+        end
+    end
 end
 
 return M

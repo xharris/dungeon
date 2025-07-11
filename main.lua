@@ -9,6 +9,7 @@ local shop = require 'shop'
 local state = require 'lib.state'
 local states = require 'states.index'
 local color = require 'lib.color'
+local char = require 'character'
 
 render.DEBUG = true
 
@@ -23,6 +24,12 @@ function love.load()
     render.load()
 
     love.graphics.setBackgroundColor(color.MUI.WHITE)
+    screens.signals.on(screens.SIGNALS.on_change, function ()
+        char.arrange()
+    end)
+    combat.signals.on(combat.SIGNALS.on_start, function ()
+        char.arrange()
+    end)
 
     state.push(states.lobby)
 end
@@ -34,6 +41,7 @@ function love.update(dt)
     entity.update()
     dialog.update(dt)
     combat.update(dt)
+    char.update(dt)
 
     -- dialog controls
     if dialog.has_image_choices() then

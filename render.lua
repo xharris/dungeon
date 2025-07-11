@@ -7,6 +7,8 @@ local log = require 'lib.log'
 local signal = require 'lib.signal'
 local easing = require 'lib.easing'
 
+local abs = math.abs
+
 ---@alias RenderableEaseFn 'linear'|'ease_in_out_sine'
 
 ---@class RenderableEasing
@@ -34,6 +36,8 @@ local easing = require 'lib.easing'
 ---@field oy? number
 ---@field _remove? boolean
 ---@field _easing? table<string, RenderableEasing>
+---@field w? number
+---@field h? number
 
 ---@class RenderableFrame
 ---@field x number
@@ -97,6 +101,8 @@ function M.add(t)
         t.ox = t.ox or r.ox
         t.oy = t.oy or r.ox
     end
+    t.w = 0
+    t.h = 0
     return t.id, t
 end
 
@@ -120,7 +126,7 @@ function M.transform_point(id, x, y)
     local r = renderable_map[id]
     assert(r, 'renderable not found')
     transform:setTransformation(r.x or 0, r.y or 0, r.r, r.sx, r.sy, r.ox, r.oy)
-    local x, y = transform:transformPoint(x, y)
+    local x, y = transform:transformPoint(x + r.ox, y + r.oy)
     return x, y, r
 end
 
@@ -155,18 +161,17 @@ function M.ease(id, property, to, opts)
 end
 
 ---@param id any renderable to ease
----@param source any renderable id
 ---@param target any renderable id
----@param opts? {duration?:number, ease_fn?:RenderableEaseFn}
-function M.move_to(id, source, target, opts)
+---@param opts? {duration?:number, ease_fn?:RenderableEaseFn, transform_target?:fun(r:Renderable, x:number,y:number):number,number}
+function M.move_to(id, target, opts)
     local r = M.get(id)
-    local r_source = M.get(source)
     local r_target = M.get(target)
-    assert(r and r_source and r_target, 'invalid renderable id')
+    assert(r and r_target, 'invalid renderable id')
 
-    r.x = r_source.x
-    r.y = r_source.y
-    local target_x, target_y = M.transform_point(target, r.ox, r.oy)
+    local target_x, target_y = M.transform_point(target, 0, 0)
+    if opts and opts.transform_target then
+        target_x, target_y = opts.transform_target(r, target_x, target_y)
+    end
     M.ease(id, 'x', target_x, opts)
     M.ease(id, 'y', target_y, opts)
 end
@@ -207,6 +212,17 @@ function M.update(dt)
                         end
                     end
                 end
+
+                -- calculate size
+                local frame = r.current_frame and r.frames and r.frames[r.current_frame]
+                if frame and r.tex then
+                    r.w = abs(frame.w * (r.sx or 1))
+                    r.h = abs(frame.h * (r.sy or r.sx))
+                elseif r.tex then
+                    local sw, sh = r.tex:getDimensions()
+                    r.w = abs(sw * (r.sx or 1))
+                    r.h = abs(sh * (r.sy or r.sx))
+                end
             end
         end
     end
@@ -216,37 +232,26 @@ function M.draw()
     for _, r in ipairs(collection[current_collection]) do
         love.graphics.push('all')
         color.reset()
+
+        -- draw image
         local frame = r.current_frame and r.frames and r.frames[r.current_frame]
         if frame and r.tex then
             local sw, sh = r.tex:getDimensions()
             quad:setViewport(frame.x, frame.y, frame.w, frame.h, sw, sh)
             love.graphics.draw(r.tex, quad, r.x or 0, r.y or 0, r.r, r.sx, r.sy, r.ox, r.oy)
-
-            if M.DEBUG then
-                -- draw rectangle around texture
-                local x, y = M.transform_point(r.id, 0, 0)
-                local centerx, centery = M.transform_point(r.id, r.ox, r.oy)
-                love.graphics.push('all')
-                love.graphics.setColor(1, 0, 0, 1)
-                love.graphics.circle('fill', centerx, centery, 4)
-                love.graphics.rectangle('line', x, y, frame.w * (r.sx or 1), frame.h * (r.sy or r.sx or 1))
-                love.graphics.pop()
-            end
-
         elseif r.tex then
             love.graphics.draw(r.tex, r.x or 0, r.y or 0, r.r, r.sx, r.sy, r.ox, r.oy)
+        end
 
-            if M.DEBUG then
-                -- draw rectangle around texture
-                local x, y = M.transform_point(r.id, 0, 0)
-                local centerx, centery = M.transform_point(r.id, r.ox, r.oy)
-                local sw, sh = r.tex:getDimensions()
-                love.graphics.push('all')
-                love.graphics.setColor(1, 0, 0, 1)
-                love.graphics.circle('fill', centerx, centery, 4)
-                love.graphics.rectangle('line', x, y, sw * (r.sx or 1), sh * (r.sy or r.sx or 1))
-                love.graphics.pop()
-            end
+        if M.DEBUG then
+            -- draw rectangle around texture
+            local x, y = M.transform_point(r.id, 0, 0)
+            local x2, y2 = x - (r.ox * abs(r.sx)), y - (r.oy * abs(r.sy))
+            love.graphics.push('all')
+            love.graphics.setColor(1, 0, 0, 1)
+            love.graphics.circle('fill', x, y, 4)
+            love.graphics.rectangle('line', x2, y2, r.w, r.h)
+            love.graphics.pop()
         end
         
         if r.text then

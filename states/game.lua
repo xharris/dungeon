@@ -90,6 +90,8 @@ enter_room = function(room_id)
     local player = char.get_player()
     local room = dungeon.move_to_room(room_id)
     local room_type = room and dungeon.rooms.get_type(room.id)
+    local current_zone = dungeon.current_zone()
+
     if player and room and room_type then
         log.info("move to room:", room.id, ", type:", room_type)
 
@@ -108,7 +110,7 @@ enter_room = function(room_id)
                 choices=choices,
             }
         elseif room_type == 'combat' then
-            combat.start()
+            combat.start(current_zone, nil, player.screen_id)
         elseif room_type == 'shop' then
             shop.enter()
         elseif room_type == 'event' and player then
@@ -223,23 +225,6 @@ return {
             dialog.next_dialog()
         end
 
-        for _, e in ipairs(entity.all()) do
-            -- character physics
-            if e.x and e.y and e.gravity and e.floor_y and e.velocity_y then
-                -- gravity
-                if e.y < e.floor_y then
-                    e.velocity_y = e.velocity_y + e.gravity * dt
-                    e.y = e.y + e.velocity_y * dt
-                else
-                    e.velocity_y = min(0, e.velocity_y)
-                end
-            end
-
-            if ctrl:pressed 'up' then
-                e.velocity_y = -10
-            end
-        end
-
         -- player died
         if player and player.health.current <= 0 and not is_game_over then
             log.info("player died")
@@ -256,9 +241,7 @@ return {
                     }
                 }
             end
-        end    
-
-
+        end 
     end
 
 } --[[@as State]]

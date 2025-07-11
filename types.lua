@@ -4,15 +4,15 @@
 ---@field name? string
 ---@field group? 'player'|'enemy'|'ally'
 ---@field items? ItemData[]
----@field screen_id? any id of the screen this entity is in
----@field render_character? any id of character sprite renderable
+---@field screen_id? string id of the screen this entity is in
+---@field render_character? string id of character sprite renderable
 ---@field stats? Stats
 ---@field attack_timer? number
 ---@field money? number
 ---@field escort_clients? string[] ids of characters being escorted
 ---@field x? number
 ---@field y? number
----@field velocity_y? number
+---@field vy? number
 ---@field gravity? number
 ---@field floor_y? number
 

@@ -73,7 +73,9 @@ function M.start_event(id, e)
         return false
     end
     log.info("start event", id)
-    state.current_event.on_start(e)
+    if state.current_event.on_start then
+        state.current_event.on_start(e)
+    end
     return true
 end
 
@@ -87,7 +89,7 @@ end
 ---@param dt number
 ---@param e Entity
 function M.update(dt, e)
-    if state.current_event then
+    if state.current_event and state.current_event.on_update then
         state.current_event.on_update(dt, e)
     end
 end
