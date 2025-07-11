@@ -23,6 +23,10 @@ return {
             max_jumps = 2,
             floor_behavior = 'bounce'
         }
+        char.create{
+            group = 'ally',
+            name = 'some kid'
+        }
 
         -- get starting items
         ---@type DialogChoice[]

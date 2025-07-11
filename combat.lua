@@ -56,26 +56,20 @@ function M.start(zone, enemy_types, screen_id)
         local enemy = id and enemies[id]
         if enemy then
             log.info("add enemy", enemy.id)
-            local e = char.create{
-                group='enemy',
-                name=lang.get(enemy.id),
-                items=enemy.items and lume.clone(enemy.items) or nil,
-                health=enemy.health and lume.clone(enemy.health) or nil,
-                screen_id=screen_id,
-                stats=enemy.stats and lume.clone(enemy.stats) or nil,
-            }
-            if screen_id then
-                render.set_collection(screen_id)
-            end
-            e.render_character = render.add{
-                tex = IMG.ohmydungeon_v11,
-                frames = {{x=48, y=144, w=16, h=16}},
-                current_frame = 1,
-                x = gw * 2/3, y = gh / 2,
-                ox = 8, oy = 8,
-                sx = -2, sy = 2,
-            }
-            render.set_collection()
+            local e = char.create(
+                {
+                    group='enemy',
+                    name=lang.get(enemy.id),
+                    items=enemy.items and lume.clone(enemy.items) or nil,
+                    health=enemy.health and lume.clone(enemy.health) or nil,
+                    screen_id=screen_id,
+                    stats=enemy.stats and lume.clone(enemy.stats) or nil,
+                },
+                {
+                    frames = {{x=48, y=144, w=16, h=16}},
+                    sx = 2, sy = 2,
+                }
+            )
         end
     end
 
@@ -205,7 +199,7 @@ function M.update(dt)
                     end
                     local item = items.get_by_id(data.id)
                     if item and item.image and e.render_character and target and target.render_character then
-                        log.debug('combat attack item:', data.id, ', target:', target.name)
+                        log.debug('combat attack item:', data.id, ', source:', e.name, ', target:', target.name)
                         -- animate attack
                         local r_id, r = render.add{
                             tex = images.get(item.image),

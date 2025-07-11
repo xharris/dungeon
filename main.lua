@@ -11,8 +11,6 @@ local states = require 'states.index'
 local color = require 'lib.color'
 local char = require 'character'
 
--- render.DEBUG = true
-
 function love.load()
     plugin.add(require 'plugins.global_events')
     plugin.add(require 'plugins.forest')

@@ -63,6 +63,7 @@ local function calc_angles()
 end
 
 ---@param id string
+---@return Screen?
 function M.get(id)
     for _, instance in ipairs(instances) do
         if instance.id == id then
@@ -170,8 +171,8 @@ end
 ---@param screen_id? string
 function M.rect(screen_id)
     local ox, oy = 0, 0
-    if screen_id then
-        local screen = M.get(screen_id)
+    local screen = screen_id and M.get(screen_id)
+    if screen then
         ox = screen.ox
         oy = screen.oy
     end

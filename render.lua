@@ -6,6 +6,7 @@ local color = require 'lib.color'
 local log = require 'lib.log'
 local signal = require 'lib.signal'
 local easing = require 'lib.easing'
+local const  = require 'const'
 
 local abs = math.abs
 
@@ -21,12 +22,13 @@ local abs = math.abs
 
 ---@class Renderable
 ---@field id? string
+---@field collection_id? string
 ---@field data? table arbitrary value that does nothing
 ---@field tex? any love.Texture
 ---@field text? string
 ---@field frames? RenderableFrame[]
 ---@field current_frame? number
----@field copy_transform? any id of renderable with transform that should be copied
+---@field copy_transform? string id of renderable with transform that should be copied
 ---@field x? number
 ---@field y? number
 ---@field r? number
@@ -51,7 +53,7 @@ local max = math.max
 local min = math.min
 
 local DEFAULT_COLLECTION = '_default'
-M.DEBUG = false
+M.DEBUG = const.DEBUG_RENDER
 
 ---@type table<string, Renderable[]>
 local collection = {}
@@ -84,8 +86,36 @@ function M.set_collection(id)
     current_collection = id
 end
 
+---@param render_id string
+---@param collection_id string
+---@return boolean ok
+function M.move_to_collection(render_id, collection_id)
+    local r = M.get(render_id)
+    if not r then
+        log.warn('(move_to_collection) renderable not found, id:', render_id)
+        return false
+    end
+    local from_c = collection[r.collection_id]
+    if from_c then
+        -- remove from old collection
+        for i, r2 in lume.ripairs(from_c) do
+            ---@cast r2 Renderable
+            if r2.id == r.id then
+                table.remove(from_c, i)
+                break
+            end
+        end
+    end
+    -- add to new collection
+    M.set_collection(collection_id)
+    r.collection_id = collection_id
+    table.insert(collection[collection_id], r)
+    M.set_collection()
+    return true
+end
+
 ---@param t Renderable
----@return any, Renderable
+---@return string, Renderable
 function M.add(t)
     t.id = genid()
     table.insert(collection[current_collection], t)
@@ -103,6 +133,7 @@ function M.add(t)
     end
     t.w = 0
     t.h = 0
+    t.collection_id = current_collection
     return t.id, t
 end
 
@@ -124,7 +155,7 @@ local transform
 ---@return number, number, Renderable
 function M.transform_point(id, x, y)
     local r = renderable_map[id]
-    assert(r, 'renderable not found')
+    assert(r, 'renderable not found, id:', id)
     transform:setTransformation(r.x or 0, r.y or 0, r.r, r.sx, r.sy, r.ox, r.oy)
     local x, y = transform:transformPoint(x + r.ox, y + r.oy)
     return x, y, r
@@ -249,6 +280,7 @@ function M.draw()
             local x2, y2 = x - (r.ox * abs(r.sx)), y - (r.oy * abs(r.sy))
             love.graphics.push('all')
             love.graphics.setColor(1, 0, 0, 1)
+            love.graphics.print(r.id, x, y)
             love.graphics.circle('fill', x, y, 4)
             love.graphics.rectangle('line', x2, y2, r.w, r.h)
             love.graphics.pop()

@@ -8,6 +8,8 @@ local const = require 'const'
 local ctrl = require 'lib.controls'
 local render = require 'render'
 local screens = require 'screens'
+local images = require 'lib.images'
+local assets = require 'assets.index'
 
 local abs = math.abs
 local min = math.min
@@ -88,31 +90,43 @@ end
 function M.arrange()
     local screen_x, _, w, _ = screens.rect()
     local player = M.get_player()
+    local sep = const.CHAR_ARRANGE_SEP
 
     local ally_x = (0.25 * w) + screen_x
     local enemy_x = (0.75 * w) + screen_x
 
     if player then
         player.x = ally_x
-        ally_x = ally_x - 64
+        ally_x = ally_x - sep
     end
 
     for _, e in ipairs(entity.all()) do
         if not player or e._id ~= player._id then
-            if e.gravity == 'ally' then
+            if e.group == 'ally' then
                 e.x = ally_x
-                ally_x = ally_x - 64
+                ally_x = ally_x - sep
+                local r = e.render_character and render.get(e.render_character)
+                if r then
+                    -- ally faces to the right
+                    r.sx = abs(r.sx)
+                end
             end
             if e.group == 'enemy' then
                 e.x = enemy_x
-                enemy_x = enemy_x + 64
+                enemy_x = enemy_x + sep
+                local r = e.render_character and render.get(e.render_character)
+                if r then
+                    -- enemy faces to the left
+                    r.sx = -abs(r.sx)
+                end
             end
         end
     end
 end
 
 ---@param v Entity?
-function M.create(v)
+---@param renderable Renderable?
+function M.create(v, renderable)
     local e = entity.add(lume.extend(
         {
             group = 'player',
@@ -134,7 +148,34 @@ function M.create(v)
         } --[[@as Entity]],
         v or {}
     ))
+    -- set screen
+    local screen_id = M.get_screen_id(e._id)
+    if e.group ~= 'player' then
+        local player = M.get_player()
+        if player then
+            screen_id = M.get_screen_id(player._id)
+        end
+    end
+    e.screen_id = screen_id
+    -- add sprite
+    render.set_collection(screen_id)
+    e.render_character = render.add(lume.extend(
+        {
+            tex = images.get{
+                path = assets.ohmydungeon_v11,
+            },
+            frames = {{x=0, y=144, w=16, h=16}},
+            current_frame = 1,
+            x = e.x,
+            y = e.y,
+            ox = 8, oy = 8,
+            sx = 2, sy = 2,
+        } --[[@as Renderable]],
+        renderable or {}
+    ))
+    render.set_collection()
     M.arrange()
+    log.debug('create character, name:', e.name, ', render_character:', e.render_character)
     return e
 end
 
@@ -173,7 +214,6 @@ function M.update(dt)
             -- bounce off floor
             e.vy = -e.vy * 0.6
             e.y = e.floor_y or const.FLOOR_Y
-            log.debug('bounce', {vy=e.vy})
             if e.vy < 0 and e.vy >= const.BOUNCE_VY_THRESHOLD then
                 -- stop bouncing
                 e.vy = 0
@@ -191,8 +231,8 @@ function M.update(dt)
         end
 
         -- character rendering
-        if e.render_character then
-            local r = render.get(e.render_character)
+        local r = e.render_character and render.get(e.render_character)
+        if r and e.x and e.y then
             r.x = e.x
             r.y = e.y
         end

@@ -128,7 +128,6 @@ return {
     enter = function ()
         next_zones = nil
         is_game_over = false
-        render.reset()
 
         for _, e in ipairs(entity.all()) do
             if e.group ~= 'player' then
@@ -151,34 +150,14 @@ return {
         end)
 
         -- start game
-        local gw, gh = love.graphics.getDimensions()
-
         local player = char.get_player()
         assert(player, "player entity not created")
 
-        -- add player zone
-        player.screen_id = char.get_screen_id(player._id)
-
         -- enter a zone
-        local screen_id = player.screen_id
         next_zones = dungeon.get_next_zones()
         local rand_zone = lume.randomchoice(next_zones)
         dungeon.enter_zone(rand_zone, player)
-        screens.set{{id=screen_id, image=dungeon.get_background_image()}}
-
-        -- add player sprite
-        render.set_collection(screen_id)
-        player.render_character = render.add{
-            tex = images.get{
-                path = assets.ohmydungeon_v11,
-            },
-            frames = {{x=0, y=144, w=16, h=16}},
-            current_frame = 1,
-            x = gw / 3, y = gh / 2,
-            ox = 8, oy = 8,
-            sx = 2, sy = 2,
-        }
-        render.set_collection()
+        screens.set{{id=player.screen_id, image=dungeon.get_background_image()}}
     end,
     
     update = function (dt)
@@ -228,7 +207,6 @@ return {
         -- player died
         if player and player.health.current <= 0 and not is_game_over then
             log.info("player died")
-            render.remove(player.render_character)
             is_game_over = true
 
             -- game over
