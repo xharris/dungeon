@@ -91,11 +91,9 @@ function M.arrange()
 
     local ally_x = (0.25 * w) + screen_x
     local enemy_x = (0.75 * w) + screen_x
-    log.debug('arrange w:', w, ', ally_x:', ally_x, ', enemy_x:', enemy_x)
 
     if player then
         player.x = ally_x
-        log.debug('player x:', player.x)
         ally_x = ally_x - 64
     end
 
@@ -103,12 +101,10 @@ function M.arrange()
         if not player or e._id ~= player._id then
             if e.gravity == 'ally' then
                 e.x = ally_x
-                log.debug('ally x:', e.x)
                 ally_x = ally_x - 64
             end
             if e.group == 'enemy' then
                 e.x = enemy_x
-                log.debug('enemy x:', e.x)
                 enemy_x = enemy_x + 64
             end
         end
@@ -123,8 +119,8 @@ function M.create(v)
             name = 'Player',
             items = {},
             health = {
-                current = const.CHAR_HEALTH,
-                max = const.CHAR_HEALTH,
+                current = const.HEALTH,
+                max = const.HEALTH,
             },
             stats = {agi=1, str=1, int=1},
             money = 0,
@@ -133,6 +129,8 @@ function M.create(v)
             floor_y = const.FLOOR_Y,
             gravity = 700,
             vy = 0,
+            jump_velocity = const.JUMP_VELOCITY,
+            max_jumps = const.MAX_JUMPS,
         } --[[@as Entity]],
         v or {}
     ))
@@ -144,18 +142,52 @@ end
 function M.update(dt)
     for _, e in ipairs(entity.all()) do
         -- character physics
-        if e.x and e.y and e.gravity and e.floor_y and e.vy then
-            -- gravity
-            if e.y < e.floor_y then
-                e.vy = e.vy + e.gravity * dt
-            else
-                e.vy = min(0, e.vy)
-            end
+        local on_floor = (e.y or const.FLOOR_Y) >= (e.floor_y or const.FLOOR_Y)
+        local should_stand = not e.floor_behavior or e.floor_behavior == 'stand'
+        local should_bounce = e.floor_behavior == 'bounce'
+        local can_jump = e.jump_velocity and e.jump_velocity ~= 0
+        local has_jumps_left = (e.jumps or const.MAX_JUMPS) < (e.max_jumps or const.MAX_JUMPS)
+        local is_falling = e.vy and e.vy > 0
+
+        if e.y and e.vy then
+            -- apply velocity
             e.y = e.y + e.vy * dt
         end
 
-        if ctrl:pressed 'up' then
-            e.vy = -300
+        if e.gravity and not on_floor then
+            -- apply gravity
+            e.vy = (e.vy or 0) + e.gravity * dt
+        end
+
+        if on_floor and should_stand and is_falling then
+            -- stand on floor
+            e.vy = 0
+            e.y = e.floor_y or const.FLOOR_Y
+            if can_jump then
+                -- reset jumps
+                e.jumps = 0
+            end
+        end
+
+        if on_floor and should_bounce and is_falling then
+            -- bounce off floor
+            e.vy = -e.vy * 0.6
+            e.y = e.floor_y or const.FLOOR_Y
+            log.debug('bounce', {vy=e.vy})
+            if e.vy < 0 and e.vy >= const.BOUNCE_VY_THRESHOLD then
+                -- stop bouncing
+                e.vy = 0
+                if can_jump then
+                    -- reset jumps
+                    e.jumps = 0
+                end
+            end
+        end
+
+        if can_jump and has_jumps_left and ctrl:pressed 'up' then
+            -- jump
+            e.jumps = (e.jumps or 0) + 1
+            e.vy = e.jump_velocity
         end
 
         -- character rendering

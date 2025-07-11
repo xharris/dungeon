@@ -15,6 +15,10 @@
 ---@field vy? number
 ---@field gravity? number
 ---@field floor_y? number
+---@field jump_velocity? number
+---@field floor_behavior? 'stand'|'bounce'|'fall'
+---@field max_jumps? number
+---@field jumps? number
 
 ---@class Health
 ---@field current number

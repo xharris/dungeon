@@ -19,7 +19,10 @@ return {
         render.reset()
 
         -- create player
-        char.create()
+        char.create{
+            max_jumps = 2,
+            floor_behavior = 'bounce'
+        }
 
         -- get starting items
         ---@type DialogChoice[]
