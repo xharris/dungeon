@@ -6,6 +6,7 @@ local signal = require 'lib.signal'
 
 ---@class Event
 ---@field id string
+---@field rarity? Rarity
 ---@field disabled? boolean
 ---@field only_zones? string[] only allow this event to happen in specified zones
 ---@field on_start fun(e:Entity)
@@ -78,8 +79,8 @@ end
 
 function M.end_event()
     if state.current_event then
-        M.signals.emit(M.SIGNALS.on_end)
         state.current_event = nil
+        M.signals.emit(M.SIGNALS.on_end)
     end
 end
 

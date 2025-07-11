@@ -5,8 +5,7 @@ local ctrl = require 'lib.controls'
 local color = require 'lib.color'
 local char = require 'character'
 local lume = require 'ext.lume'
-local combat = require 'combat'
-local items = require 'items'
+local lang = require 'lib.i18n'
 
 local MEDIC_HEAL_AMOUNT = 20
 local MEDIC_TIP_AMOUNT = 12
@@ -19,7 +18,16 @@ local MEDIC_TIPS = {
 return {
     -- related_plugins = {'warrior'}, -- TODO ?
     on_load = function()
+        lang.set('en', {
+            medic_name = 'Wandering Medic',
+            medic_desc = "Will help injured travelers. Typically accepts tips in return."
+        })
 
+        ---Medic
+        ---Heal decreases if a tip is not given
+        ---Will stop appearing if not tipped enough times
+        ---Better heals/Larger tips with consistent tipping
+        ---Sometimes will say a tip is not necessary
         events.add{
             id = 'medic',
             on_start = function(e)

@@ -567,7 +567,7 @@ local serialize_map = {
   [ "userdata"] = tostring,
   [ "boolean" ] = tostring,
   [ "nil"     ] = tostring,
-  [ "string"  ] = function(v) return string.format("%q", v) end,
+  [ "string"  ] = function(v) return string.format("%s", v) end,
   [ "number"  ] = function(v)
     if      v ~=  v     then return  "0/0"      --  nan
     elseif  v ==  1 / 0 then return  "1/0"      --  inf

@@ -9,6 +9,9 @@ local M = {}
 ---@field shop_disabled? boolean can appear in the shop
 ---@field starter_item? boolean player can start the game with this item
 ---@field image? Image
+---@field rarity? Rarity
+---@field is_augment? boolean TODO does not appear in shop, offered every X combats?
+---@field charges_required? number TODO in combat, item activates after X cycles
 
 ---@class ItemData
 ---@field id string
@@ -16,10 +19,12 @@ local M = {}
 
 ---@type Item[]
 local items = {}
+---@type Item[]
+local augments = {}
 
 ---@param id string
 ---@return Item?
-M.get_by_id = function(id)
+function M.get_by_id(id)
     for _, item in ipairs(items) do
         if item.id == id then
             return item
@@ -27,13 +32,33 @@ M.get_by_id = function(id)
     end
 end
 
+---@return Item[]
+function M.get_all_starters()
+    ---@type Item[]
+    local out = {}
+    for _, item in ipairs(items) do
+        if item.starter_item then
+            table.insert(out, item)
+        end
+    end
+    return out
+end
+
 ---@param v Item
 function M.add(v)
-    table.insert(items, v)
+    if v.is_augment then
+        table.insert(augments, v)
+    else
+        table.insert(items, v)
+    end
 end
 
 function M.all()
     return items
+end
+
+function M.augments()
+    return augments
 end
 
 return M

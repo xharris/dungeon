@@ -52,7 +52,7 @@ function M.start(zone_id, enemy_types)
         local id = M.get_random_enemy(zone_id, enemy_types)
         local enemy = id and enemies[id]
         if enemy then
-            local e = entity.add{
+            local e = char.create{
                 group='enemy',
                 name=lang.get(enemy.id),
                 items=lume.clone(enemy.items),
@@ -116,13 +116,20 @@ function M.load()
         ---@param r Renderable
         function (id, r)
             local data = r.data
-            if data then
+            if data and data.source then
+                local source = entity.get(data.source)
+                if not source then
+                    log.warn("attack source not found, data:", data)
+                    return
+                end
+
                 -- attack animation
-                if data.type == 'attack' then
-                    local source = entity.get(data.source)
+                if source and data.type == 'attack' then
                     local target = entity.get(data.target)
-                    assert(target, 'attack source not found')
-                    assert(target, 'attack target not found')
+                    if not target then
+                        log.warn('attack target not found, target-data:', data.target)
+                        return
+                    end
 
                     -- get modified character stats
                     local stats = data.stats --[[@as Stats]]

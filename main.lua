@@ -4,18 +4,17 @@ local render = require 'render'
 local screens  = require 'screens'
 local dialog = require 'dialog'
 local plugin = require 'plugin'
-local events = require 'events'
-local char = require 'character'
 local combat = require 'combat'
 local shop = require 'shop'
 local state = require 'lib.state'
 local states = require 'states.index'
+local color = require 'lib.color'
 
 render.DEBUG = true
 
 function love.load()
-    plugin.add(require 'plugins.basic_events')
-    plugin.add(require 'plugins.forest_zone')
+    plugin.add(require 'plugins.global_events')
+    plugin.add(require 'plugins.forest')
     plugin.add(require 'plugins.warrior_class')
 
     shop.load()
@@ -23,7 +22,9 @@ function love.load()
     plugin.load()
     render.load()
 
-    state.push(states.game)
+    love.graphics.setBackgroundColor(color.MUI.WHITE)
+
+    state.push(states.lobby)
 end
 
 function love.update(dt)
@@ -34,11 +35,23 @@ function love.update(dt)
     dialog.update(dt)
     combat.update(dt)
 
-    local player = char.get_player()
-    if player then
-        events.update(dt, player)
+    -- dialog controls
+    if dialog.has_image_choices() then
+        if ctrl:pressed 'left' then
+            dialog.prev_choice()
+        end
+        if ctrl:pressed 'right' then
+            dialog.next_choice()
+        end
+    elseif dialog.has_choices() then
+        if ctrl:pressed 'up' then
+            dialog.prev_choice()
+        end
+        if ctrl:pressed 'down' then
+            dialog.next_choice()
+        end
     end
-
+    
     state.update(dt)
 end
 
@@ -47,9 +60,8 @@ function love.draw()
         render.set_collection(zone_id)
         render.draw()
     end)
-
     render.set_collection()
+
     render.draw()
     dialog.draw()
-
 end

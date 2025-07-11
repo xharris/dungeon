@@ -22,8 +22,7 @@ M.padding = {0, 0, 0, 0}
 ---@class DialogChoice
 ---@field id string
 ---@field texts? PrintcText[]
----@field image? any love.Image TODO
----@field image_frames? {x:number, y:number, w:number, h:number}[] TODO
+---@field image? Image TODO
 
 ---@class DialogOptions
 ---@field texts? PrintcText[]

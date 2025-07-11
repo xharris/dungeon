@@ -22,7 +22,8 @@ function M.add(e)
     return e
 end
 
----@param id number
+---@param id string
+---@return Entity?
 function M.get(id)
     return entity_map[id]
 end

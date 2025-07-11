@@ -3,11 +3,8 @@ local items = require 'items'
 local combat = require 'combat'
 local events = require 'events'
 local dialog = require 'dialog'
-local log = require 'lib.log'
 local ctrl = require 'lib.controls'
-local color = require 'lib.color'
 local char = require 'character'
-local lume = require 'ext.lume'
 local assets = require 'assets.index'
 
 local REST_HEAL_AMOuNT = 20
@@ -31,20 +28,33 @@ return {
             end
         }
 
+        items.add{
+            id = 'slime_shot',
+            type = 'weapon',
+            shop_disabled = true,
+        }
+
         combat.add_enemy{
             id = 'goblin',
             items = {{id='big_stick'}},
             health = {current=40, max=40},
-            stats = {agi=0, str=3},
+            stats = {agi=1, str=1, int=0},
             image = {
                 path = assets.dk_items,
                 frames = {{x=160, y=128, w=16, h=16}},
             },
         }
 
+        combat.add_enemy{
+            id = 'slime',
+            health = {current=40, max=40},
+            stats = {agi=1, str=1, int=0},
+        }
+
         events.add{
             id = 'cozy_cabin',
             only_zones = {'forest'},
+            rarity = "rare",
             on_start = function (e)
                 dialog.add{
                     texts={{text="You see a cozy looking cabin in the distance."}},
@@ -70,16 +80,38 @@ return {
                 end
             end
         }
-        
+
+        events.add{
+            id = 'collect_sticks',
+            on_start = function (e)
+                
+            end
+        }
+
+        events.add{
+            id = 'lost_kid',
+            on_start = function (e)
+                
+            end
+        }
+
+        events.add{
+            id = 'combat_assist',
+            on_start = function (e)
+
+            end
+        }
+
         dungeon.add_zone{
             id = 'forest',
             enemies = {'goblin'},
             default_background_image = {
                 path = assets.forest,
             },
+            can_return = true,
             setup_rooms = function (ctx, e)
                 ctx.add_room{
-                    id = 'rm_start',
+                    id = 'rm_first_fight',
                     types = {'combat'},
                     doors = {'rm_event'},
                     spawn_room = true,

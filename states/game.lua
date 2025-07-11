@@ -14,14 +14,16 @@ local states = require 'states.index'
 local ctrl = require 'lib.controls'
 local shop = require 'shop'
 local lume = require 'ext.lume'
+local items = require 'items'
 
-local const = {
-    INITIAL_PLAYER_HEALTH = 100
-}
+local min = math.min
 
 ---@type string[]?
 local next_zones = nil
 local is_game_over = false
+
+---@type fun(room_id:string) string
+local enter_room
 
 local function show_rift_choices()
     next_zones = dungeon.get_next_zones()
@@ -55,12 +57,18 @@ local function show_room_choices()
         end
     end
 
+    -- can move to a new zone
     if is_current_room_rift or next_room_has_rift then
         show_rift_choices()
         return
     end
+
+    -- only one room to go to
+    if #next_rooms == 1 then
+        enter_room(next_rooms[1].id)
+        return
+    end
     
-    log.debug('next rooms:', next_rooms)
     for _, room in ipairs(next_rooms) do
         local room_type = dungeon.rooms.get_type(room.id)
         if room_type then
@@ -78,11 +86,53 @@ local function show_room_choices()
     }
 end
 
+enter_room = function(room_id)
+    local player = char.get_player()
+    local room = dungeon.move_to_room(room_id)
+    local room_type = room and dungeon.rooms.get_type(room.id)
+    if player and room and room_type then
+        log.info("move to room:", room.id, ", type:", room_type)
+
+        if room_type == 'rift' then
+            next_zones = dungeon.get_next_zones()
+            ---@type DialogChoice[]
+            local choices = {}
+            for _, zone in ipairs(next_zones) do
+                table.insert(choices, {
+                    id = zone,
+                    texts = {{text=zone}},
+                } --[[@as DialogChoice]])
+            end
+            dialog.add{
+                texts={{text="A rift has opened"}},
+                choices=choices,
+            }
+        elseif room_type == 'combat' then
+            combat.start()
+        elseif room_type == 'shop' then
+            shop.enter()
+        elseif room_type == 'event' and player then
+            local zone = dungeon.current_zone()
+            assert(zone, "could not get current zone")
+            local event = events.get_random_event(zone.id)
+            assert(event, "could not pick random event in current zone")
+            events.start_event(event, player)
+        end
+    end
+end
+
 return {
 
     enter = function ()
         next_zones = nil
         is_game_over = false
+        render.reset()
+
+        for _, e in ipairs(entity.all()) do
+            if e.group ~= 'player' then
+                entity.remove(e._id)
+            end
+        end
 
         events.signals.on(events.SIGNALS.on_end, function ()
             log.debug "event ended"
@@ -101,19 +151,8 @@ return {
         -- start game
         local gw, gh = love.graphics.getDimensions()
 
-        entity.remove_all()
-        render.reset()
-
-        local player = entity.add{
-            group='player',
-            name='Player',
-            items={{id='rusty_sword',data={}}},
-            health={
-                current = const.INITIAL_PLAYER_HEALTH,
-                max = const.INITIAL_PLAYER_HEALTH,
-            },
-            stats = {agi=0, str=5}
-        }
+        local player = char.get_player()
+        assert(player, "player entity not created")
 
         -- add player zone
         player.screen_id = char.get_screen_id(player._id)
@@ -143,23 +182,10 @@ return {
     update = function (dt)
         local player = char.get_player()
 
-        -- dialog controls
-        if dialog.has_image_choices() then
-            if ctrl:pressed 'left' then
-                dialog.prev_choice()
-            end
-            if ctrl:pressed 'right' then
-                dialog.next_choice()
-            end
-        elseif dialog.has_choices() then
-            if ctrl:pressed 'up' then
-                dialog.prev_choice()
-            end
-            if ctrl:pressed 'down' then
-                dialog.next_choice()
-            end
+        if player then
+            events.update(dt, player)
         end
-
+        
         if ctrl:pressed 'select' then
             ---@type Room|string|nil
             local choice_id = dialog.selected_choice()
@@ -170,7 +196,7 @@ return {
 
             if choice_id == "restart_game" then
                 state.pop()
-                state.push(states.game)
+                state.push(states.lobby)
             end
 
             if choice_id == "quit_game" then
@@ -191,40 +217,27 @@ return {
 
             -- select the next dungeon room to enter
             if choice_id and dungeon.rooms.get_by_id(choice_id) then
-                local room = dungeon.move_to_room(choice_id)
-                local room_type = room and dungeon.rooms.get_type(room.id)
-                if room and room_type then
-                    log.info("move to room:", room.id, ", type:", room_type)
-
-                    if room_type == 'rift' then
-                        next_zones = dungeon.get_next_zones()
-                        ---@type DialogChoice[]
-                        local choices = {}
-                        for _, zone in ipairs(next_zones) do
-                            table.insert(choices, {
-                                id = zone,
-                                texts = {{text=zone}},
-                            } --[[@as DialogChoice]])
-                        end
-                        dialog.add{
-                            texts={{text="A rift has opened"}},
-                            choices=choices,
-                        }
-                    elseif room_type == 'combat' then
-                        combat.start()
-                    elseif room_type == 'shop' then
-                        shop.enter()
-                    elseif room_type == 'event' and player then
-                        local zone = dungeon.current_zone()
-                        assert(zone, "could not get current zone")
-                        local event = events.get_random_event(zone.id)
-                        assert(event, "could not pick random event in current zone")
-                        events.start_event(event, player)
-                    end
-                end
+                enter_room(choice_id)
             end
 
             dialog.next_dialog()
+        end
+
+        for _, e in ipairs(entity.all()) do
+            -- character physics
+            if e.x and e.y and e.gravity and e.floor_y and e.velocity_y then
+                -- gravity
+                if e.y < e.floor_y then
+                    e.velocity_y = e.velocity_y + e.gravity * dt
+                    e.y = e.y + e.velocity_y * dt
+                else
+                    e.velocity_y = min(0, e.velocity_y)
+                end
+            end
+
+            if ctrl:pressed 'up' then
+                e.velocity_y = -10
+            end
         end
 
         -- player died
