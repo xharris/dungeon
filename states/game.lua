@@ -88,7 +88,10 @@ end
 
 enter_room = function(room_id)
     local player = char.get_player()
-    local room = dungeon.move_to_room(room_id)
+    local room
+    if player then
+        room = dungeon.move_to_room(room_id, player)
+    end
     local room_type = room and dungeon.rooms.get_type(room.id)
     local current_zone = dungeon.current_zone()
 
@@ -200,8 +203,6 @@ return {
             if choice_id and dungeon.rooms.get_by_id(choice_id) then
                 enter_room(choice_id)
             end
-
-            dialog.next_dialog()
         end
 
         -- player died

@@ -10,6 +10,12 @@ local state = require 'lib.state'
 local states = require 'states.index'
 local color = require 'lib.color'
 local char = require 'character'
+local items= require 'items'
+local dungeon = require 'dungeon'
+local log     = require 'lib.log'
+local const   = require 'const'
+
+log.LOG_METHODS_LEVEL = const.LOG_METHODS_LEVEL
 
 function love.load()
     plugin.add(require 'plugins.global_events')
@@ -26,7 +32,22 @@ function love.load()
         char.arrange()
     end)
     combat.signals.on(combat.SIGNALS.on_start, function ()
+        local player = char.get_player()
+        if player then
+            items.ability.show_ability_gain_screen(player._id)
+        end
         char.arrange()
+    end)
+    dungeon.signals.on(dungeon.SIGNALS.enter_room, 
+    ---@param _ DungeonRoom
+    ---@param entity Entity
+    function (_, entity)
+        items.ability.reduce_gain_ability_cooldown(entity._id, 1)
+    end)
+    items.signals.on(items.SIGNALS.gain_ability_ready, 
+    ---@param entity_id string
+    function (entity_id)
+        items.ability.show_ability_gain_screen(entity_id)
     end)
 
     state.push(states.lobby)
@@ -57,8 +78,12 @@ function love.update(dt)
             dialog.next_choice()
         end
     end
-    
+
     state.update(dt)
+
+    if ctrl:pressed 'select' then
+        dialog.next_dialog()
+    end
 end
 
 function love.draw()
@@ -69,5 +94,6 @@ function love.draw()
     render.set_collection()
 
     render.draw()
+    state.draw()
     dialog.draw()
 end

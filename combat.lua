@@ -49,9 +49,8 @@ end
 ---@param screen_id string?
 function M.start(zone, enemy_types, screen_id)
     log.info("start combat", {screen_id=screen_id})
-    local gw, gh = love.graphics.getDimensions()
 
-    for i = 1, 1 do -- scale based on difficulty
+    for i = 1, 1 do -- TODO scale based on difficulty or whatever
         local id = M.get_random_enemy(zone, enemy_types)
         local enemy = id and enemies[id]
         if enemy then
@@ -137,13 +136,15 @@ function M.load()
                     local stats = data.stats --[[@as Stats]]
                     for _, data in ipairs(source.items) do
                         local item = items.get_by_id(data.id)
-                        if item and item.modify_stats then
-                            item.modify_stats(stats)
+                        if item and item.stats_ratio then
+                            stats.agi = stats.agi * item.stats_ratio.agi
+                            stats.int = stats.int * item.stats_ratio.int
+                            stats.str = stats.str * item.stats_ratio.str
                         end
                     end
 
                     -- calculate damage the attack will do
-                    local damage = stats.str
+                    local damage = stats.str + stats.agi + stats.int
                     for _, data in ipairs(target.items) do
                         local item = items.get_by_id(data.id)
                         if item and item.mitigate_damage then

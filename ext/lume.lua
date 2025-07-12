@@ -144,7 +144,9 @@ function lume.randomchoice(t)
   return t[math.random(#t)]
 end
 
-
+---@generic K
+---@param t table<K, number>
+---@return K?
 function lume.weightedchoice(t)
   local sum = 0
   for _, v in pairs(t) do

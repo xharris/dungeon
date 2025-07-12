@@ -3,6 +3,7 @@ local M = {}
 local log = require 'lib.log'
 local lume = require 'ext.lume'
 local signal = require 'lib.signal'
+local ds = require 'lib.datastore'
 
 ---@class Event
 ---@field id string
@@ -18,12 +19,21 @@ M.SIGNALS = {
     on_end = 'on_end'
 }
 
+---@class EventStorage
+---@field visits number
+
+local entity_storage = ds.create{
+    visits = 0,
+} --[[@as Datastore<EventStorage>]]
+
 ---@type table<string, Event>
 local events = {}
 
 local state = {
     ---@type Event?
     current_event = nil,
+    ---@type Entity?
+    current_event_entity = nil,
     ---@type string?
     entity = nil,
 }
@@ -43,15 +53,22 @@ function M.disable(id)
     events[id].disabled = true
 end
 
+---@param entity_id string
+function M.storage(entity_id)
+    return entity_storage(entity_id)
+end
+
 ---@param zone_id? string
+---@param only_events? string[]
 ---@return string? id
-function M.get_random_event(zone_id)
+function M.get_random_event(zone_id, only_events)
     ---@type string[]
     local possible_events = {}
     for key, event in pairs(events) do
         local correct_zone =
             (zone_id and not event.only_zones) or
             (not zone_id and not event.only_zones) or
+            (only_events and not lume.find(only_events, event.id)) or
             (zone_id and event.only_zones and lume.find(event.only_zones, zone_id))
         if not event.disabled and correct_zone then
             table.insert(possible_events, key)
@@ -76,12 +93,18 @@ function M.start_event(id, e)
     if state.current_event.on_start then
         state.current_event.on_start(e)
     end
+    state.current_event_entity = e._id
     return true
 end
 
 function M.end_event()
-    if state.current_event then
+    if state.current_event and state.current_event_entity then
+        -- increment visit count
+        local data = entity_storage(state.current_event_entity._id)
+        data.visits = data.visits + 1
+        -- reset state
         state.current_event = nil
+        state.current_event_entity = nil
         M.signals.emit(M.SIGNALS.on_end)
     end
 end

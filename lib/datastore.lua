@@ -2,31 +2,19 @@ local M = {}
 
 local lume = require 'ext.lume'
 
----@class Datastore<D>: { get: (fun(key:string):D), storage: (fun():table<string, D>) }
+---@alias Datastore<D> fun(id:string):D
 
----@generic T
----@param default T
----@return Datastore<T>
-function M.new(default)
+---@generic S
+---@param default S
+---@return Datastore<S>
+function M.create(default)
     local storage = {}
-    
-    return {
-        get = function(key)
-            local data = storage[key]
-            if data == nil and default then
-                data = lume.clone(default)
-            end
-            if data == nil then
-                data = {}
-            end
-            storage[key] = data
-            return data
-        end,
 
-        storage = function()
-            return storage
-        end
-    }
+    return function (id)
+        local v = storage[id] or lume.clone(default)
+        storage[id] = v
+        return v
+    end
 end
 
 return M

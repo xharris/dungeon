@@ -2,11 +2,10 @@ local M = {}
 
 local lume = require 'ext.lume'
 local log = require 'lib.log'
-local images = require 'lib.images'
-local screens = require 'screens'
 local signal = require 'lib.signal'
+local const  = require 'const'
 
----@alias DungeonRoomType 'combat'|'shop'|'rest'|'event'|'rift'
+---@alias DungeonRoomType 'combat'|'shop'|'rest'|'event'|'rift'|'ability'
 
 ---@class DungeonRoom
 ---@field id string
@@ -18,6 +17,7 @@ local signal = require 'lib.signal'
 ---@field spawn_room? boolean allow player to spawn in this room
 ---@field rift_room? boolean allow player to riftwalk in this room
 ---@field background_image? Image
+---@field only_events? string[]
 
 ---@class DungeonSetupRoomsCtx
 ---@field add_room fun(room:DungeonRoom)
@@ -42,9 +42,14 @@ local current_room
 ---@type table<string, DungeonZone>
 local zones = {}
 
+---@class DungeonData
+---@field rooms_until_ability number
+
 M.signals = signal.create 'dungeon'
 M.SIGNALS = {
+    --- DungeonZone, entity_id
     enter_zone = 'enter_zone',
+    --- DungeonRoom, entity_id
     enter_room = 'enter_room',
 }
 
@@ -144,7 +149,7 @@ function M.enter_zone(zone_id, player)
         return false
     end
 
-    M.signals.emit(M.SIGNALS.enter_zone, zone)
+    M.signals.emit(M.SIGNALS.enter_zone, zone, player)
 
     return true
 end
@@ -177,6 +182,7 @@ function M.get_next_rooms()
         local spawn_rooms = M.rooms.get_spawn()
         return {lume.randomchoice(spawn_rooms)}
     end
+
     local doors = current_room.doors or {}
     if current_room.rift_room and #doors == 0 then
         -- move to rift next
@@ -196,8 +202,9 @@ function M.get_next_rooms()
 end
 
 ---@param room_id string
+---@param entity Entity
 ---@return DungeonRoom?
-function M.move_to_room(room_id)
+function M.move_to_room(room_id, entity)
     assert(current_zone, "not currently in a zone")
 
     local room = M.rooms.get_by_id(room_id)
@@ -223,6 +230,7 @@ function M.move_to_room(room_id)
         return nil
     end
 
+    M.signals.emit(M.SIGNALS.enter_room, room, entity)
     current_room = room
     return room
 end
@@ -232,4 +240,10 @@ function M.get_background_image()
     return current_room and current_room.background_image or current_zone and current_zone.default_background_image
 end
 
-return M
+M.rooms = log.log_methods('dungeon.rooms', M.rooms, {
+    exclude={'get_type'}
+})
+
+return log.log_methods('dungeon', M, {
+    exclude={'get_background_image', 'get_by_id', 'get_type', 'current_zone'}
+})

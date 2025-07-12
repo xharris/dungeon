@@ -24,13 +24,11 @@ local max = math.max
 
 ---@param e Entity
 ---@param v number can be negative to lose money
----@return boolean ok
+---@return boolean has_enough_money
 function M.add_money(e, v)
     if v < 0 and e.money < abs(v) then
-        log.info(e.name, "insufficient money ("..tostring(abs(v))..")")
         return false
     end
-    log.info(e.name, v >= 0 and "gain" or "lose", v, "money")
     e.money = (e.money or 0) + v
     -- TODO add/lose money animation
     return true
@@ -40,7 +38,6 @@ end
 ---@param v number can be negative to lose health
 ---@return boolean ok
 function M.add_health(e, v)
-    log.info(e.name, v >= 0 and "gain" or "lose", v, "health")
     e.health.current = max(0, min(e.health.max, e.health.current + v))
     return true
 end
@@ -51,14 +48,15 @@ function M.add_item(e, data)
     table.insert(e.items, data)
 end
 
----@return Entity?
+---@return Entity|false
 function M.get_player()
     for _, e in ipairs(entity.find('group')) do
         if e.group == 'player' then
             return e
         end
     end
-    log.error_if(true, "player not found")
+    log.error("player not found")
+    return false
 end
 
 ---@param player_id string
@@ -72,7 +70,6 @@ end
 function M.add_escort_client(escort_id, client)
     local escort = entity.get(escort_id)
     if not escort then
-        log.error("escort not found")
         return false
     end
     local client_entity = entity.add{
@@ -175,7 +172,6 @@ function M.create(v, renderable)
     ))
     render.set_collection()
     M.arrange()
-    log.debug('create character, name:', e.name, ', render_character:', e.render_character)
     return e
 end
 
@@ -239,4 +235,6 @@ function M.update(dt)
     end
 end
 
-return M
+return log.log_methods('character', M, {
+    exclude={'update', 'get_player'}
+})

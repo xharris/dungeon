@@ -6,6 +6,7 @@ local dialog = require 'dialog'
 local ctrl = require 'lib.controls'
 local char = require 'character'
 local assets = require 'assets.index'
+local theme = require 'theme'
 
 local REST_HEAL_AMOuNT = 20
 
@@ -23,21 +24,20 @@ return {
                 frames = {{x=160, y=128, w=16, h=16}},
             },
             shop_disabled = true,
-            modify_stats = function (stats)
-                stats.str = stats.str + 3
-            end
+            stats_ratio = {agi=0, int=0, str=0.2},
         }
 
         items.add{
             id = 'slime_shot',
             type = 'weapon',
             shop_disabled = true,
+            stats_ratio = {agi=0, int=0, str=1},
         }
 
         combat.add_enemy{
             id = 'goblin',
             items = {{id='big_stick'}},
-            stats = {agi=1, str=1, int=0},
+            stats = {agi=100, str=10, int=0},
             image = {
                 path = assets.dk_items,
                 frames = {{x=160, y=128, w=16, h=16}},
@@ -82,7 +82,26 @@ return {
         events.add{
             id = 'collect_sticks',
             on_start = function (e)
-                
+                local data = events.storage(e._id)
+                if data.visits == 0 then
+                    -- propose quest to collect sticks
+                    dialog.add{
+                        texts = {
+                            {text="Oh noes!! Where did my stick pile go?! Did the wind blow them away?"},
+                        }
+                    }
+                    dialog.add{
+                        texts = {
+                            {text="You there! Please help me! I'll starve in the winter without at least "},
+                            {text="10 sticks", color=theme.color.quest_goal},
+                            {text="!"}
+                        },
+                        choices = {
+                            {id='accept', }
+                        }
+                    }
+                    events.end_event()
+                end
             end
         }
 

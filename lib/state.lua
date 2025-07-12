@@ -1,9 +1,10 @@
 local M = {}
 
 local lume = require 'ext.lume'
+local log = require 'lib.log'
 
 ---@class State
----@field enter? fun()
+---@field enter? fun(...:any)
 ---@field update? fun(dt:number)
 ---@field draw? fun()
 ---@field leave? fun()
@@ -23,12 +24,15 @@ local function get(require_path)
     return states[require_path]
 end
 
-function M.push(require_path)
+---Push a state onto the stack
+---@param require_path string
+---@param ... any
+function M.push(require_path, ...)
     local state = get(require_path)
     if not M.is_active(require_path) then
         table.insert(stack, require_path)
         if state.enter then
-            state.enter()
+            state.enter(...)
         end
     end
 end
@@ -70,4 +74,4 @@ function M.draw()
     end
 end
 
-return M
+return log.log_methods('state', M, {exclude={'update', 'draw', 'get', 'is_active'}})
