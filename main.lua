@@ -19,8 +19,8 @@ log.LOG_METHODS_LEVEL = const.LOG_METHODS_LEVEL
 
 function love.load()
     plugin.add(require 'plugins.global_events')
+    plugin.add(require 'plugins.base_classes')
     plugin.add(require 'plugins.forest')
-    plugin.add(require 'plugins.warrior_class')
 
     shop.load()
     combat.load()
@@ -32,10 +32,6 @@ function love.load()
         char.arrange()
     end)
     combat.signals.on(combat.SIGNALS.on_start, function ()
-        local player = char.get_player()
-        if player then
-            items.ability.show_ability_gain_screen(player._id)
-        end
         char.arrange()
     end)
     dungeon.signals.on(dungeon.SIGNALS.enter_room, 

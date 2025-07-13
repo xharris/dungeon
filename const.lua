@@ -10,9 +10,18 @@ return {
     CHAR_ARRANGE_SEP = 32,
     GAIN_ABILITY_COOLDOWN = 5,
     LOG_HEADER = {
-        debug = '[DEBUG]',
-        info = '[INFO]',
-        warn = '[WARN]',
-        error = '[ERR]',
+        debug       = '[DEBUG]',
+        info        = '[INFO]',
+        warn        = '[WARN]',
+        error       = '[ERR]',
     },
+    RARITY_SCALE_MAX = 1,
+    RARITY_SCALE_MIN = 0.5,
+    ---@type table<Class, Stats>
+    CLASS_STATS = {
+        warrior     = {agi=50,  int=25,     str=75},
+        archer      = {agi=50,  int=25,     str=50},
+        mage        = {agi=25,  int=75,     str=25},
+        rogue       = {agi=75,  int=25,     str=50},
+    }
 }

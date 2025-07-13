@@ -2,9 +2,12 @@ local M = {}
 
 local log = require 'lib.log'
 local lume = require 'ext.lume'
+local const= require 'const'
 
 local floor = math.floor
 local lerp = lume.lerp
+local max = math.max
+local min = math.min
 
 ---@alias RarityLevel 'common'|'normal'|'rare'|'super_rare'
 
@@ -31,8 +34,11 @@ M.RARITY_ORDER = {'common', 'normal', 'rare', 'super_rare'}
 function M.random(scale)
     local chance = lume.clone(M.RARITY_CHANCE)
     local len = #M.RARITY_ORDER
+    scale = min(1, max(0, scale))
+    local rarity_max = const.RARITY_SCALE_MAX - scale
+    local rarity_min = const.RARITY_SCALE_MIN + scale
     for i, v in ipairs(M.RARITY_ORDER) do
-        chance[v] = floor(chance[v] * lerp(1 - scale, 0.5 + scale, i/len))
+        chance[v] = floor(chance[v] * lerp(rarity_max, rarity_min, i/len))
     end
     log.debug('random', chance)
     return lume.weightedchoice(chance)

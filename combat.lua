@@ -12,6 +12,7 @@ local char = require 'character'
 local images = require 'lib.images'
 local assets = require 'assets.index'
 local screens= require 'screens'
+local errors = require 'lib.errors'
 
 ---@alias CombatEnemyType 'boss'
 
@@ -108,6 +109,62 @@ function M.get_random_enemy(zone, enemy_types)
     return lume.randomchoice(possible_enemies)
 end
 
+---@param source_id string entity id
+---@param target_id string entity id
+---@param item_data ItemData item used
+---@return string? error
+function M.attack(source_id, target_id, item_data)
+    local source = entity.get(source_id)
+    local target = entity.get(target_id)
+    local item = items.get_by_id(item_data.id)
+
+    if not source then return errors.not_found("source entity", source_id) end
+    if not target then return errors.not_found("target entity", target_id) end
+    if not item then return errors.not_found("item", item_data.id) end
+
+    if not (item.image and source.render_character and target.render_character) then
+        return "missing visuals"
+    end
+
+    -- animate attack
+    local r_id, r = render.add{
+        tex = images.get(item.image),
+        frames = item.image.frames,
+        current_frame = 1,
+        copy_transform = source.render_character,
+        data = {
+            type = 'attack',
+            source = source._id,
+            target = target._id,
+            item = item_data,
+            stats = lume.clone(source.stats),
+        }
+    }
+    local e_render_x, e_render_y = render.transform_point(source.render_character, 0, 0)
+    local e_screen_ox, e_screen_oy = screens.rect(source.screen_id)
+    r.x = e_render_x + e_screen_ox
+    r.y = e_render_y + e_screen_oy
+    -- ease towards target
+    render.move_to(r_id, target.render_character, {
+        duration = 500,
+        transform_target = function (_, x, y)
+            if target.screen_id then
+                local target_screen_ox, target_screen_oy = screens.rect(source.screen_id)
+                return x + target_screen_ox, y + target_screen_oy
+            end
+            return x, y
+        end
+    })
+    -- screen drawing offset
+    if source.screen_id then
+        local screen = screens.get(source.screen_id)
+        if screen then
+            r.x = r.x + screen.ox
+            r.y = r.y + screen.oy
+        end
+    end
+end
+
 function M.load()
     IMG.ohmydungeon_v11 = love.graphics.newImage(assets.ohmydungeon_v11)
     IMG.ohmydungeon_v11:setFilter('linear', 'nearest')
@@ -198,47 +255,8 @@ function M.update(dt)
                             target = other
                         end
                     end
-                    local item = items.get_by_id(data.id)
-                    if item and item.image and e.render_character and target and target.render_character then
-                        log.debug('combat attack item:', data.id, ', source:', e.name, ', target:', target.name)
-                        -- animate attack
-                        local r_id, r = render.add{
-                            tex = images.get(item.image),
-                            frames = item.image.frames,
-                            current_frame = 1,
-                            copy_transform = e.render_character,
-                            data = {
-                                type = 'attack',
-                                source = e._id,
-                                target = target._id,
-                                item = data,
-                                stats = lume.clone(e.stats),
-                            }
-                        }
-                        local e_render_x, e_render_y = render.transform_point(e.render_character, 0, 0)
-                        local e_screen_ox, e_screen_oy = screens.rect(e.screen_id)
-                        r.x = e_render_x + e_screen_ox
-                        r.y = e_render_y + e_screen_oy
-                        -- ease towards target
-                        render.move_to(r_id, target.render_character, {
-                            duration = 500,
-                            transform_target = function (_, x, y)
-                                if target.screen_id then
-                                    local target_screen_ox, target_screen_oy = screens.rect(e.screen_id)
-                                    return x + target_screen_ox, y + target_screen_oy
-                                end
-                                return x, y
-                            end
-                        })
-                        -- screen drawing offset
-                        if e.screen_id then
-                            local screen = screens.get(e.screen_id)
-                            if screen then
-                                r.x = r.x + screen.ox
-                                r.y = r.y + screen.oy
-                            end
-                        end
-                    end
+
+                    M.attack(e._id, target._id, data)
                 end
             end
 

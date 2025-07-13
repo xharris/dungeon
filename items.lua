@@ -18,11 +18,13 @@ local max = math.max
 ---@field stats_ratio? Stats
 ---@field mitigate_damage? fun(src:Entity, damage:number): number mitigate damage before an attack lands
 ---@field shop_disabled? boolean can appear in the shop
----@field starter_item? boolean player can start the game with this item
 ---@field image? Image
 ---@field rarity? Rarity
 ---@field is_ability? boolean TODO does not appear in shop, offered every X combats?
 ---@field charges_required? number TODO in combat, item activates after X cycles
+---@field class_starter? Class starter item for class
+---@field subclass? string replaces class starter item
+---@field upgrade_of? string[] TODO can only be accepted/offered if player has item in list
 
 ---@class ItemData
 ---@field id string
@@ -64,20 +66,27 @@ function M.get_by_id(id)
     end
 end
 
+---Get starting item for each class
 ---@return Item[]
 function M.get_all_starters()
+    ---@type table<Class, Item>
+    local class_items = {}
+    for _, item in ipairs(items) do
+        if item.class_starter then
+            class_items[item.class_starter] = item
+        end
+    end
     ---@type Item[]
     local out = {}
-    for _, item in ipairs(items) do
-        if item.starter_item then
-            table.insert(out, item)
-        end
+    for _, item in pairs(class_items) do
+        table.insert(out, item)
     end
     return out
 end
 
 ---@param v Item
 function M.add(v)
+    v.label = v.label or {{text=v.id}} --[[@as PrintcText[] ]]
     if v.is_ability then
         table.insert(abilities, v)
     else
@@ -91,6 +100,15 @@ end
 
 function M.abilities()
     return abilities
+end
+
+---@param v {agi?:number, str?:number, int?:number}
+---@return Stats
+function M.stats(v)
+    v.agi = v.agi or 0
+    v.int = v.int or 0
+    v.str = v.str or 0
+    return v
 end
 
 M.ability = {}

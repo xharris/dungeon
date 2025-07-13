@@ -19,6 +19,10 @@
 ---@field floor_behavior? 'stand'|'bounce'|'fall'
 ---@field max_jumps? number
 ---@field jumps? number
+---@field class? Class
+---@field subclass? string
+
+---@alias Class 'warrior'|'archer'|'mage'|'rogue' base classs
 
 ---@class Health
 ---@field current number

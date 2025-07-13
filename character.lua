@@ -10,6 +10,7 @@ local render = require 'render'
 local screens = require 'screens'
 local images = require 'lib.images'
 local assets = require 'assets.index'
+local errors = require 'lib.errors'
 
 local abs = math.abs
 local min = math.min
@@ -128,12 +129,12 @@ function M.create(v, renderable)
         {
             group = 'player',
             name = 'Player',
+            class = 'warrior',
             items = {},
             health = {
                 current = const.HEALTH,
                 max = const.HEALTH,
             },
-            stats = {agi=1, str=1, int=1},
             money = 0,
             x = 0,
             y = const.FLOOR_Y,
@@ -145,6 +146,11 @@ function M.create(v, renderable)
         } --[[@as Entity]],
         v or {}
     ))
+    -- default class stats
+    if e.class then
+        e.stats = const.CLASS_STATS[e.class]
+        log.warn_if(not e.stats, 'default stats not found for class:', e.class)
+    end
     -- set screen
     local screen_id = M.get_screen_id(e._id)
     if e.group ~= 'player' then
@@ -173,6 +179,15 @@ function M.create(v, renderable)
     render.set_collection()
     M.arrange()
     return e
+end
+
+---@param entity_id string
+---@return string? error
+function M.kill(entity_id)
+    local e = entity.get(entity_id)
+    if not e then
+        return errors.not_found("entity", entity_id)
+    end
 end
 
 ---@param dt number
