@@ -1,8 +1,22 @@
 local M = {}
 
 local log = require 'lib.log'
+local lume = require 'ext.lume'
 
+---@type table<string, function[]>
 local signals = {}
+
+function M.off(...)
+    for _, fn in ipairs({...}) do
+        for k, fns in pairs(signals) do
+            for i, signal_fn in lume.ripairs(fns) do
+                if fn == signal_fn then
+                    table.remove(fns, i)
+                end
+            end
+        end
+    end
+end
 
 ---@param prefix string
 function M.create(prefix)
@@ -15,6 +29,20 @@ function M.create(prefix)
                 signals[key] = {}
             end
             table.insert(signals[key], fn)
+        end,
+        ---@param ... function]
+        off = function(...)
+            for _, fn in ipairs({...}) do
+                for k, fns in pairs(signals) do
+                    if string.find(k, "^"..prefix..".") then
+                        for i, signal_fn in lume.ripairs(fns) do
+                            if fn == signal_fn then
+                                table.remove(fns, i)
+                            end
+                        end
+                    end
+                end
+            end
         end,
         ---@param name string
         ---@param ... any

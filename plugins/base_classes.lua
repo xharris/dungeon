@@ -1,5 +1,6 @@
 local items = require 'items'
 local assets = require 'assets.index'
+local zindex = require 'zindex'
 
 local WPN_STATS_RATIO = 0.25
 
@@ -17,13 +18,15 @@ return {
             image = {
                 path = assets.dk_items,
                 frames = {{x=48, y=104, w=16, h=24}},
-                sx = 4,
+                sx = 2,
+                ox = 8,
+                oy = -1,
             },
             stats_ratio = items.stats{str=WPN_STATS_RATIO},
             attack_animation = {
                 swing = {}
             },
-            render_on_character = true,
+            render_on_character = {x=16, y=0, z=zindex.equipped_item_back},
         }
         -- warrior abilities
         --
@@ -39,7 +42,25 @@ return {
             type = 'weapon',
             class_starter = 'archer',
             stats_ratio = items.stats{str=WPN_STATS_RATIO},
-            render_on_character = true,
+            render_on_character = {x=0, y=0, z=zindex.equipped_item_back},
+            image = {
+                path = assets.dk_items,
+                frames = {{x=144, y=106, w=16, h=22}},
+                sx = 2,
+            },
+            attack_animation = {
+                shoot = {
+                    projectile = {
+                        image = {
+                            path = assets.dk_items,
+                            frames = {{x=161, y=128, w=14, h=16}},
+                            sx = 2,
+                            ox = 7,
+                            oy = 8,
+                        }
+                    }
+                },
+            }
         }
 
         -- mage
@@ -48,7 +69,7 @@ return {
             type = 'weapon',
             class_starter = 'mage',
             stats_ratio = items.stats{int=WPN_STATS_RATIO},
-            render_on_character = true,
+            render_on_character = {x=0, y=0, z=zindex.equipped_item_back},
         }
 
         -- rogue
@@ -61,10 +82,9 @@ return {
                 {text='Starter Knife\n'},
                 {text='Sharpens as you use it!'}
             },
-            render_on_character = true,
+            render_on_character = {x=0, y=0, z=zindex.equipped_item_back},
         }
-
-        
+ 
         items.add{
             id = 'chain_vest',
             type = 'armor',

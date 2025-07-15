@@ -29,17 +29,21 @@ local max = math.max
 ---@field subclass? string replaces class starter item
 ---@field upgrade_from? string[] TODO can only be accepted/offered if player has item in list
 ---@field attack_animation? ItemAttackAnimation
----@field render_on_character? boolean
+---@field render_on_character? Vector3
 
 ---@class ItemAttackAnimation
 ---@field swing? {}
----@field shoot? {}
+---@field shoot? {projectile?:ItemProjectileAnimation}
 ---@field stab? {}
 ---@field custom? AnimationStep[]
+
+---@class ItemProjectileAnimation
+---@field image Image
 
 ---@class ItemData
 ---@field id string
 ---@field data? table<string, any>
+---@field renderable? string
 
 ---@alias Ability Item
 
@@ -105,15 +109,6 @@ end
 function M.add(v)
     v.label = v.label or {{text=v.id}} --[[@as PrintcText[] ]]
     v.image = v.image or DEFAULT_IMAGE
-    if v.image and v.image.frames then
-        local frame1 = v.image.frames[1]
-            v.image.ox = v.image.ox or frame1.w/2
-            v.image.oy = v.image.oy or frame1.h - 4
-    elseif v.image then
-        local w, h = images.dimensions(v.image)
-        v.image.ox = v.image.ox or w/2
-        v.image.oy = v.image.oy or h - 4
-    end
     if v.is_ability then
         table.insert(abilities, v)
     else

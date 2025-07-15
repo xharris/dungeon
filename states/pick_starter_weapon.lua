@@ -23,6 +23,8 @@ local lerp = lume.lerp
 ---@field x number
 ---@field y number
 ---@field scale number
+---@field sx number
+---@field sy number
 ---@field shadow_offset number
 
 local RECT_SIZE = 32
@@ -55,9 +57,6 @@ return {
 
         -- create player
         char.create()
-
-        local a = 2
-        a = a + "d"
         
         local starters = items.get_all_starters()
         starting_items = {}
@@ -69,6 +68,8 @@ return {
                 item = item,
                 x = 0,
                 y = 0,
+                sx = r.sx,
+                sy = r.sy,
                 scale = SCALE,
                 shadow_offset = SHADOW_OFFSET,
                 r_weapon = render.add(r),
@@ -102,12 +103,10 @@ return {
             if r then
                 r.x = item.x + x_offset.current
                 r.y = item.y
-                r.sx = item.scale
-                r.sy = item.scale
                 local target_scale = i == selected_index and SELECTED_SCALE or SCALE
                 item.scale = lerp(item.scale, target_scale, easing.ease_in_out_sine(t / ease_duration))
-                r.sx = item.scale
-                r.sy = item.scale
+                r.sx = item.sx * item.scale
+                r.sy = item.sy * item.scale
             end
         end
 

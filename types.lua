@@ -24,7 +24,6 @@
 ---@field jumps? number
 ---@field class? Class
 ---@field subclass? string
----@field render_weapon? string render id
 
 ---@alias Class 'warrior'|'archer'|'mage'|'rogue' base classs
 
@@ -42,3 +41,8 @@
 ---@class Vector2
 ---@field x number
 ---@field y number
+
+---@class Vector3
+---@field x number
+---@field y number
+---@field z number

@@ -203,21 +203,28 @@ function M.equip_item(entity_id, idx, swap_idx)
     
     local inventory_data = e.inventory[idx]
     local equipped_data = e.equipped_items[swap_idx]
+
+    if equipped_data and equipped_data.renderable then
+        -- remove renderable for previously equipped item
+        render.remove(equipped_data.renderable)
+    end
+
+    local inventory_item = items.get_by_id(inventory_data.id)
+    if not inventory_item then
+        return "inventory item not found"
+    end
+    if inventory_item.render_on_character then
+        -- add renderable for newly equipped item
+        if e.screen_id then
+            render.set_collection(e.screen_id)
+        end
+        inventory_data.renderable = render.add(images.renderable(inventory_item.image))
+        render.set_collection()
+    end
+
+    -- swap items
     e.inventory[idx] = equipped_data
     e.equipped_items[swap_idx] = inventory_data
-
-    local item = items.get_by_id(inventory_data.id)
-    if not item then
-        return "item not found"
-    end
-
-    -- add renderable?
-    if item.render_on_character then
-        if e.render_weapon then
-            render.remove(e.render_weapon)
-        end
-        e.render_weapon = render.add(images.renderable(item.image))
-    end
 end
 
 ---@param entity_id string
@@ -306,12 +313,28 @@ function M.update(dt)
             r.y = e.y
         end
 
-        -- weapon rendering
-        local r_weapon = e.render_weapon and render.get(e.render_weapon)
-        if r_weapon and r and e.x and e.y then
-            -- local w, h = render.dimensions(r)
-            r_weapon.x = e.x + r.w
-            r_weapon.y = e.y + r.h
+        -- rendering for equipped items
+        for _, equip in ipairs(e.equipped_items) do
+            local item = items.get_by_id(equip.id)
+            local r_equip = render.get(equip.renderable)
+            if item and r_equip and e.x and e.y then
+                local cx, cy = 
+                    (item.render_on_character and item.render_on_character.x or 0),
+                    (item.render_on_character and item.render_on_character.y or 0)
+                -- local r = render.get(e.render_character)
+                -- if r then
+                --     local rw, rh = render.dimensions(r)
+                --     if cx < 0 then
+                --         cx = rw + cx
+                --     end
+                --     if cy < 0 then
+                --         cy = rh + cy
+                --     end
+                -- end
+                r_equip.x = e.x + cx
+                r_equip.y = e.y + cy
+                r_equip.z = -1
+            end
         end
     end
 end

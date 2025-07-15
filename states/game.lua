@@ -15,6 +15,7 @@ local ctrl = require 'lib.controls'
 local shop = require 'shop'
 local lume = require 'ext.lume'
 local items = require 'items'
+local signal = require 'lib.signal'
 
 local min = math.min
 
@@ -39,7 +40,6 @@ local function show_rift_choices()
         texts={{text="A rift has opened"}},
         choices=choices,
     }
-    log.debug('next zones:', next_zones)
 end
 
 local function show_room_choices()
@@ -136,29 +136,28 @@ return {
             end
         end
 
-        events.signals.on(events.SIGNALS.on_end, function ()
-            log.debug "event ended"
-            show_room_choices()
-        end)
-
-        combat.signals.on(combat.SIGNALS.on_end, function ()
-            log.debug "combat ended"
-            show_room_choices()
-        end)
-
-        dungeon.signals.on(dungeon.SIGNALS.enter_zone, function ()
-            show_room_choices()
-        end)
+        events.signals.on(events.SIGNALS.on_end, show_room_choices)
+        combat.signals.on(combat.SIGNALS.on_end, show_room_choices)
+        dungeon.signals.on(dungeon.SIGNALS.enter_zone, show_room_choices)
 
         -- start game
         local player = char.get_player()
-        assert(player, "player entity not created")
+        if not player then
+            log.error("player entity not created")
+            state.pop()
+            state.push(states.pick_starter_weapon)
+            return
+        end
 
         -- enter a zone
         next_zones = dungeon.get_next_zones()
         local rand_zone = lume.randomchoice(next_zones)
         dungeon.enter_zone(rand_zone, player)
         screens.set{{id=player.screen_id, image=dungeon.get_background_image()}}
+    end,
+
+    leave = function ()
+        signal.off(show_room_choices)
     end,
     
     update = function (dt)

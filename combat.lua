@@ -130,7 +130,7 @@ function M.attack_with_item(source_id, target_id, item_data)
 
     -- animate attack
     if item.attack_animation then
-        local r_weapon = source.render_weapon and render.get(source.render_weapon)
+        local r_weapon = item_data.renderable and render.get(item_data.renderable)
         local swing = item.attack_animation.swing
         local shoot = item.attack_animation.shoot
         -- local x, y, x2, y2 = source.x, source.y, target.x, target.y
@@ -143,32 +143,10 @@ function M.attack_with_item(source_id, target_id, item_data)
             stats = lume.clone(source.stats),
         }
 
-        ---@param x number
-        ---@param y number
-        local function center(x ,y)
-            local e_render_x, e_render_y = render.transform_point(source.render_character, x, y)
-            local e_screen_ox, e_screen_oy = screens.rect(source.screen_id)
-
-            -- screen drawing offset
-            local screen_ox, screen_oy = 0, 0
-            if source.screen_id then
-                local screen = screens.get(source.screen_id)
-                if screen then
-                    screen_ox = screen.ox
-                    screen_oy = screen.oy
-                end
-            end
-
-            return e_render_x + e_screen_ox + screen_ox, e_render_y + e_screen_oy + screen_oy
-        end
-
         log.warn_if(swing and not r_weapon, "missing weapon renderable")
         if swing and r_weapon and source.render_character then
             local r = r_weapon
-            r.x, r.y = center(0, 0)
-            if not r.r or r.r == 0 then
-                r.r = rad(45)
-            end
+            r.r = r.r or 0
             animation
                 .create(r.id, r)
                 .add(
@@ -177,26 +155,30 @@ function M.attack_with_item(source_id, target_id, item_data)
                 .start()
         end
 
-        if shoot then
-            local r_id, r = render.add{
-                tex = images.get(item.image),
-                frames = item.image.frames,
-                current_frame = 1,
-                copy_transform = source.render_character,
-                data = data,
-            }
-            r.x, r.y = center(0, 0)
-            -- ease towards target
-            render.move_to(r_id, target.render_character, {
-                duration = 500,
-                transform_target = function (_, x, y)
-                    if target.screen_id then
-                        local target_screen_ox, target_screen_oy = screens.rect(source.screen_id)
-                        return x + target_screen_ox, y + target_screen_oy
-                    end
-                    return x, y
-                end
-            })
+        if shoot and r_weapon then
+            local r = r_weapon
+            -- TODO recoil
+            -- animation
+            --     .create(r.id, r)
+            --     .add()
+            
+            -- shoot projectile
+            local _, r_projectile = render.add(images.renderable(shoot.projectile.image))
+            r_projectile.x, r_projectile.y = render.transform_point(r_weapon.id)
+
+            local target_screen_ox, target_screen_oy = screens.rect(source.screen_id)
+            local target_x = target.x + target_screen_ox
+            local target_y = target.y + target_screen_oy
+
+            animation
+                .create(r_projectile.id, r_projectile)
+                .add(
+                    {to={x=target_x, y=target_y}, duration=5000, data=data}
+                )
+                .on_end(function ()
+                    render.remove(r_projectile.id)
+                end)
+                .start()
         end
     end
 end
@@ -291,8 +273,9 @@ function M.update(dt)
                             target = other
                         end
                     end
-
-                    M.attack_with_item(e._id, target._id, data)
+                    if target then
+                        M.attack_with_item(e._id, target._id, data)
+                    end
                 end
             end
 

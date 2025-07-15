@@ -40,6 +40,8 @@ local abs = math.abs
 ---@field _easing? table<string, RenderableEasing>
 ---@field w? number
 ---@field h? number
+---@field z? number
+---@field _last_z? number
 
 ---@class RenderableFrame
 ---@field x number
@@ -71,8 +73,15 @@ M.signals = signal.create('render')
 
 M.SIGNALS = {
     -- id, Renderable
-    easing_done = 'render_ease_done'
+    easing_done = 'easing_done'
 }
+
+---@param t Renderable[]
+local function z_sort(t)
+    table.sort(t, function (a, b)
+        return (a.z or 0) < (b.z or 0)
+    end)
+end
 
 ---All new renderables will be added to the specified collection. 
 ---When calling draw or other methods, only renderables in the 
@@ -110,6 +119,7 @@ function M.move_to_collection(render_id, collection_id)
     M.set_collection(collection_id)
     r.collection_id = collection_id
     table.insert(collection[collection_id], r)
+    z_sort(collection[collection_id])
     M.set_collection()
     return true
 end
@@ -137,7 +147,19 @@ function M.add(t)
     t.oy = t.oy or 0
     t.sx = t.sx or 1
     t.sy = t.sy or t.sx
+    t.current_frame = t.current_frame or 1
     t.collection_id = current_collection
+    z_sort(collection[current_collection])
+
+    -- negative offsets
+    local w, h = M.dimensions(t, true)
+    if t.ox < 0 then
+        t.ox = w + t.ox
+    end
+    if t.oy < 0 then
+        t.oy = h + t.oy
+    end
+
     return t.id, t
 end
 
@@ -154,26 +176,35 @@ end
 local transform
 
 ---@param id any
----@param x number
----@param y number
+---@param x? number
+---@param y? number
 ---@return number, number, Renderable
 function M.transform_point(id, x, y)
     local r = renderable_map[id]
     assert(r, 'renderable not found, id:', id)
+    x = x or 0
+    y = y or 0
     transform:setTransformation(r.x or 0, r.y or 0, r.r, r.sx, r.sy, r.ox, r.oy)
-    x, y = transform:transformPoint(x ,y)
+    x, y = transform:transformPoint(x, y)
     return x, y, r
 end
 
 ---@param r Renderable
+---@param ignore_scaling? boolean
 ---@return number,number
-function M.dimensions(r)
-    if r.tex then
-        return
-            r.tex:getWidth() * (r.sx or 1),
-            r.tex:getHeight() * (r.sy or r.sx or 1)
+function M.dimensions(r, ignore_scaling)
+    local frame = r.current_frame and r.frames and r.frames[r.current_frame]
+    local sx = ignore_scaling and 1 or r.sx or 1
+    local sy = ignore_scaling and 1 or r.sy or r.sx or 1
+    if frame and r.tex then
+        r.w = abs(frame.w * sx)
+        r.h = abs(frame.h * sy)
+    elseif r.tex then
+        local sw, sh = r.tex:getDimensions()
+        r.w = abs(sw * sx)
+        r.h = abs(sh * sy)
     end
-    return 0, 0
+    return r.w, r.h
 end
 
 function M.reset()
@@ -232,12 +263,18 @@ end
 ---@param dt number
 function M.update(dt)
     for _, c in pairs(collection) do
+        local need_z_sort = false
         for i, r in lume.ripairs(c) do
             ---@cast r Renderable
             if r._remove then
                 renderable_map[r.id] = nil
                 table.remove(c, i)
             else
+                if r.z ~= r._last_z then
+                    r._last_z = r.z
+                    need_z_sort = true
+                end
+
                 if r.frames and #r.frames > 0 then
                     r.current_frame = 1
                 else
@@ -260,16 +297,13 @@ function M.update(dt)
                 end
 
                 -- calculate size
-                local frame = r.current_frame and r.frames and r.frames[r.current_frame]
-                if frame and r.tex then
-                    r.w = abs(frame.w * (r.sx or 1))
-                    r.h = abs(frame.h * (r.sy or r.sx))
-                elseif r.tex then
-                    local sw, sh = r.tex:getDimensions()
-                    r.w = abs(sw * (r.sx or 1))
-                    r.h = abs(sh * (r.sy or r.sx))
-                end
+                M.dimensions(r)
             end
+        end
+
+        -- sort?
+        if need_z_sort then
+            z_sort(c)
         end
     end
 end
@@ -281,23 +315,33 @@ function M.draw()
 
         -- draw image
         local frame = r.frames and r.frames[r.current_frame or 1]
-        local x, y = M.transform_point(r.id, r.ox, r.oy)
+        local x, y = 0, 0
+        local ox, oy = r.ox or 1, r.oy or 1
+
         if frame and r.tex then
             local sw, sh = r.tex:getDimensions()
+            x, y = M.transform_point(r.id, ox, oy)
             quad:setViewport(frame.x, frame.y, frame.w, frame.h, sw, sh)
             love.graphics.draw(r.tex, quad, x, y, r.r, r.sx, r.sy, r.ox, r.oy)
         elseif r.tex then
+            x, y = M.transform_point(r.id, ox, oy)
             love.graphics.draw(r.tex, x, y, r.r, r.sx, r.sy, r.ox, r.oy)
         end
 
         if M.DEBUG then
-            -- draw rectangle around texture
+            local w, h = M.dimensions(r, true)
+
+            -- draw rectangle around texture with origin point
             local x2, y2 = x - (r.ox * abs(r.sx)), y - (r.oy * abs(r.sy))
             love.graphics.push('all')
             love.graphics.setColor(1, 0, 0, 1)
-            love.graphics.print(r.id, x, y)
-            love.graphics.circle('fill', x, y, 4)
-            love.graphics.rectangle('line', x2, y2, r.w, r.h)
+
+            transform:setTransformation(r.x or 0, r.y or 0, r.r, r.sx, r.sy, r.ox, r.oy)
+            love.graphics.replaceTransform(transform)
+
+            love.graphics.print(r.id, 0, 0)
+            love.graphics.circle('fill', r.ox, r.oy, 2)
+            love.graphics.rectangle('line', 0, 0, w, h)
             love.graphics.pop()
         end
         
