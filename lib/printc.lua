@@ -1,8 +1,27 @@
 local M = {}
 
+local floor = math.floor
+
 ---@class PrintcText
 ---@field text string
 ---@field color? number[] {r,g,b,a}
+
+M.ROUND_POSITION = true
+
+---@param x number
+local function round(x)
+    return floor(x + 0.5)
+end
+
+---@param x number
+---@param start_x number
+---@param limit number
+---@param c string
+local function should_break(x, start_x, limit, c)
+    return
+        c == "\n" or
+        ((x - start_x) > limit and c == " ")
+end
 
 ---@param texts1 PrintcText[]
 ---@param texts2 PrintcText[]
@@ -40,8 +59,11 @@ end
 ---@return number, number
 function M.dimensions(texts, x, limit, char_limit)
     x = x or 0
-    local start_x = x
     local y = 0
+    if M.ROUND_POSITION then
+        x, y = round(x), round(y)
+    end
+    local start_x = x
     limit = limit or love.graphics.getWidth()
     local font = love.graphics.getFont()
     local font_h = font:getHeight()
@@ -59,7 +81,7 @@ function M.dimensions(texts, x, limit, char_limit)
             if x > w then
                 w = x
             end
-            if c == "\n" or x > limit - start_x then
+            if should_break(x, start_x, limit, c) then
                 x = start_x
                 y = y + font_h
                 h = h + font_h
@@ -78,6 +100,9 @@ end
 function M.draw(texts, x, y, limit, char_limit)
     x = x or 0
     y = y or 0
+    if M.ROUND_POSITION then
+        x, y = round(x), round(y)
+    end
     limit = limit or love.graphics.getWidth()
     local start_x = x
     local font = love.graphics.getFont()
@@ -97,7 +122,7 @@ function M.draw(texts, x, y, limit, char_limit)
             love.graphics.print(c, x, y)
             x = x + font:getWidth(c)
             -- new line or reached limit
-            if c == "\n" or x > limit - start_x then
+            if should_break(x, start_x, limit, c) then
                 x = start_x
                 y = y + font_h
                 h = h + font_h

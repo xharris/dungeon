@@ -6,7 +6,6 @@ local lume = require 'ext.lume'
 local lang = require 'lib.i18n'
 local render = require 'render'
 local signal = require 'lib.signal'
-local zones = require 'screens'
 local items = require 'items'
 local char = require 'character'
 local images = require 'lib.images'
@@ -14,7 +13,7 @@ local assets = require 'assets.index'
 local screens= require 'screens'
 local errors = require 'lib.errors'
 local animation = require 'lib.animation'
-local easing    = require 'lib.easing'
+local stats = require 'stats'
 
 local rad = math.rad
 local deg = math.deg
@@ -36,8 +35,6 @@ local deg = math.deg
 ---@field target string
 ---@field item ItemData
 ---@field stats Stats
-
-local IMG = {}
 
 ---@type table<string, CombatEnemy>
 local enemies = {}
@@ -144,6 +141,7 @@ function M.use_item(source_id, target_id, item_data)
         local r_weapon = item_data.renderable and render.get(item_data.renderable)
         local swing = item.attack_animation.swing
         local shoot = item.attack_animation.shoot
+        local custom = item.attack_animation.custom
         log.warn_if((swing or shoot) and not r_weapon, "missing weapon renderable")
 
         ---@type CombatUseItemData
@@ -155,9 +153,15 @@ function M.use_item(source_id, target_id, item_data)
             stats = lume.clone(stats),
         }
 
+        if custom then
+            custom(source, target, item_data)
+        end
+
         if swing and r_weapon and source.render_character then
             local r = r_weapon
             r.r = r.r or 0
+
+            -- swing weapon
             animation
                 .create(r.id, r)
                 .add(
@@ -204,8 +208,7 @@ function M.use_item(source_id, target_id, item_data)
 end
 
 function M.load()
-    IMG.ohmydungeon_v11 = love.graphics.newImage(assets.ohmydungeon_v11)
-    IMG.ohmydungeon_v11:setFilter('linear', 'nearest')
+    -- yes it's empty
 end
 
 function M.update(dt)
@@ -220,19 +223,18 @@ function M.update(dt)
             render.remove(e.render_character)
             entity.remove(e._id)
         end
-        if e.health.current > 0 then
+        if e.health.current > 0 and e.stats then
             if e.group == 'enemy' then
                 no_enemies_left = false
             end
 
-            local stats = e.stats and lume.clone(e.stats)
             if not e.attack_timer then
                 e.attack_timer = 0
             end
-            e.attack_timer = e.attack_timer + (dt * 1000)
+            e.attack_timer = e.attack_timer + (dt * 1000 * stats.attack_speed(e.stats))
 
             -- attack
-            if stats and e.attack_timer >= 1000 then -- TODO stats.agi modifier
+            if e.stats and e.attack_timer >= 1000 then
                 e.attack_timer = 0
             
                 -- process items

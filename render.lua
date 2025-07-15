@@ -53,9 +53,12 @@ local cos = math.cos
 local pi = math.pi
 local max = math.max
 local min = math.min
+local floor = math.floor
 
 local DEFAULT_COLLECTION = '_default'
-M.DEBUG = const.DEBUG_RENDER
+
+M.DEBUG = false
+M.ROUND_POSITION = true
 
 ---@type table<string, Renderable[]>
 local collection = {}
@@ -75,6 +78,11 @@ M.SIGNALS = {
     -- id, Renderable
     easing_done = 'easing_done'
 }
+
+---@param x number
+local function round(x)
+    return floor(x + 0.5)
+end
 
 ---@param t Renderable[]
 local function z_sort(t)
@@ -322,35 +330,47 @@ function M.draw()
         local x, y = 0, 0
         local ox, oy = r.ox or 1, r.oy or 1
 
+        if M.ROUND_POSITION then
+            ox = round(ox)
+            oy = round(oy)
+        end
+
         if frame and r.tex then
             local sw, sh = r.tex:getDimensions()
             x, y = M.transform_point(r.id, ox, oy)
+            if M.ROUND_POSITION then
+                x = round(x)
+                y = round(y)
+            end
             quad:setViewport(frame.x, frame.y, frame.w, frame.h, sw, sh)
-            love.graphics.draw(r.tex, quad, x, y, r.r, r.sx, r.sy, r.ox, r.oy)
+            love.graphics.draw(r.tex, quad, x, y, r.r, r.sx, r.sy, ox, oy)
         elseif r.tex then
             x, y = M.transform_point(r.id, ox, oy)
-            love.graphics.draw(r.tex, x, y, r.r, r.sx, r.sy, r.ox, r.oy)
+            if M.ROUND_POSITION then
+                x = round(x)
+                y = round(y)
+            end
+            love.graphics.draw(r.tex, x, y, r.r, r.sx, r.sy, ox, oy)
         end
 
         if M.DEBUG then
             local w, h = M.dimensions(r, true)
 
             -- draw rectangle around texture with origin point
-            local x2, y2 = x - (r.ox * abs(r.sx)), y - (r.oy * abs(r.sy))
             love.graphics.push('all')
             love.graphics.setColor(1, 0, 0, 1)
 
-            transform:setTransformation(r.x or 0, r.y or 0, r.r, r.sx, r.sy, r.ox, r.oy)
+            transform:setTransformation(x, y, r.r, r.sx, r.sy, ox, oy)
             love.graphics.replaceTransform(transform)
 
             love.graphics.print(r.id, 0, 0)
-            love.graphics.circle('fill', r.ox, r.oy, 2)
+            love.graphics.circle('fill', ox, oy, 2)
             love.graphics.rectangle('line', 0, 0, w, h)
             love.graphics.pop()
         end
         
         if r.text then
-            love.graphics.print(r.text, r.x or 0, r.y or 0, r.r, r.sx, r.sy, r.ox, r.oy)
+            love.graphics.print(r.text, x, y, r.r, r.sx, r.sy, ox, oy)
         end
 
         if M.DEBUG and r._easing then

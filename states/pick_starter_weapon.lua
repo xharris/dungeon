@@ -138,6 +138,7 @@ return {
     end,
 
     pre_draw = function ()
+        ---@type number, number
         local gw, gh = love.graphics.getDimensions()
         for i, item in ipairs(starting_items) do
             love.graphics.push('all')
@@ -161,8 +162,8 @@ return {
         if selected_item then
             love.graphics.push('all')
             color.set(color.MUI.GREY_900)
-            local w = printc.dimensions(selected_item.item.label)
-            printc.draw(selected_item.item.label, (gw/2) - (w/2))
+            local w = gw / 3
+            printc.draw(selected_item.item.label, (gw/2) - (w/2), 20, w)
             love.graphics.pop()
         end
     end,

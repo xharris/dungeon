@@ -31,11 +31,6 @@
 ---@field current number
 ---@field max number
 
----@class Stats
----@field str number strength
----@field int number intelligence
----@field agi number agility
-
 ---@alias Room 'combat'|'shop'|'rest'|'event'
 
 ---@class Vector2

@@ -17,6 +17,7 @@ local lume = require 'ext.lume'
 local items = require 'items'
 local signal = require 'lib.signal'
 local errors = require 'lib.errors'
+local stats  = require 'stats'
 
 local max = math.max
 local min = math.min
@@ -101,10 +102,7 @@ local function on_attack_landed(data)
 
     if data.type == 'attack' then
         -- take damage from attack
-        local damage =
-            (item.stats_ratio.str * source.stats.str) +
-            (item.stats_ratio.int * source.stats.int) +
-            (item.stats_ratio.agi * source.stats.agi)
+        local damage = stats.damage(item.stats_ratio, source.stats)
         if item.mitigate_damage then
             damage = item.mitigate_damage(source, damage)
         end

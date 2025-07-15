@@ -12,6 +12,7 @@ local log  = require 'lib.log'
 ---@field oy? number
 ---@field sx? number
 ---@field sy? number
+---@field r? number
 
 ---@type table<string, any>
 local images = {}
@@ -26,8 +27,9 @@ function M.get(t)
     t.oy = t.oy or 0
     t.sx = t.sx or 1
     t.sy = t.sy or t.sx or 1
+    t.r = t.r or 0
 
-    local key = table.concat({t.path, t.filter.min, t.filter.max, t.ox, t.oy}, ',')
+    local key = table.concat({t.path, t.filter.min, t.filter.max, t.ox, t.oy, t.sx, t.sy, t.r}, ',')
     
     local img = images[key]
     if not img then
@@ -54,6 +56,7 @@ function M.renderable(image, v)
             current_frame = image.current_frame,
             sx = image.sx,
             sy = image.sy,
+            r = image.r,
         } --[[@as Renderable]],
         v or {}
     )

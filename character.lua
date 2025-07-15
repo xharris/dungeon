@@ -13,6 +13,7 @@ local assets = require 'assets.index'
 local errors = require 'lib.errors'
 local items = require 'items'
 local signal = require 'lib.signal'
+local zindex = require 'zindex'
 
 local abs = math.abs
 local min = math.min
@@ -328,19 +329,14 @@ function M.update(dt)
                 local cx, cy = 
                     (item.render_on_character and item.render_on_character.x or 0),
                     (item.render_on_character and item.render_on_character.y or 0)
-                -- local r = render.get(e.render_character)
-                -- if r then
-                --     local rw, rh = render.dimensions(r)
-                --     if cx < 0 then
-                --         cx = rw + cx
-                --     end
-                --     if cy < 0 then
-                --         cy = rh + cy
-                --     end
-                -- end
+                local z = 
+                    item.render_on_character and
+                    item.render_on_character.z or
+                    zindex.equipped_item_back
+                    
                 r_equip.x = e.x + cx
                 r_equip.y = e.y + cy
-                r_equip.z = -1
+                r_equip.z = z
             end
         end
     end

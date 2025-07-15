@@ -18,6 +18,7 @@ local animation = require 'lib.animation'
 
 log.LOG_METHODS_LEVEL = const.LOG_METHODS_LEVEL
 log.LOG_CONSOLE_LEVEL = const.LOG_CONSOLE_LEVEL
+render.DEBUG = const.DEBUG_RENDER
 
 function love.load()
     plugin.add(require 'plugins.global_events')
