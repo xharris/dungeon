@@ -3,7 +3,10 @@
 ---@field health? Health
 ---@field name? string
 ---@field group? 'player'|'enemy'|'ally'
----@field items? ItemData[]
+---@field inventory? ItemData[]
+---@field max_inventory_items? number
+---@field equipped_items? ItemData[]
+---@field max_equipped_items? number
 ---@field screen_id? string id of the screen this entity is in
 ---@field render_character? string id of character sprite renderable
 ---@field stats? Stats
@@ -21,6 +24,7 @@
 ---@field jumps? number
 ---@field class? Class
 ---@field subclass? string
+---@field render_weapon? string render id
 
 ---@alias Class 'warrior'|'archer'|'mage'|'rogue' base classs
 
@@ -34,3 +38,7 @@
 ---@field agi number agility
 
 ---@alias Room 'combat'|'shop'|'rest'|'event'
+
+---@class Vector2
+---@field x number
+---@field y number

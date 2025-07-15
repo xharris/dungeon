@@ -37,23 +37,28 @@ end
 ---@param x? number
 ---@param limit? number
 ---@param char_limit? number
----@return number
-function M.height(texts, x, limit, char_limit)
+---@return number, number
+function M.dimensions(texts, x, limit, char_limit)
+    x = x or 0
     local start_x = x
     local y = 0
-    x = x or 0
+    limit = limit or love.graphics.getWidth()
     local font = love.graphics.getFont()
     local font_h = font:getHeight()
+    local w = 0
     local h = font_h
     local n = 0
     for _, text in ipairs(texts) do
         for i = 1, string.len(text.text) do
             n = n + 1
             if char_limit ~= nil and n > char_limit then
-                return h
+                return w, h
             end
             local c = text.text:sub(i, i)
             x = x + font:getWidth(c)
+            if x > w then
+                w = x
+            end
             if c == "\n" or x > limit - start_x then
                 x = start_x
                 y = y + font_h
@@ -61,7 +66,7 @@ function M.height(texts, x, limit, char_limit)
             end
         end
     end
-    return h
+    return w, h
 end
 
 ---@param texts PrintcText[]

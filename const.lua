@@ -1,7 +1,10 @@
 return {
-    DEBUG_RENDER = false,
+    DEBUG_RENDER = true, -- false,
     ---@type LogLevel
     LOG_METHODS_LEVEL = 'debug',
+    ---@type LogLevel
+    LOG_CONSOLE_LEVEL = 'info',
+    WRITE_LOGS_APPEND = false,
     HEALTH = 100,
     FLOOR_Y = 160,
     JUMP_VELOCITY = -300,
@@ -23,5 +26,7 @@ return {
         archer      = {agi=50,  int=25,     str=50},
         mage        = {agi=25,  int=75,     str=25},
         rogue       = {agi=75,  int=25,     str=50},
-    }
+    },
+    MAX_EQUIPPED_ITEMS = 5,
+    MAX_INVENTORY_ITEMS = 5,
 }

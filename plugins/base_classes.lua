@@ -16,9 +16,14 @@ return {
             },
             image = {
                 path = assets.dk_items,
-                frames = {{x=160, y=128, w=16, h=16}},
+                frames = {{x=48, y=104, w=16, h=24}},
+                sx = 4,
             },
             stats_ratio = items.stats{str=WPN_STATS_RATIO},
+            attack_animation = {
+                swing = {}
+            },
+            render_on_character = true,
         }
         -- warrior abilities
         --
@@ -34,6 +39,7 @@ return {
             type = 'weapon',
             class_starter = 'archer',
             stats_ratio = items.stats{str=WPN_STATS_RATIO},
+            render_on_character = true,
         }
 
         -- mage
@@ -42,6 +48,7 @@ return {
             type = 'weapon',
             class_starter = 'mage',
             stats_ratio = items.stats{int=WPN_STATS_RATIO},
+            render_on_character = true,
         }
 
         -- rogue
@@ -53,7 +60,8 @@ return {
             label = {
                 {text='Starter Knife\n'},
                 {text='Sharpens as you use it!'}
-            }
+            },
+            render_on_character = true,
         }
 
         

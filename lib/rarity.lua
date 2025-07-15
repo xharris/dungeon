@@ -40,7 +40,7 @@ function M.random(scale)
     for i, v in ipairs(M.RARITY_ORDER) do
         chance[v] = floor(chance[v] * lerp(rarity_max, rarity_min, i/len))
     end
-    log.debug('random', chance)
+    log.debug('chance', chance)
     return lume.weightedchoice(chance)
 end
 

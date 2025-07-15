@@ -14,8 +14,10 @@ local items= require 'items'
 local dungeon = require 'dungeon'
 local log     = require 'lib.log'
 local const   = require 'const'
+local animation = require 'lib.animation'
 
 log.LOG_METHODS_LEVEL = const.LOG_METHODS_LEVEL
+log.LOG_CONSOLE_LEVEL = const.LOG_CONSOLE_LEVEL
 
 function love.load()
     plugin.add(require 'plugins.global_events')
@@ -34,19 +36,19 @@ function love.load()
     combat.signals.on(combat.SIGNALS.on_start, function ()
         char.arrange()
     end)
-    dungeon.signals.on(dungeon.SIGNALS.enter_room, 
+    dungeon.signals.on(dungeon.SIGNALS.enter_room,
     ---@param _ DungeonRoom
     ---@param entity Entity
     function (_, entity)
-        items.ability.reduce_gain_ability_cooldown(entity._id, 1)
+        items.ability.reduce_gain_ability_cooldown(entity._id)
     end)
-    items.signals.on(items.SIGNALS.gain_ability_ready, 
+    items.signals.on(items.SIGNALS.gain_ability_ready,
     ---@param entity_id string
     function (entity_id)
         items.ability.show_ability_gain_screen(entity_id)
     end)
 
-    state.push(states.lobby)
+    state.push(states.pick_starter_weapon)
 end
 
 function love.update(dt)
@@ -57,6 +59,7 @@ function love.update(dt)
     dialog.update(dt)
     combat.update(dt)
     char.update(dt)
+    animation.update(dt)
 
     -- dialog controls
     if dialog.has_image_choices() then
@@ -89,7 +92,26 @@ function love.draw()
     end)
     render.set_collection()
 
+    state.pre_draw()
     render.draw()
     state.draw()
     dialog.draw()
+end
+
+function love.quit()
+    local err = log.write_to_file('logs.txt', const.WRITE_LOGS_APPEND)
+    if err then print('could not write logs:', err) end
+end
+
+local function error_printer(msg, layer)
+    return (debug.traceback("Error: " .. tostring(msg), 1+(layer or 1)):gsub("\n[^\n]+$", ""))
+end
+
+local old_errorhandler = love.errorhandler or love.errhand
+
+function love.errorhandler(msg)
+    log.add_line(error_printer(msg, 2))
+    local err = log.write_to_file('logs.txt', const.WRITE_LOGS_APPEND)
+    if err then print('could not write logs:', err) end
+    return old_errorhandler(msg)
 end

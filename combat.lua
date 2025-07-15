@@ -13,6 +13,10 @@ local images = require 'lib.images'
 local assets = require 'assets.index'
 local screens= require 'screens'
 local errors = require 'lib.errors'
+local animation = require 'lib.animation'
+
+local rad = math.rad
+local deg = math.deg
 
 ---@alias CombatEnemyType 'boss'
 
@@ -49,8 +53,6 @@ end
 ---@param enemy_types CombatEnemyType[]?
 ---@param screen_id string?
 function M.start(zone, enemy_types, screen_id)
-    log.info("start combat", {screen_id=screen_id})
-
     for i = 1, 1 do -- TODO scale based on difficulty or whatever
         local id = M.get_random_enemy(zone, enemy_types)
         local enemy = id and enemies[id]
@@ -60,7 +62,7 @@ function M.start(zone, enemy_types, screen_id)
                 {
                     group='enemy',
                     name=lang.get(enemy.id),
-                    items=enemy.items and lume.clone(enemy.items) or nil,
+                    equipped_items=enemy.items and lume.clone(enemy.items) or nil,
                     health=enemy.health and lume.clone(enemy.health) or nil,
                     screen_id=screen_id,
                     stats=enemy.stats and lume.clone(enemy.stats) or nil,
@@ -113,7 +115,7 @@ end
 ---@param target_id string entity id
 ---@param item_data ItemData item used
 ---@return string? error
-function M.attack(source_id, target_id, item_data)
+function M.attack_with_item(source_id, target_id, item_data)
     local source = entity.get(source_id)
     local target = entity.get(target_id)
     local item = items.get_by_id(item_data.id)
@@ -127,40 +129,74 @@ function M.attack(source_id, target_id, item_data)
     end
 
     -- animate attack
-    local r_id, r = render.add{
-        tex = images.get(item.image),
-        frames = item.image.frames,
-        current_frame = 1,
-        copy_transform = source.render_character,
-        data = {
+    if item.attack_animation then
+        local r_weapon = source.render_weapon and render.get(source.render_weapon)
+        local swing = item.attack_animation.swing
+        local shoot = item.attack_animation.shoot
+        -- local x, y, x2, y2 = source.x, source.y, target.x, target.y
+
+        local data = {
             type = 'attack',
             source = source._id,
             target = target._id,
             item = item_data,
             stats = lume.clone(source.stats),
         }
-    }
-    local e_render_x, e_render_y = render.transform_point(source.render_character, 0, 0)
-    local e_screen_ox, e_screen_oy = screens.rect(source.screen_id)
-    r.x = e_render_x + e_screen_ox
-    r.y = e_render_y + e_screen_oy
-    -- ease towards target
-    render.move_to(r_id, target.render_character, {
-        duration = 500,
-        transform_target = function (_, x, y)
-            if target.screen_id then
-                local target_screen_ox, target_screen_oy = screens.rect(source.screen_id)
-                return x + target_screen_ox, y + target_screen_oy
+
+        ---@param x number
+        ---@param y number
+        local function center(x ,y)
+            local e_render_x, e_render_y = render.transform_point(source.render_character, x, y)
+            local e_screen_ox, e_screen_oy = screens.rect(source.screen_id)
+
+            -- screen drawing offset
+            local screen_ox, screen_oy = 0, 0
+            if source.screen_id then
+                local screen = screens.get(source.screen_id)
+                if screen then
+                    screen_ox = screen.ox
+                    screen_oy = screen.oy
+                end
             end
-            return x, y
+
+            return e_render_x + e_screen_ox + screen_ox, e_render_y + e_screen_oy + screen_oy
         end
-    })
-    -- screen drawing offset
-    if source.screen_id then
-        local screen = screens.get(source.screen_id)
-        if screen then
-            r.x = r.x + screen.ox
-            r.y = r.y + screen.oy
+
+        log.warn_if(swing and not r_weapon, "missing weapon renderable")
+        if swing and r_weapon and source.render_character then
+            local r = r_weapon
+            r.x, r.y = center(0, 0)
+            if not r.r or r.r == 0 then
+                r.r = rad(45)
+            end
+            animation
+                .create(r.id, r)
+                .add(
+                    {to={r=deg(r.r) >= (45+135)/2 and rad(45) or rad(135)}, duration=1000, data=data}
+                )
+                .start()
+        end
+
+        if shoot then
+            local r_id, r = render.add{
+                tex = images.get(item.image),
+                frames = item.image.frames,
+                current_frame = 1,
+                copy_transform = source.render_character,
+                data = data,
+            }
+            r.x, r.y = center(0, 0)
+            -- ease towards target
+            render.move_to(r_id, target.render_character, {
+                duration = 500,
+                transform_target = function (_, x, y)
+                    if target.screen_id then
+                        local target_screen_ox, target_screen_oy = screens.rect(source.screen_id)
+                        return x + target_screen_ox, y + target_screen_oy
+                    end
+                    return x, y
+                end
+            })
         end
     end
 end
@@ -191,7 +227,7 @@ function M.load()
 
                     -- get modified character stats
                     local stats = data.stats --[[@as Stats]]
-                    for _, data in ipairs(source.items) do
+                    for _, data in ipairs(source.equipped_items) do
                         local item = items.get_by_id(data.id)
                         if item and item.stats_ratio then
                             stats.agi = stats.agi * item.stats_ratio.agi
@@ -202,7 +238,7 @@ function M.load()
 
                     -- calculate damage the attack will do
                     local damage = stats.str + stats.agi + stats.int
-                    for _, data in ipairs(target.items) do
+                    for _, data in ipairs(target.equipped_items) do
                         local item = items.get_by_id(data.id)
                         if item and item.mitigate_damage then
                             damage = item.mitigate_damage(target, damage)
@@ -247,7 +283,7 @@ function M.update(dt)
                 e.attack_timer = 0
             
                 -- process items
-                for _, data in ipairs(e.items) do
+                for _, data in ipairs(e.equipped_items) do
                     -- get target
                     local target --[[@as Entity?]]
                     for _, other in ipairs(combat_entities) do
@@ -256,7 +292,7 @@ function M.update(dt)
                         end
                     end
 
-                    M.attack(e._id, target._id, data)
+                    M.attack_with_item(e._id, target._id, data)
                 end
             end
 
@@ -270,4 +306,6 @@ function M.update(dt)
     end
 end
 
-return M
+return log.log_methods('combat', M, {
+    exclude={'is_in_progress', 'update'}
+})

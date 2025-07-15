@@ -201,7 +201,9 @@ function lume.clear(t)
   return t
 end
 
-
+---@generic T : table
+---@param t T
+---@return T
 function lume.extend(t, ...)
   for i = 1, select("#", ...) do
     local x = select(i, ...)
@@ -582,7 +584,7 @@ local serialize_map = {
     local rtn = {}
     stk[t] = true
     for k, v in pairs(t) do
-      rtn[#rtn + 1] = "[" .. serialize(k, stk) .. "]=" .. serialize(v, stk)
+      rtn[#rtn + 1] = "" .. serialize(k, stk) .. "=" .. serialize(v, stk)
     end
     stk[t] = nil
     return "{" .. table.concat(rtn, ", ") .. "}"

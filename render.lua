@@ -31,7 +31,7 @@ local abs = math.abs
 ---@field copy_transform? string id of renderable with transform that should be copied
 ---@field x? number
 ---@field y? number
----@field r? number
+---@field r? number radians
 ---@field sx? number
 ---@field sy? number
 ---@field ox? number
@@ -133,6 +133,10 @@ function M.add(t)
     end
     t.w = 0
     t.h = 0
+    t.ox = t.ox or 0
+    t.oy = t.oy or 0
+    t.sx = t.sx or 1
+    t.sy = t.sy or t.sx
     t.collection_id = current_collection
     return t.id, t
 end
@@ -157,8 +161,19 @@ function M.transform_point(id, x, y)
     local r = renderable_map[id]
     assert(r, 'renderable not found, id:', id)
     transform:setTransformation(r.x or 0, r.y or 0, r.r, r.sx, r.sy, r.ox, r.oy)
-    local x, y = transform:transformPoint(x + r.ox, y + r.oy)
+    x, y = transform:transformPoint(x ,y)
     return x, y, r
+end
+
+---@param r Renderable
+---@return number,number
+function M.dimensions(r)
+    if r.tex then
+        return
+            r.tex:getWidth() * (r.sx or 1),
+            r.tex:getHeight() * (r.sy or r.sx or 1)
+    end
+    return 0, 0
 end
 
 function M.reset()
@@ -265,18 +280,18 @@ function M.draw()
         color.reset()
 
         -- draw image
-        local frame = r.current_frame and r.frames and r.frames[r.current_frame]
+        local frame = r.frames and r.frames[r.current_frame or 1]
+        local x, y = M.transform_point(r.id, r.ox, r.oy)
         if frame and r.tex then
             local sw, sh = r.tex:getDimensions()
             quad:setViewport(frame.x, frame.y, frame.w, frame.h, sw, sh)
-            love.graphics.draw(r.tex, quad, r.x or 0, r.y or 0, r.r, r.sx, r.sy, r.ox, r.oy)
+            love.graphics.draw(r.tex, quad, x, y, r.r, r.sx, r.sy, r.ox, r.oy)
         elseif r.tex then
-            love.graphics.draw(r.tex, r.x or 0, r.y or 0, r.r, r.sx, r.sy, r.ox, r.oy)
+            love.graphics.draw(r.tex, x, y, r.r, r.sx, r.sy, r.ox, r.oy)
         end
 
         if M.DEBUG then
             -- draw rectangle around texture
-            local x, y = M.transform_point(r.id, 0, 0)
             local x2, y2 = x - (r.ox * abs(r.sx)), y - (r.oy * abs(r.sy))
             love.graphics.push('all')
             love.graphics.setColor(1, 0, 0, 1)
@@ -305,4 +320,6 @@ function M.draw()
     end
 end
 
-return M
+return log.log_methods('render', M, {
+    exclude={'draw', 'update', 'get', 'transform_point', 'set_collection'}
+})

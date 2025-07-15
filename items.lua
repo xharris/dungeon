@@ -8,6 +8,9 @@ local states = require 'states.index'
 local log = require 'lib.log'
 local rarity = require 'lib.rarity'
 local lume = require 'ext.lume'
+local images = require 'lib.images'
+local assets = require 'assets.index'
+local render = require 'render'
 
 local max = math.max
 
@@ -24,7 +27,15 @@ local max = math.max
 ---@field charges_required? number TODO in combat, item activates after X cycles
 ---@field class_starter? Class starter item for class
 ---@field subclass? string replaces class starter item
----@field upgrade_of? string[] TODO can only be accepted/offered if player has item in list
+---@field upgrade_from? string[] TODO can only be accepted/offered if player has item in list
+---@field attack_animation? ItemAttackAnimation
+---@field render_on_character? boolean
+
+---@class ItemAttackAnimation
+---@field swing? {}
+---@field shoot? {}
+---@field stab? {}
+---@field custom? AnimationStep[]
 
 ---@class ItemData
 ---@field id string
@@ -39,6 +50,12 @@ M.signals = signal.create 'items'
 M.SIGNALS = {
     -- entity_id
     gain_ability_ready = 'gain_ability_ready'
+}
+
+---@type Image
+local DEFAULT_IMAGE = {
+    path = assets.dk_items,
+    frames = {{x=48, y=104, w=16, h=24}},
 }
 
 ---@type Item[]
@@ -87,6 +104,16 @@ end
 ---@param v Item
 function M.add(v)
     v.label = v.label or {{text=v.id}} --[[@as PrintcText[] ]]
+    v.image = v.image or DEFAULT_IMAGE
+    if v.image and v.image.frames then
+        local frame1 = v.image.frames[1]
+            v.image.ox = v.image.ox or frame1.w/2
+            v.image.oy = v.image.oy or frame1.h - 4
+    elseif v.image then
+        local w, h = images.dimensions(v.image)
+        v.image.ox = v.image.ox or w/2
+        v.image.oy = v.image.oy or h - 4
+    end
     if v.is_ability then
         table.insert(abilities, v)
     else
@@ -132,11 +159,16 @@ end
 
 ---@param entity_id string
 ---@param x? number
+---@return number cooldown
 function M.ability.reduce_gain_ability_cooldown(entity_id, x)
     x = x or 1
     local data = entity_storage(entity_id)
+    log.debug('ability cooldown', data.gain_ability_cooldown)
     data.gain_ability_cooldown = max(0, data.gain_ability_cooldown - x)
-    M.signals.emit(M.SIGNALS.gain_ability_ready, entity_id)
+    if data.gain_ability_cooldown < 0 then
+        M.signals.emit(M.SIGNALS.gain_ability_ready, entity_id)
+    end
+    return data.gain_ability_cooldown
 end
 
 ---@param entity_id string

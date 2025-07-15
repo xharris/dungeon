@@ -11,6 +11,7 @@ local screens = require 'screens'
 local images = require 'lib.images'
 local assets = require 'assets.index'
 local errors = require 'lib.errors'
+local items = require 'items'
 
 local abs = math.abs
 local min = math.min
@@ -43,12 +44,6 @@ function M.add_health(e, v)
     return true
 end
 
----@param e Entity
----@param data ItemData
-function M.add_item(e, data)
-    table.insert(e.items, data)
-end
-
 ---@return Entity|false
 function M.get_player()
     for _, e in ipairs(entity.find('group')) do
@@ -78,7 +73,7 @@ function M.add_escort_client(escort_id, client)
         name = client.name,
         health = client.health,
         stats = client.stats,
-        items = client.items,
+        equipped_items = client.items,
         money = client.money,
     }
     table.insert(escort.escort_clients, client_entity._id)
@@ -130,7 +125,10 @@ function M.create(v, renderable)
             group = 'player',
             name = 'Player',
             class = 'warrior',
-            items = {},
+            inventory = {},
+            equipped_items = {},
+            max_equipped_items = const.MAX_EQUIPPED_ITEMS,
+            max_inventory_items = const.MAX_INVENTORY_ITEMS,
             health = {
                 current = const.HEALTH,
                 max = const.HEALTH,
@@ -177,8 +175,68 @@ function M.create(v, renderable)
         renderable or {}
     ))
     render.set_collection()
+    -- add weapon sprite
+    for _, data in ipairs(e.inventory) do
+        local item = items.get_by_id(data.id)
+        if item and item.class_starter then
+            local idx = M.add_item_to_inventory(e._id, data)
+            M.equip_item(e._id, idx)
+        end
+    end
     M.arrange()
     return e
+end
+
+---@param entity_id string
+---@param idx number inventory index
+---@param swap_idx? number
+---@return string? error
+function M.equip_item(entity_id, idx, swap_idx)
+    swap_idx = swap_idx or 1
+    local e = entity.get(entity_id)
+    if not e then
+        return "entity not found"
+    end
+    if #e.equipped_items >= e.max_equipped_items then
+        return "reached max equipped items"
+    end
+    
+    local inventory_data = e.inventory[idx]
+    local equipped_data = e.equipped_items[swap_idx]
+    e.inventory[idx] = equipped_data
+    e.equipped_items[swap_idx] = inventory_data
+
+    local item = items.get_by_id(inventory_data.id)
+    if not item then
+        return "item not found"
+    end
+
+    -- add renderable?
+    if item.render_on_character then
+        if e.render_weapon then
+            render.remove(e.render_weapon)
+        end
+        e.render_weapon = render.add(images.renderable(item.image))
+    end
+end
+
+---@param entity_id string
+---@param item_data ItemData
+---@return number,string?
+function M.add_item_to_inventory(entity_id, item_data)
+    local e = entity.get(entity_id)
+    if not e then
+        return 0, "entity not found"
+    end
+    if #e.inventory >= e.max_inventory_items then
+        return 0, "reached max inventory items"
+    end
+    local item = items.get_by_id(item_data.id)
+    if not item then
+        return 0, "item not found"
+    end
+    table.insert(e.inventory, item_data)
+    return #e.inventory
 end
 
 ---@param entity_id string
@@ -246,6 +304,14 @@ function M.update(dt)
         if r and e.x and e.y then
             r.x = e.x
             r.y = e.y
+        end
+
+        -- weapon rendering
+        local r_weapon = e.render_weapon and render.get(e.render_weapon)
+        if r_weapon and r and e.x and e.y then
+            -- local w, h = render.dimensions(r)
+            r_weapon.x = e.x + r.w
+            r_weapon.y = e.y + r.h
         end
     end
 end

@@ -67,7 +67,7 @@ function M.buy_item(e, item_id)
             max_time = 2000,
             texts={{text=lang.join("You purchased ", item_id, ".")}}
         }
-        table.insert(e.items, {id=item_id})
+        table.insert(e.equipped_items, {id=item_id})
         return true
     end
     return false

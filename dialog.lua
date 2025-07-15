@@ -54,7 +54,8 @@ local function draw_box_with_text(texts, y, limit, opts)
     -- local font = love.graphics.getFont()
     local gw = love.graphics.getPixelWidth()
     local w = gw - (2 * margin) - (2 * padding)
-    local h = printc.height(texts, margin + padding, limit) + (2 * padding)
+    local _, h = printc.dimensions(texts, margin + padding, limit)
+    h = h + (2 * padding)
 
     -- box
     love.graphics.setColor(0, 0, 0, 0.8)
@@ -184,11 +185,12 @@ function M.selected_choice()
 end
 
 ---@param force? boolean
+---@return string? error
 function M.next_dialog(force)
     local first = instances[1]
     if not first then
         -- no dialog
-        return
+        return "no dialog to skip"
     end
 
     local _next_dialog = function ()
@@ -202,7 +204,6 @@ function M.next_dialog(force)
             if duration and duration > 0 then
                 next_dialog_cooldown = min(duration, M.NEXT_DIALOG_COOLDOWN)
             end
-            log.debug('next dialog', next_dialog_cooldown, duration, M.NEXT_DIALOG_COOLDOWN)
         end
         if first and removed then
             -- reset animations and stuff if dialogs are different
@@ -215,7 +216,6 @@ function M.next_dialog(force)
     
     if not force and first and has_animation and not is_animation_finished then
         -- skip prompt animation
-        log.debug("skip dialog animation")
         first._t = first.duration
         next_dialog_cooldown = 0
         return
@@ -227,8 +227,7 @@ function M.next_dialog(force)
     end
 
     if not force and next_dialog_cooldown > 0 then
-        log.debug("next_dialog on cooldown")
-        return
+        return "dialog not finished"
     end
     
     _next_dialog()

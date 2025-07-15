@@ -1,0 +1,66 @@
+=== START Tue Jul 15 07:08:00 2025 ===
+
+[INFO] (signal.create) render
+[INFO] |-> {emit=function: 0x010e5147c0, on=function: 0x010e514630}
+[INFO] (signal.create) screens
+[INFO] |-> {emit=function: 0x010e520f38, on=function: 0x010e520da8}
+[INFO] (signal.create) items
+[INFO] |-> {emit=function: 0x010e53bb70, on=function: 0x010e53b9e0}
+[INFO] (signal.create) animation
+[INFO] |-> {emit=function: 0x010e547488, on=function: 0x010e546fe0}
+[INFO] (signal.create) combat
+[INFO] |-> {emit=function: 0x010e549948, on=function: 0x010e5497b8}
+[INFO] (signal.create) dungeon
+[INFO] |-> {emit=function: 0x010e551930, on=function: 0x010e550b78}
+[DEBUG] (signal.create) events
+[DEBUG] |-> {emit=function: 0x010e50f688, on=function: 0x010e546a90}
+[DEBUG] (combat.load)
+[DEBUG] (items.stats) {str=0.25}
+[DEBUG] |-> {str=0.25, int=0, agi=0}
+[DEBUG] (items.add) {id=starter_sword, attack_animation={swing={}}, class_starter=warrior, label={1={text=Rusty Sword
+}, 2={text=It does a little damage}}, render_on_character=true, stats_ratio={str=0.25, int=0, agi=0}, image={path=assets/( D&K ) Items V.2.png, sx=4, frames={1={h=24, x=48, y=104, w=16}}}, type=weapon}
+[DEBUG] (items.stats) {str=0.25}
+[DEBUG] |-> {str=0.25, int=0, agi=0}
+[DEBUG] (items.add) {class_starter=archer, id=starter_bow, render_on_character=true, stats_ratio={str=0.25, int=0, agi=0}, type=weapon}
+[DEBUG] (items.stats) {int=0.25}
+[DEBUG] |-> {int=0.25, str=0, agi=0}
+[DEBUG] (items.add) {class_starter=mage, id=starter_wand, render_on_character=true, stats_ratio={int=0.25, str=0, agi=0}, type=weapon}
+[DEBUG] (items.stats) {str=0.25}
+[DEBUG] |-> {str=0.25, int=0, agi=0}
+[DEBUG] (items.add) {class_starter=rogue, id=starter_knife, render_on_character=true, stats_ratio={str=0.25, int=0, agi=0}, label={1={text=Starter Knife
+}, 2={text=Sharpens as you use it!}}, type=weapon}
+[DEBUG] (items.add) {mitigate_damage=function: 0x01091fa1f8, label={1={text=Chain Vest
+}, 2={text=Blocks some damage}}, type=armor, id=chain_vest}
+[DEBUG] (items.add) {type=weapon, label={1={text=Big Stick
+}, 2={text=Found somewhere in the forest}}, shop_disabled=true, stats_ratio={int=0, str=0.2, agi=0}, image={frames={1={h=16, x=160, y=128, w=16}}, path=assets/( D&K ) Items V.2.png}, id=big_stick}
+[DEBUG] (items.add) {shop_disabled=true, stats_ratio={int=0, str=1, agi=0}, type=weapon, id=slime_shot}
+[DEBUG] (combat.add_enemy) {items={1={id=big_stick}}, stats={str=10, int=0, agi=100}, image={frames={1={h=16, x=160, y=128, w=16}}, path=assets/( D&K ) Items V.2.png}, id=goblin}
+[DEBUG] (combat.add_enemy) {stats={str=1, int=0, agi=1}, health={max=40, current=40}, id=slime}
+[DEBUG] (dungeon.add_zone) {enemies={1=goblin}, id=forest, default_background_image={path=assets/forest.jpg}, can_return=true, events={1=cozy_cabin, 2=collect_sticks, 3=lost_kid, 4=combat_assist}, setup_rooms=function: 0x01091fdaa0}
+[DEBUG] (render.load)
+[DEBUG] (state.push) states.pick_starter_weapon
+[DEBUG] | (states.pick_starter_weapon.enter)
+[DEBUG] | | (render.reset)
+[DEBUG] | | (character.create)
+[DEBUG] | | | (character.get_screen_id) 1
+[DEBUG] | | | |-> entity-1
+[DEBUG] | | | (render.add) {current_frame=1, x=0, y=160, sx=2, sy=2, ox=8, oy=8, tex=Image: 0x6000015d5080, frames={1={h=16, x=0, y=144, w=16}}}
+[DEBUG] | | | |-> 1
+[DEBUG] | | | |-> {current_frame=1, x=0, y=160, sx=2, sy=2, ox=8, oy=8, h=0, id=1, collection_id=entity-1, tex=Image: 0x6000015d5080, w=0, frames={1={h=16, x=0, y=144, w=16}}}
+[DEBUG] | | | (character.arrange)
+[DEBUG] | | | |-> {screen_id=entity-1, x=100, y=160, group=player, equipped_items={}, health={max=100, current=100}, stats={int=25, str=75, agi=50}, class=warrior, inventory={}, max_equipped_items=5, max_inventory_items=5, name=Player, gravity=700, vy=0, jump_velocity=-300, max_jumps=0, render_character=1, _id=1, money=0, floor_y=160}
+Error: states/pick_starter_weapon.lua:60: attempt to perform arithmetic on a string value
+stack traceback:
+	[love "boot.lua"]:352: in function '__add'
+	states/pick_starter_weapon.lua:60: in function 'v'
+	lib/log.lua:140: in function 'enter'
+	lib/state.lua:38: in function 'v'
+	lib/log.lua:140: in function 'push'
+	main.lua:51: in function 'load'
+	[love "callbacks.lua"]:136: in function <[love "callbacks.lua"]:135>
+	[C]: in function 'xpcall'
+	[love "boot.lua"]:368: in function <[love "boot.lua"]:355>
+	[C]: in function 'xpcall'
+
+=== END ===
+

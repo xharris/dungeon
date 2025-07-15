@@ -1,5 +1,5 @@
 return {
     game = 'states.game',
-    lobby = 'states.lobby',
+    pick_starter_weapon = 'states.pick_starter_weapon',
     gain_ability = 'states.gain_ability',
 }

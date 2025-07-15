@@ -6,6 +6,7 @@ local log = require 'lib.log'
 ---@class State
 ---@field enter? fun(...:any)
 ---@field update? fun(dt:number)
+---@field pre_draw? fun()
 ---@field draw? fun()
 ---@field leave? fun()
 
@@ -19,7 +20,9 @@ local stack = {}
 ---@return State
 local function get(require_path)
     if not states[require_path] then
-        states[require_path] = require(require_path)
+        states[require_path] = log.log_methods(require_path, require(require_path), {
+            exclude = {'update', 'draw', 'pre_draw'}
+        })
     end
     return states[require_path]
 end
@@ -65,6 +68,15 @@ function M.update(dt)
     end
 end
 
+function M.pre_draw()
+    for _, path in ipairs(stack) do
+        local state = get(path)
+        if state.pre_draw then
+            state.pre_draw()
+        end
+    end
+end
+
 function M.draw()
     for _, path in ipairs(stack) do
         local state = get(path)
@@ -74,4 +86,4 @@ function M.draw()
     end
 end
 
-return log.log_methods('state', M, {exclude={'update', 'draw', 'get', 'is_active'}})
+return log.log_methods('state', M, {exclude={'update', 'pre_draw', 'draw', 'get', 'is_active'}})

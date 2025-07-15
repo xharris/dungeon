@@ -1,9 +1,12 @@
 local M = {}
 
+local log = require 'lib.log'
+
 local signals = {}
 
+---@param prefix string
 function M.create(prefix)
-    return {
+    return log.log_methods('signal.'..tostring(prefix), {
         ---@param name string
         ---@param fn function
         on = function(name, fn)
@@ -29,7 +32,9 @@ function M.create(prefix)
             end
             signals[key] = keep_fns
         end,
-    }
+    }, {
+        exclude={'on'}
+    })
 end
 
-return M
+return log.log_methods('signal', M)

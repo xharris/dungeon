@@ -96,8 +96,6 @@ enter_room = function(room_id)
     local current_zone = dungeon.current_zone()
 
     if player and room and room_type then
-        log.info("move to room:", room.id, ", type:", room_type)
-
         if room_type == 'rift' then
             next_zones = dungeon.get_next_zones()
             ---@type DialogChoice[]
@@ -180,7 +178,7 @@ return {
 
             if choice_id == "restart_game" then
                 state.pop()
-                state.push(states.lobby)
+                state.push(states.pick_starter_weapon)
             end
 
             if choice_id == "quit_game" then
