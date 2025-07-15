@@ -12,6 +12,7 @@ local images = require 'lib.images'
 local assets = require 'assets.index'
 local errors = require 'lib.errors'
 local items = require 'items'
+local signal = require 'lib.signal'
 
 local abs = math.abs
 local min = math.min
@@ -23,6 +24,11 @@ local max = math.max
 ---@field stats Stats
 ---@field items? ItemData[]
 ---@field money? number
+
+M.signals = signal.create 'character'
+M.SIGNALS = {
+    change_health = 'change_health' -- Entity, number
+}
 
 ---@param e Entity
 ---@param v number can be negative to lose money
@@ -41,6 +47,7 @@ end
 ---@return boolean ok
 function M.add_health(e, v)
     e.health.current = max(0, min(e.health.max, e.health.current + v))
+    M.signals.emit(M.SIGNALS.change_health, e, v)
     return true
 end
 

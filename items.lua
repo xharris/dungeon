@@ -30,6 +30,7 @@ local max = math.max
 ---@field upgrade_from? string[] TODO can only be accepted/offered if player has item in list
 ---@field attack_animation? ItemAttackAnimation
 ---@field render_on_character? Vector3
+---@field attack_landed? fun(target:Entity, projectiles:Renderable[])
 
 ---@class ItemAttackAnimation
 ---@field swing? {}
@@ -39,6 +40,8 @@ local max = math.max
 
 ---@class ItemProjectileAnimation
 ---@field image Image
+---@field ease_fn? function
+---@field face_direction? boolean TODO
 
 ---@class ItemData
 ---@field id string
@@ -124,6 +127,7 @@ function M.abilities()
     return abilities
 end
 
+---shortcut to create Stats object
 ---@param v {agi?:number, str?:number, int?:number}
 ---@return Stats
 function M.stats(v)

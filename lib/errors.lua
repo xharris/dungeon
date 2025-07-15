@@ -6,5 +6,10 @@ return {
     ---@param id? any
     not_found = function (name, id)
         return name.." not found: "..serialize(id)
+    end,
+
+    ---@param key_path string
+    missing_field = function (key_path)
+        return "missing key:"..key_path
     end
 }

@@ -19,6 +19,7 @@ local max = math.max
 
 ---@class AnimationStep
 ---@field object? table
+---@field _from? table
 ---@field to table
 ---@field duration number ms
 ---@field delay? number ms
@@ -48,9 +49,12 @@ function M.update(dt)
             local step = a.steps[a.step]
             if step then
                 local object = step.object or a.object
-                if a._t > step.duration then
+                local t = max(0, a._t - (step.delay or 0))
+                local ease_fn = step.ease_fn or linear
+
+                if t > step.duration then
                     -- finish animation step
-                    a._t = 0
+                    t = 0
                     a.step = a.step + 1
                     if step.on_end then
                         step.on_end()
@@ -61,12 +65,12 @@ function M.update(dt)
                     M.signals.emit(M.SIGNALS.animation_step_end, step.data)
                 else
                     -- animate
-                    a._t = a._t + (dt * 1000 * a.speed)
-                    local delay = step.delay or 0
+                    t = t + (dt * 1000 * a.speed)
                     for k, v in pairs(step.to) do
-                        a.object[k] = lerp(object[k], v, max(0, a._t - delay) / step.duration)
+                        object[k] = lerp(step._from[k], v, ease_fn(t / step.duration))
                     end
                 end
+                a._t = t
             end
         end
     end
@@ -103,7 +107,10 @@ function M.create(id, t)
             ---@type AnimationStep
             local step = select(i, ...)
             step.duration = step.duration or 1000
-            step.ease_fn = step.ease_fn or linear
+            step._from = {}
+            for k in pairs(step.to) do
+                step._from[k] = a.object[k]
+            end
             table.insert(a.steps, step)
         end
         return N

@@ -1,6 +1,8 @@
 local items = require 'items'
 local assets = require 'assets.index'
 local zindex = require 'zindex'
+local render = require 'render'
+local easing = require 'lib.easing'
 
 local WPN_STATS_RATIO = 0.25
 
@@ -19,14 +21,13 @@ return {
                 path = assets.dk_items,
                 frames = {{x=48, y=104, w=16, h=24}},
                 sx = 2,
-                ox = 8,
-                oy = -1,
+                ox = 8, oy = -4,
             },
             stats_ratio = items.stats{str=WPN_STATS_RATIO},
+            render_on_character = {x=16, y=0, z=zindex.equipped_item_back},
             attack_animation = {
                 swing = {}
             },
-            render_on_character = {x=16, y=0, z=zindex.equipped_item_back},
         }
         -- warrior abilities
         --
@@ -42,12 +43,13 @@ return {
             type = 'weapon',
             class_starter = 'archer',
             stats_ratio = items.stats{str=WPN_STATS_RATIO},
-            render_on_character = {x=0, y=0, z=zindex.equipped_item_back},
             image = {
                 path = assets.dk_items,
                 frames = {{x=144, y=106, w=16, h=22}},
                 sx = 2,
+                ox = 8, oy = 11,
             },
+            render_on_character = {x=16, y=0, z=zindex.equipped_item_back},
             attack_animation = {
                 shoot = {
                     projectile = {
@@ -57,10 +59,16 @@ return {
                             sx = 2,
                             ox = 7,
                             oy = 8,
-                        }
+                        },
+                        ease_fn = easing.ease_in_quad
                     }
                 },
-            }
+            },
+            attack_landed = function (_, projectiles)
+                for _, r in ipairs(projectiles) do
+                    render.remove(r.id)
+                end
+            end
         }
 
         -- mage

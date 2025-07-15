@@ -167,10 +167,14 @@ function M.get(id)
     return id and renderable_map[id] or nil
 end
 
+---@param id string
+---@return string? error
 function M.remove(id)
     if renderable_map[id] then
         renderable_map[id]._remove = true
+        return
     end
+    return "renderable not found"
 end
 
 local transform
@@ -365,5 +369,5 @@ function M.draw()
 end
 
 return log.log_methods('render', M, {
-    exclude={'draw', 'update', 'get', 'transform_point', 'set_collection'}
+    exclude={'draw', 'update', 'get', 'transform_point', 'set_collection', 'dimensions'}
 })

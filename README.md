@@ -1,5 +1,9 @@
 # Dungeon game notes
 
+## BUGS
+
+- entering combat with starter_bow causes first arrow to have incorrect starting position
+
 ## TODO
 
 - Game State
@@ -12,7 +16,7 @@
 - Events
   - Escort
     - [ ] npcs follow player
-    - [ ] npc can hold items
+    - [x] npc can hold items
     - [ ] npc will flee when player dies
   - Quest
     - [ ] can be viewed from map screen

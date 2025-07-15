@@ -14,6 +14,7 @@ local assets = require 'assets.index'
 local screens= require 'screens'
 local errors = require 'lib.errors'
 local animation = require 'lib.animation'
+local easing    = require 'lib.easing'
 
 local rad = math.rad
 local deg = math.deg
@@ -29,6 +30,13 @@ local deg = math.deg
 ---@field type? CombatEnemyType
 ---@field only_zones? string[] only allow this enemy to spawn in specified zones
 
+---@class CombatUseItemData
+---@field type 'attack'
+---@field source string
+---@field target string
+---@field item ItemData
+---@field stats Stats
+
 local IMG = {}
 
 ---@type table<string, CombatEnemy>
@@ -39,7 +47,8 @@ local in_combat = false
 M.signals = signal.create 'combat'
 M.SIGNALS = {
     on_start = 'on_start',
-    on_end = 'on_end'
+    on_end = 'on_end',
+    attack_landed = 'attack_landed', -- CombatUseItemData
 }
 
 ---@param v CombatEnemy
@@ -115,12 +124,14 @@ end
 ---@param target_id string entity id
 ---@param item_data ItemData item used
 ---@return string? error
-function M.attack_with_item(source_id, target_id, item_data)
+function M.use_item(source_id, target_id, item_data)
     local source = entity.get(source_id)
     local target = entity.get(target_id)
     local item = items.get_by_id(item_data.id)
 
     if not source then return errors.not_found("source entity", source_id) end
+    local stats = source.stats
+    if not stats then return errors.missing_field("source.stats") end
     if not target then return errors.not_found("target entity", target_id) end
     if not item then return errors.not_found("item", item_data.id) end
 
@@ -133,17 +144,17 @@ function M.attack_with_item(source_id, target_id, item_data)
         local r_weapon = item_data.renderable and render.get(item_data.renderable)
         local swing = item.attack_animation.swing
         local shoot = item.attack_animation.shoot
-        -- local x, y, x2, y2 = source.x, source.y, target.x, target.y
+        log.warn_if((swing or shoot) and not r_weapon, "missing weapon renderable")
 
+        ---@type CombatUseItemData
         local data = {
             type = 'attack',
             source = source._id,
             target = target._id,
             item = item_data,
-            stats = lume.clone(source.stats),
+            stats = lume.clone(stats),
         }
 
-        log.warn_if(swing and not r_weapon, "missing weapon renderable")
         if swing and r_weapon and source.render_character then
             local r = r_weapon
             r.r = r.r or 0
@@ -152,6 +163,12 @@ function M.attack_with_item(source_id, target_id, item_data)
                 .add(
                     {to={r=deg(r.r) >= (45+135)/2 and rad(45) or rad(135)}, duration=1000, data=data}
                 )
+                .on_end(function ()
+                    if item.attack_landed then
+                        item.attack_landed(target, {})
+                    end
+                    M.signals.emit(M.SIGNALS.attack_landed, data)
+                end)
                 .start()
         end
 
@@ -164,7 +181,7 @@ function M.attack_with_item(source_id, target_id, item_data)
             
             -- shoot projectile
             local _, r_projectile = render.add(images.renderable(shoot.projectile.image))
-            r_projectile.x, r_projectile.y = render.transform_point(r_weapon.id)
+            r_projectile.x, r_projectile.y = render.transform_point(r_weapon.id, r_weapon.ox, r_weapon.oy)
 
             local target_screen_ox, target_screen_oy = screens.rect(source.screen_id)
             local target_x = target.x + target_screen_ox
@@ -173,10 +190,13 @@ function M.attack_with_item(source_id, target_id, item_data)
             animation
                 .create(r_projectile.id, r_projectile)
                 .add(
-                    {to={x=target_x, y=target_y}, duration=5000, data=data}
+                    {to={x=target_x, y=target_y}, duration=1000, data=data, ease_fn=shoot.projectile.ease_fn}
                 )
                 .on_end(function ()
-                    render.remove(r_projectile.id)
+                    if item.attack_landed then
+                        item.attack_landed(target, {r_projectile})
+                    end
+                    M.signals.emit(M.SIGNALS.attack_landed, data)
                 end)
                 .start()
         end
@@ -186,55 +206,6 @@ end
 function M.load()
     IMG.ohmydungeon_v11 = love.graphics.newImage(assets.ohmydungeon_v11)
     IMG.ohmydungeon_v11:setFilter('linear', 'nearest')
-
-    render.signals.on(render.SIGNALS.easing_done,
-        ---@param id any
-        ---@param r Renderable
-        function (id, r)
-            local data = r.data
-            if data and data.source then
-                local source = entity.get(data.source)
-                if not source then
-                    log.warn("attack source not found, data:", data)
-                    return
-                end
-
-                -- attack animation
-                if source and data.type == 'attack' then
-                    local target = entity.get(data.target)
-                    if not target then
-                        log.warn('attack target not found, target-data:', data.target)
-                        return
-                    end
-
-                    -- get modified character stats
-                    local stats = data.stats --[[@as Stats]]
-                    for _, data in ipairs(source.equipped_items) do
-                        local item = items.get_by_id(data.id)
-                        if item and item.stats_ratio then
-                            stats.agi = stats.agi * item.stats_ratio.agi
-                            stats.int = stats.int * item.stats_ratio.int
-                            stats.str = stats.str * item.stats_ratio.str
-                        end
-                    end
-
-                    -- calculate damage the attack will do
-                    local damage = stats.str + stats.agi + stats.int
-                    for _, data in ipairs(target.equipped_items) do
-                        local item = items.get_by_id(data.id)
-                        if item and item.mitigate_damage then
-                            damage = item.mitigate_damage(target, damage)
-                        end
-                    end
- 
-                    if not char.add_health(target, -damage) then
-                        log.warn("attack failed, could not change target hp, damage:", -damage, ", hp:", target.health.current, target.health.max)
-                    end
-                    render.remove(id)
-                end
-            end
-        end
-    )
 end
 
 function M.update(dt)
@@ -274,7 +245,7 @@ function M.update(dt)
                         end
                     end
                     if target then
-                        M.attack_with_item(e._id, target._id, data)
+                        M.use_item(e._id, target._id, data)
                     end
                 end
             end

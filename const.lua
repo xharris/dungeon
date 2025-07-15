@@ -1,5 +1,5 @@
 return {
-    DEBUG_RENDER = true,
+    DEBUG_RENDER = false,
     ---@type LogLevel
     LOG_METHODS_LEVEL = 'debug',
     ---@type LogLevel

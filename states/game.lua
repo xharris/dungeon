@@ -16,7 +16,9 @@ local shop = require 'shop'
 local lume = require 'ext.lume'
 local items = require 'items'
 local signal = require 'lib.signal'
+local errors = require 'lib.errors'
 
+local max = math.max
 local min = math.min
 
 ---@type string[]?
@@ -86,6 +88,36 @@ local function show_room_choices()
     }
 end
 
+---@param data CombatUseItemData
+local function on_attack_landed(data)
+    local source = entity.get(data.source)
+    local target = entity.get(data.target)
+    local item = items.get_by_id(data.item.id)
+
+    if not source or not target then return end
+    if not item then
+        return log.error(errors.not_found('item', data.item.id))
+    end
+
+    if data.type == 'attack' then
+        -- take damage from attack
+        local damage =
+            (item.stats_ratio.str * source.stats.str) +
+            (item.stats_ratio.int * source.stats.int) +
+            (item.stats_ratio.agi * source.stats.agi)
+        if item.mitigate_damage then
+            damage = item.mitigate_damage(source, damage)
+        end
+        char.add_health(target, max(0, -damage))
+    end
+end
+
+---@param e Entity
+---@param change number
+local function on_change_health(e, change)
+
+end
+
 enter_room = function(room_id)
     local player = char.get_player()
     local room
@@ -139,6 +171,8 @@ return {
         events.signals.on(events.SIGNALS.on_end, show_room_choices)
         combat.signals.on(combat.SIGNALS.on_end, show_room_choices)
         dungeon.signals.on(dungeon.SIGNALS.enter_zone, show_room_choices)
+        combat.signals.on(combat.SIGNALS.attack_landed, on_attack_landed)
+        char.signals.on(char.SIGNALS.change_health, on_change_health)
 
         -- start game
         local player = char.get_player()
@@ -157,7 +191,7 @@ return {
     end,
 
     leave = function ()
-        signal.off(show_room_choices)
+        signal.off(show_room_choices, on_attack_landed, on_change_health)
     end,
     
     update = function (dt)
