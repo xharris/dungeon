@@ -1,9 +1,5 @@
 # Dungeon game notes
 
-## BUGS
-
-- entering combat with starter_bow causes first arrow to have incorrect starting position
-
 ## TODO
 
 - Game State

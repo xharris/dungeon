@@ -6,6 +6,7 @@ local render = require 'render'
 local images = require 'lib.images'
 local signal = require 'lib.signal'
 local color  = require 'lib.color'
+local log    = require 'lib.log'
 
 local max = math.max
 local min = math.min
@@ -133,4 +134,6 @@ function M.draw()
     end
 end
 
-return M
+return log.log_methods('projectiles', M, {
+    exclude={'update', 'draw'}
+})

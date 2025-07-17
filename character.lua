@@ -195,6 +195,27 @@ function M.create(v, renderable)
     return e
 end
 
+---@param e Entity
+local function position_equipped_items(e)
+    for _, equip in ipairs(e.equipped_items) do
+        local item = items.get_by_id(equip.id)
+        local r_equip = render.get(equip.renderable)
+        if item and r_equip and e.x and e.y then
+            local cx, cy = 
+                (item.render_on_character and item.render_on_character.x or 0),
+                (item.render_on_character and item.render_on_character.y or 0)
+            local z = 
+                item.render_on_character and
+                item.render_on_character.z or
+                zindex.equipped_item_back
+                
+            r_equip.x = e.x + cx
+            r_equip.y = e.y + cy
+            r_equip.z = z
+        end
+    end
+end
+
 ---@param entity_id string
 ---@param idx number inventory index
 ---@param swap_idx? number
@@ -233,6 +254,8 @@ function M.equip_item(entity_id, idx, swap_idx)
     -- swap items
     e.inventory[idx] = equipped_data
     e.equipped_items[swap_idx] = inventory_data
+
+    position_equipped_items(e)
 end
 
 ---@param entity_id string
@@ -322,23 +345,7 @@ function M.update(dt)
         end
 
         -- rendering for equipped items
-        for _, equip in ipairs(e.equipped_items) do
-            local item = items.get_by_id(equip.id)
-            local r_equip = render.get(equip.renderable)
-            if item and r_equip and e.x and e.y then
-                local cx, cy = 
-                    (item.render_on_character and item.render_on_character.x or 0),
-                    (item.render_on_character and item.render_on_character.y or 0)
-                local z = 
-                    item.render_on_character and
-                    item.render_on_character.z or
-                    zindex.equipped_item_back
-                    
-                r_equip.x = e.x + cx
-                r_equip.y = e.y + cy
-                r_equip.z = z
-            end
-        end
+        position_equipped_items(e)
     end
 end
 
