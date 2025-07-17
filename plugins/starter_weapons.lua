@@ -34,7 +34,7 @@ return {
         -- warrior abilities
         --
         -- [crit|hp|agi] * 2
-        -- 5% parry chance (reflect 50% damage)
+        -- 5% parry chance (reflect 100% damage)
         -- cannot die for 2 sec
         -- weapon mastery: every 5 seconds switch to a special random sword (super_rare)
         -- double edged
@@ -65,15 +65,17 @@ return {
                             sx = WPN_SCALE,
                             ox = 7, oy = 8,
                         },
-                        ease_fn = easing.ease_in_quad
-                    }
+                        ease_fn = easing.ease_in_out_sine,
+                        face_direction = true,
+                        curve = {
+                            0,      0,
+                            0.5, -0.5,
+                            1,      0,
+                        },
+                        curve_sy = 100,
+                    },
                 },
             },
-            attack_landed = function (_, projectiles)
-                for _, r in ipairs(projectiles) do
-                    render.remove(r.id)
-                end
-            end
         }
 
         -- mage

@@ -34,7 +34,7 @@ return {
             stats_ratio = {agi=0, int=0, str=1},
         }
 
-        combat.add_enemy{
+        combat.enemy.add{
             id = 'goblin',
             items = {{id='big_stick'}},
             stats = {agi=100, str=10, int=0},
@@ -44,7 +44,7 @@ return {
             },
         }
 
-        combat.add_enemy{
+        combat.enemy.add{
             id = 'slime',
             health = {current=40, max=40},
             stats = {agi=1, str=1, int=0},

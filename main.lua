@@ -15,14 +15,16 @@ local dungeon = require 'dungeon'
 local log     = require 'lib.log'
 local const   = require 'const'
 local animation = require 'lib.animation'
+local projectiles = require 'projectiles'
 
 log.LOG_METHODS_LEVEL = const.LOG_METHODS_LEVEL
 log.LOG_CONSOLE_LEVEL = const.LOG_CONSOLE_LEVEL
 render.DEBUG = const.DEBUG_RENDER
+projectiles.DEBUG = const.DEBUG_PROJECTILES
 
 function love.load()
     plugin.add(require 'plugins.global_events')
-    plugin.add(require 'plugins.base_classes')
+    plugin.add(require 'plugins.starter_weapons')
     plugin.add(require 'plugins.forest')
 
     shop.load()
@@ -61,6 +63,7 @@ function love.update(dt)
     combat.update(dt)
     char.update(dt)
     animation.update(dt)
+    projectiles.update(dt)
 
     -- dialog controls
     if dialog.has_image_choices() then
@@ -97,6 +100,8 @@ function love.draw()
     render.draw()
     state.draw()
     dialog.draw()
+    animation.draw()
+    projectiles.draw()
 end
 
 function love.quit()

@@ -34,16 +34,12 @@ local max = math.max
 
 ---@class ItemAttackAnimation
 ---@field swing? {}
----@field shoot? {projectile?:ItemProjectileAnimation}
+---@field shoot? {projectile?:ProjectileAnimation, beam?:ItemBeamAnimation}
 ---@field stab? {}
 ---@field custom? fun(source:Entity, target:Entity, data:ItemData)
 
----TODO throw held weapon (knife)
----@class ItemProjectileAnimation
----@field image Image
----@field ease_fn? function
----@field face_direction? boolean TODO
-
+---NOTE stops at target, does not pass through
+---@class ItemBeamAnimation
 
 ---@class ItemData
 ---@field id string

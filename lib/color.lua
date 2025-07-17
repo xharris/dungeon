@@ -9,17 +9,19 @@ M.hex2rgba = lume.memoize(
     end
 )
 
----@param rgb table
+---@param rgb? table
 ---@param a? number
 function M.set(rgb, a)
     a = a or 1
-    local color = {rgb[1], rgb[2], rgb[3], a}
+    local color = rgb and {rgb[1], rgb[2], rgb[3], a} or M.RESET_COLOR
     love.graphics.setColor(color)
 end
 
 function M.reset()
     love.graphics.setColor(M.MUI.WHITE)
 end
+
+M.RESET_COLOR = {1, 1, 1, 1}
 
 M.MUI = {
     WHITE = {1, 1, 1},

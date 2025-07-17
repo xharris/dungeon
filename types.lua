@@ -32,12 +32,3 @@
 ---@field max number
 
 ---@alias Room 'combat'|'shop'|'rest'|'event'
-
----@class Vector2
----@field x number
----@field y number
-
----@class Vector3
----@field x number
----@field y number
----@field z number

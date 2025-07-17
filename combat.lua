@@ -8,12 +8,11 @@ local render = require 'render'
 local signal = require 'lib.signal'
 local items = require 'items'
 local char = require 'character'
-local images = require 'lib.images'
-local assets = require 'assets.index'
 local screens= require 'screens'
 local errors = require 'lib.errors'
 local animation = require 'lib.animation'
 local stats = require 'stats'
+local projectiles = require 'projectiles'
 
 local rad = math.rad
 local deg = math.deg
@@ -36,10 +35,12 @@ local deg = math.deg
 ---@field item ItemData
 ---@field stats Stats
 
----@type table<string, CombatEnemy>
-local enemies = {}
-
-local in_combat = false
+---@type table<'slow'|'normal'|'fast', number>
+M.PROJECTILE_SPEED = {
+    slow = 0.5,
+    normal = 1,
+    fast = 2.0,
+}
 
 M.signals = signal.create 'combat'
 M.SIGNALS = {
@@ -48,39 +49,57 @@ M.SIGNALS = {
     attack_landed = 'attack_landed', -- CombatUseItemData
 }
 
+---@type table<string, CombatEnemy>
+local enemies = {}
+
+local in_combat = false
+
+M.enemy = {}
+
 ---@param v CombatEnemy
-function M.add_enemy(v)
+function M.enemy.add(v)
     v.items = v.items or {}
     v.only_zones = v.only_zones or {}
     enemies[v.id] = v
 end
 
+---@param id string
+---@param screen_id? string
+---@return string? error
+function M.enemy.spawn(id, screen_id)
+    local enemy = id and enemies[id]
+    if enemy then
+        char.create(
+            {
+                group='enemy',
+                name=lang.get(enemy.id),
+                equipped_items=enemy.items and lume.clone(enemy.items) or nil,
+                health=enemy.health and lume.clone(enemy.health) or nil,
+                screen_id=screen_id,
+                stats=enemy.stats and lume.clone(enemy.stats) or nil,
+            },
+            {
+                frames = {{x=48, y=144, w=16, h=16}},
+                sx = 2, sy = 2,
+            }
+        )
+        char.arrange()
+    end
+end
+
 ---@param zone DungeonZone?
 ---@param enemy_types CombatEnemyType[]?
 ---@param screen_id string?
+---@return string? error
 function M.start(zone, enemy_types, screen_id)
     for i = 1, 1 do -- TODO scale based on difficulty or whatever
         local id = M.get_random_enemy(zone, enemy_types)
-        local enemy = id and enemies[id]
-        if enemy then
-            log.info("add enemy", enemy.id)
-            local e = char.create(
-                {
-                    group='enemy',
-                    name=lang.get(enemy.id),
-                    equipped_items=enemy.items and lume.clone(enemy.items) or nil,
-                    health=enemy.health and lume.clone(enemy.health) or nil,
-                    screen_id=screen_id,
-                    stats=enemy.stats and lume.clone(enemy.stats) or nil,
-                },
-                {
-                    frames = {{x=48, y=144, w=16, h=16}},
-                    sx = 2, sy = 2,
-                }
-            )
+        if not id then
+            return errors.not_found("random zone enemy")
         end
+        local err = M.enemy.spawn(id, screen_id)
+        log.error_if(err, err)
     end
-
     in_combat = true
     M.signals.emit(M.SIGNALS.on_start)
 end
@@ -141,6 +160,7 @@ function M.use_item(source_id, target_id, item_data)
         local r_weapon = item_data.renderable and render.get(item_data.renderable)
         local swing = item.attack_animation.swing
         local shoot = item.attack_animation.shoot
+        local projectile = shoot and shoot.projectile
         local custom = item.attack_animation.custom
         log.warn_if((swing or shoot) and not r_weapon, "missing weapon renderable")
 
@@ -183,32 +203,45 @@ function M.use_item(source_id, target_id, item_data)
             --     .create(r.id, r)
             --     .add()
             
-            -- shoot projectile
-            local _, r_projectile = render.add(images.renderable(shoot.projectile.image))
-            r_projectile.x, r_projectile.y = render.transform_point(r_weapon.id, r_weapon.ox, r_weapon.oy)
+            if projectile then
+                local from = {render.transform_point(r_weapon.id, r_weapon.ox, r_weapon.oy)}
+                local target_screen_ox, target_screen_oy = screens.rect(target.screen_id)
 
-            local target_screen_ox, target_screen_oy = screens.rect(source.screen_id)
-            local target_x = target.x + target_screen_ox
-            local target_y = target.y + target_screen_oy
+                local on_reached_target = projectile.on_reached_target or function() end
+                projectile.on_reached_target = function (d)
+                    on_reached_target(d)
+                    M.signals.emit(M.SIGNALS.attack_landed, d)
+                end
 
-            animation
-                .create(r_projectile.id, r_projectile)
-                .add(
-                    {to={x=target_x, y=target_y}, duration=1000, data=data, ease_fn=shoot.projectile.ease_fn}
+                projectiles.create(
+                    {x=from[1], y=from[2]},
+                    {x=target.x + target_screen_ox, y=target.y + target_screen_oy},
+                    projectile,
+                    {data=data, target=target}
                 )
-                .on_end(function ()
-                    if item.attack_landed then
-                        item.attack_landed(target, {r_projectile})
-                    end
-                    M.signals.emit(M.SIGNALS.attack_landed, data)
-                end)
-                .start()
+
+                -- animation
+                --     .create(r_projectile.id, r_projectile)
+                --     .add({to={x=target_x, y=target_y}, duration=1000, data=data, ease_fn=projectile.ease_fn})
+                --     .on_end(function ()
+                --         if item.attack_landed then
+                --             item.attack_landed(target, {r_projectile})
+                --         end
+                --         M.signals.emit(M.SIGNALS.attack_landed, data)
+                --     end)
+                --     .start()
+            end
         end
     end
 end
 
 function M.load()
-    -- yes it's empty
+    projectiles.signals.on(projectiles.SIGNALS.reached_target, function (data)
+        ---@cast data CombatUseItemData
+        if data and data.type == 'attack' then
+            M.signals.emit(M.SIGNALS.attack_landed, data)
+        end
+    end)
 end
 
 function M.update(dt)

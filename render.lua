@@ -42,6 +42,10 @@ local abs = math.abs
 ---@field h? number
 ---@field z? number
 ---@field _last_z? number
+---@field _last_x? number
+---@field _last_y? number
+---@field angle? number direction of renderable movement (radians)
+---@field face_direction? boolean
 
 ---@class RenderableFrame
 ---@field x number
@@ -149,6 +153,8 @@ function M.add(t)
         t.ox = t.ox or r.ox
         t.oy = t.oy or r.ox
     end
+    t.x = t.x or 0
+    t.y = t.y or 0
     t.w = 0
     t.h = 0
     t.ox = t.ox or 0
@@ -157,6 +163,9 @@ function M.add(t)
     t.sy = t.sy or t.sx
     t.current_frame = t.current_frame or 1
     t.collection_id = current_collection
+    t.angle = 0
+    t._last_x = t.x
+    t._last_y = t.y
     z_sort(collection[current_collection])
 
     -- negative offsets
@@ -282,16 +291,21 @@ function M.update(dt)
                 renderable_map[r.id] = nil
                 table.remove(c, i)
             else
+                -- need sorting?
                 if r.z ~= r._last_z then
                     r._last_z = r.z
                     need_z_sort = true
                 end
 
-                if r.frames and #r.frames > 0 then
-                    r.current_frame = 1
-                else
-                    r.current_frame = nil
+                -- calculate movement
+                if r._last_x and r._last_y then
+                    r.angle = lume.angle(r._last_x, r._last_y, r.x, r.y)
                 end
+                if r.face_direction and r.angle then
+                    r.r = r.angle
+                end
+                r._last_x = r.x
+                r._last_y = r.y
 
                 -- easing
                 if r._easing then

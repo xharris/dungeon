@@ -125,7 +125,7 @@ function lume.angle(x1, y1, x2, y2)
   return math_atan2(y2 - y1, x2 - x1)
 end
 
-
+---@return number x,number y
 function lume.vector(angle, magnitude)
   return math.cos(angle) * magnitude, math.sin(angle) * magnitude
 end

@@ -3,9 +3,13 @@ local M = {}
 local lume = require 'ext.lume'
 local log = require 'lib.log'
 local signal = require 'lib.signal'
+local color  = require 'lib.color'
+local vector = require 'lib.vector'
 
 local lerp = lume.lerp
 local max = math.max
+local min = math.min
+local abs = math.abs
 
 ---@class Animation
 ---@field id string
@@ -19,8 +23,8 @@ local max = math.max
 
 ---@class AnimationStep
 ---@field object? table
----@field _from? table
----@field to table
+---@field _from? table<string, number>
+---@field to? table<string, number>
 ---@field duration number ms
 ---@field delay? number ms
 ---@field data? table
@@ -66,8 +70,12 @@ function M.update(dt)
                 else
                     -- animate
                     t = t + (dt * 1000 * a.speed)
-                    for k, v in pairs(step.to) do
-                        object[k] = lerp(step._from[k], v, ease_fn(t / step.duration))
+                    local amt = min(1, max(0, ease_fn(t / step.duration)))
+                    if step.to then
+                        -- interpolate between 2 values
+                        for k, v in pairs(step.to) do
+                            object[k] = lerp(step._from[k], v, amt)
+                        end
                     end
                 end
                 a._t = t
@@ -88,7 +96,7 @@ function M.create(id, t)
         speed = 1,
         enabled = false,
         steps = {},
-        _t = 0,
+        _t = 0
     }
 
     table.insert(animations, a)
@@ -108,8 +116,11 @@ function M.create(id, t)
             local step = select(i, ...)
             step.duration = step.duration or 1000
             step._from = {}
-            for k in pairs(step.to) do
-                step._from[k] = a.object[k]
+            if step.to then
+                -- get values to interpolate *from*
+                for k in pairs(step.to) do
+                    step._from[k] = a.object[k]
+                end
             end
             table.insert(a.steps, step)
         end
@@ -136,6 +147,8 @@ function M.create(id, t)
     return N
 end
 
+function M.draw() end
+
 return log.log_methods('animation', M, {
-    exclude={'update'}
+    exclude={'update', 'draw'}
 })
