@@ -22,12 +22,15 @@ local abs = math.abs
 
 ---@class Renderable
 ---@field id? string
+---@field tag? string
 ---@field collection_id? string
 ---@field data? table arbitrary value that does nothing
 ---@field tex? any love.Texture
 ---@field text? string
 ---@field frames? RenderableFrame[]
 ---@field current_frame? number
+---@field color? Color
+---@field opacity? number
 ---@field copy_transform? string id of renderable with transform that should be copied
 ---@field x? number
 ---@field y? number
@@ -139,7 +142,10 @@ end
 ---@param t Renderable
 ---@return string, Renderable
 function M.add(t)
-    t.id = genid()
+    local id = genid()
+    t.tag = t.tag or 'renderable'
+    t.id = t.tag..':'..tostring(id)
+
     table.insert(collection[current_collection], t)
     renderable_map[t.id] = t
     -- copy transform?
@@ -153,6 +159,7 @@ function M.add(t)
         t.ox = t.ox or r.ox
         t.oy = t.oy or r.ox
     end
+    t.opacity = t.opacity or 1
     t.x = t.x or 0
     t.y = t.y or 0
     t.w = 0
@@ -339,34 +346,38 @@ function M.draw()
         love.graphics.push('all')
         color.reset()
 
-        -- draw image
         local frame = r.frames and r.frames[r.current_frame or 1]
-        local x, y = 0, 0
         local ox, oy = r.ox or 1, r.oy or 1
+
+        local x, y = M.transform_point(r.id, ox, oy)
+        if M.ROUND_POSITION then
+            x = round(x)
+            y = round(y)
+        end
 
         if M.ROUND_POSITION then
             ox = round(ox)
             oy = round(oy)
         end
 
+        -- set color
+        color.set(r.color or color.MUI.WHITE, r.opacity or 1)
+
         if frame and r.tex then
+            -- draw frame of texture
             local sw, sh = r.tex:getDimensions()
-            x, y = M.transform_point(r.id, ox, oy)
-            if M.ROUND_POSITION then
-                x = round(x)
-                y = round(y)
-            end
             quad:setViewport(frame.x, frame.y, frame.w, frame.h, sw, sh)
             love.graphics.draw(r.tex, quad, x, y, r.r, r.sx, r.sy, ox, oy)
         elseif r.tex then
-            x, y = M.transform_point(r.id, ox, oy)
-            if M.ROUND_POSITION then
-                x = round(x)
-                y = round(y)
-            end
+            -- draw texture
             love.graphics.draw(r.tex, x, y, r.r, r.sx, r.sy, ox, oy)
         end
 
+        if r.text then
+            -- print text
+            love.graphics.print(r.text, x, y, r.r, r.sx, r.sy, ox, oy)
+        end
+        
         if M.DEBUG then
             local w, h = M.dimensions(r, true)
 
@@ -383,9 +394,6 @@ function M.draw()
             love.graphics.pop()
         end
         
-        if r.text then
-            love.graphics.print(r.text, x, y, r.r, r.sx, r.sy, ox, oy)
-        end
 
         if M.DEBUG and r._easing then
             -- draw position transition

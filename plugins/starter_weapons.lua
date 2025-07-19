@@ -65,14 +65,14 @@ return {
                             sx = WPN_SCALE,
                             ox = 7, oy = 8,
                         },
-                        ease_fn = easing.ease_in_out_sine,
+                        ease_fn = easing.ease_in_quad,
                         face_direction = true,
                         curve = {
                             0,      0,
                             0.5, -0.5,
                             1,      0,
                         },
-                        curve_sy = 100,
+                        curve_sy = 200,
                     },
                 },
             },
@@ -152,9 +152,7 @@ return {
                 {text='Chain Vest\n'},
                 {text='Blocks some damage'}
             },
-            mitigate_damage = function (_, damage)
-                return damage - 2
-            end
+            defense = 10,
         }
     end
 } --[[@as PluginOptions]]

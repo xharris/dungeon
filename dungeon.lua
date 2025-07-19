@@ -62,7 +62,7 @@ M.rooms.RIFT = {
 }
 
 ---@return DungeonRoom?
-function M.rooms.get_by_id(id)
+function M.rooms.id(id)
     return zone_rooms[id]
 end
 
@@ -192,7 +192,7 @@ function M.get_next_rooms()
     ---@type DungeonRoom[]
     local out = {}
     for _, r in ipairs(doors) do
-        local room = M.rooms.get_by_id(r)
+        local room = M.rooms.id(r)
         if room then
             table.insert(out, room)
         end
@@ -207,7 +207,7 @@ end
 function M.move_to_room(room_id, entity)
     assert(current_zone, "not currently in a zone")
 
-    local room = M.rooms.get_by_id(room_id)
+    local room = M.rooms.id(room_id)
     if room and room.spawn_room then
         -- spawn room
         current_room = room
@@ -245,5 +245,5 @@ M.rooms = log.log_methods('dungeon.rooms', M.rooms, {
 })
 
 return log.log_methods('dungeon', M, {
-    exclude={'get_background_image', 'get_by_id', 'get_type', 'current_zone'}
+    exclude={'get_background_image', 'id', 'get_type', 'current_zone'}
 })

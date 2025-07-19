@@ -1,3 +1,4 @@
+local log = require "lib.log"
 local M = {}
 
 ---@class Stats
@@ -7,15 +8,25 @@ local M = {}
 
 ---@param stats Stats
 function M.attack_speed(stats)
-    return stats.agi / (stats.agi + 100) + 1
+    return M.diminishing(stats.agi)
+end
+
+---@param def number
+function M.defense(def)
+    return M.diminishing(def)
+end
+
+---@param x number
+function M.diminishing(x)
+    return x / (x + 100) + 1
 end
 
 ---@param ratio Stats
 ---@param stats Stats
-function M.damage(ratio, stats)
+function M.apply(ratio, stats)
     return (ratio.str * stats.str) +
            (ratio.int * stats.int) +
            (ratio.agi * stats.agi)
 end
 
-return M
+return log.log_methods('stats', M, {exclude={'attack_speed', 'diminishing', 'defense'}})

@@ -21,6 +21,7 @@ log.LOG_METHODS_LEVEL = const.LOG_METHODS_LEVEL
 log.LOG_CONSOLE_LEVEL = const.LOG_CONSOLE_LEVEL
 render.DEBUG = const.DEBUG_RENDER
 projectiles.DEBUG = const.DEBUG_PROJECTILES
+projectiles.DURATION = const.PROJECTILE_DURATION
 
 function love.load()
     plugin.add(require 'plugins.global_events')
@@ -83,7 +84,7 @@ function love.update(dt)
     end
 
     state.update(dt)
-
+    
     if ctrl:pressed 'select' then
         dialog.next_dialog()
     end

@@ -1,6 +1,8 @@
 local M = {}
 local lume = require 'ext.lume'
 
+---@alias Color number[]
+
 M.hex2rgba = lume.memoize(
     ---@param hex string
     function(hex)
@@ -26,6 +28,7 @@ M.RESET_COLOR = {1, 1, 1, 1}
 M.MUI = {
     WHITE = {1, 1, 1},
     BLACK = {0, 0, 0},
+    RED_500 = {M.hex2rgba('#F44336')},
     GREY_900 = {M.hex2rgba('#212121')},
     GREEN_500 = {M.hex2rgba('#4CAF50')},
     ORANGE_500 = {M.hex2rgba('#FF9800')}

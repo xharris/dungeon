@@ -9,7 +9,8 @@ return {
     end,
 
     ---@param key_path string
-    missing_field = function (key_path)
-        return "missing key:"..key_path
+    ---@param object? table
+    missing_field = function (key_path, object)
+        return "missing field: "..key_path..(object and ' '..serialize(object) or '')
     end
 }

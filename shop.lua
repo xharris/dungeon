@@ -57,7 +57,7 @@ function M.buy_item(e, item_id)
     if item_id and available_items and #available_items > 0 then
         local found_item = false
         for _, data in ipairs(available_items) do
-            if item_id == data.id and items.get_by_id(data.id) then
+            if item_id == data.id and items.get(data.id) then
                 found_item = true
                 break
             end

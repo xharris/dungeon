@@ -1,6 +1,7 @@
 local M = {}
 
 local lume = require 'ext.lume'
+local log  = require 'lib.log'
 
 ---@type Entity[]
 local entities = {}
@@ -16,7 +17,8 @@ local id = 0
 ---@param e Entity
 function M.add(e)
     id = id + 1
-    e._id = tostring(id)
+    e.tag = e.tag or 'entity'
+    e._id = e.tag..':'..tostring(id)
     table.insert(entities, e)
     entity_map[e._id] = e
     return e
@@ -37,13 +39,18 @@ function M.find(...)
     local components = {...}
     ---@type Entity[]
     local found = {}
+    local skip = false
     for _, e in ipairs(entities) do
+        skip = false
         for _, c in ipairs(components) do
             if e[c] == nil then
+                skip = true
                 break
             end
         end
-        table.insert(found, e)
+        if not skip then
+            table.insert(found, e)
+        end
     end
     return found
 end
@@ -68,4 +75,6 @@ function M.update()
     deleted = {}
 end
 
-return M
+return log.log_methods('entity', M, {
+    include={'add'}
+})

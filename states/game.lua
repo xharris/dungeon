@@ -1,3 +1,5 @@
+local M = {}
+
 local events = require 'events'
 local log = require 'lib.log'
 local combat = require 'combat'
@@ -18,6 +20,10 @@ local items = require 'items'
 local signal = require 'lib.signal'
 local errors = require 'lib.errors'
 local stats  = require 'stats'
+local projectiles = require 'projectiles'
+local zindex      = require 'zindex'
+local animation = require 'lib.animation'
+local color = require 'lib.color'
 
 local max = math.max
 local min = math.min
@@ -89,31 +95,49 @@ local function show_room_choices()
     }
 end
 
----@param data CombatUseItemData
-local function on_attack_landed(data)
-    local source = entity.get(data.source)
-    local target = entity.get(data.target)
-    local item = items.get_by_id(data.item.id)
-
-    if not source or not target then return end
-    if not item then
-        return log.error(errors.not_found('item', data.item.id))
+---@param entity_id string
+---@param change number
+---@return string? error
+function M.on_change_health(entity_id, change)
+    local e = entity.get(entity_id)
+    if not e then
+        return errors.not_found('entity', entity_id)
     end
+    local x, y = e.x, e.y
 
-    if data.type == 'attack' then
-        -- take damage from attack
-        local damage = stats.damage(item.stats_ratio, source.stats)
-        if item.mitigate_damage then
-            damage = item.mitigate_damage(source, damage)
-        end
-        char.add_health(target, max(0, -damage))
-    end
+    -- show text animation
+    local r_id, text_render = render.add{
+        tag = 'health-changed-text',
+        x = x,
+        y = y,
+        text = tostring(change),
+        color = color.MUI.RED_500,
+        z = zindex.character_health_changed,
+    }
+    entity.add{
+        tag = 'health-changed-text',
+        text = text_render,
+        color = color.MUI.RED_500,
+        x = x,
+        y = y,
+        vx = lume.randomchoice{-30, 30},
+        vy = -150,
+        gravity = 300,
+        render_text = r_id,
+        render_text_animation = animation
+            .create(text_render.id, text_render)
+            .add(
+                {to={opacity=0}, duration=1500}
+            )
+            .start()
+    }
 end
 
----@param e Entity
----@param change number
-local function on_change_health(e, change)
-
+---@param data CombatUseItemData?
+local function on_projectile_reached_target(data)
+    if data then
+        combat.process_attack(data)
+    end
 end
 
 enter_room = function(room_id)
@@ -167,10 +191,10 @@ return {
         end
 
         events.signals.on(events.SIGNALS.on_end, show_room_choices)
-        combat.signals.on(combat.SIGNALS.on_end, show_room_choices)
+        combat.signals.on(combat.SIGNALS.ended, show_room_choices)
         dungeon.signals.on(dungeon.SIGNALS.enter_zone, show_room_choices)
-        combat.signals.on(combat.SIGNALS.attack_landed, on_attack_landed)
-        char.signals.on(char.SIGNALS.change_health, on_change_health)
+        char.signals.on(char.SIGNALS.change_health, M.on_change_health)
+        projectiles.signals.on(projectiles.SIGNALS.reached_target, on_projectile_reached_target)
 
         -- start game
         local player = char.get_player()
@@ -189,7 +213,7 @@ return {
     end,
 
     leave = function ()
-        signal.off(show_room_choices, on_attack_landed, on_change_health)
+        signal.off(show_room_choices, M.on_change_health, on_projectile_reached_target)
     end,
     
     update = function (dt)
@@ -229,7 +253,7 @@ return {
             end
 
             -- select the next dungeon room to enter
-            if choice_id and dungeon.rooms.get_by_id(choice_id) then
+            if choice_id and dungeon.rooms.id(choice_id) then
                 enter_room(choice_id)
             end
         end

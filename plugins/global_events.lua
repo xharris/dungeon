@@ -65,7 +65,7 @@ return {
                         dialog.add{texts={{text="Bye."}}}
 
                     elseif choice_id == "accept_heal" then
-                        char.add_health(e, MEDIC_HEAL_AMOUNT)
+                        char.add_health(e._id, MEDIC_HEAL_AMOUNT)
                         dialog.add{
                             texts={{text="There you go! That should help."}},
                             choices={

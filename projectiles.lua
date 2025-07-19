@@ -22,16 +22,17 @@ local angle = function (x1, y1, x2, y2)
     return rad < 0 and rad + math.pi*2 or rad
 end
 
+---@alias ProjectileSpeed 'slow'|'normal'|'fast'
+
 ---@class ProjectileAnimation
 ---@field image Image
 ---@field ease_fn? function
 ---@field face_direction? boolean
----@field speed? 'slow'|'normal'|'fast'
 ---@field target_distance? number distance where projectile is considered to have hit the target
 ---@field keep? boolean do not destroy after hitting target
----@field on_reached_target? fun(data:any)
 ---@field curve? number[]
 ---@field curve_sy? number
+---@field speed? ProjectileSpeed
 
 ---@class Projectile
 ---@field target Entity
@@ -44,6 +45,13 @@ end
 ---@field _bezier any love.BezierCurve
 
 M.DEBUG = false
+M.DURATION = 1000
+---@type table<ProjectileSpeed, number>
+M.SPEED = {
+    slow = 2,
+    normal = 0.5,
+    fast = 0.2,
+}
 
 M.signals = signal.create 'projectiles'
 M.SIGNALS = {
@@ -93,6 +101,9 @@ function M.update(dt)
     -- move projectiles
     for i, p in lume.ripairs(projectiles) do
         ---@cast p Projectile
+        local animation = p.animation
+        local speed = animation.speed
+        
         -- get current target position
         local target = p.target
         local target_screen_ox, target_screen_oy = screens.rect(target.screen_id)
@@ -101,24 +112,26 @@ function M.update(dt)
         local target_y = target.y + target_screen_oy
 
         local dist = distance(r_x, r_y, target_x, target_y)
-        if dist <= (p.animation.target_distance or 10) then
+        local duration = M.DURATION * M.SPEED[speed]
+
+        if dist <= (animation.target_distance or 10) then
             -- close enough to target
             M.signals.emit(M.SIGNALS.reached_target, p.data)
-            if not p.animation.keep then
+            if not animation.keep then
                 -- destroy projectile
                 render.remove(p.renderable.id)
                 table.remove(projectiles, i)
             end
-        elseif p.t <= 2000 then
+        elseif p.t <= duration then
             -- move along curve
             p.t = p.t + 1000 * dt
-            local amt = max(0, min(1, p.animation.ease_fn(p.t / 2000)))
+            local amt = max(0, min(1, animation.ease_fn(p.t / duration)))
             local x, y = p._bezier:evaluate(amt)
             
             local x_scale = p.to.x - p.from.x
 
             p.renderable.x = (x * x_scale) + p.from.x
-            p.renderable.y = (y * p.animation.curve_sy) + p.from.y
+            p.renderable.y = (y * animation.curve_sy) + p.from.y
         end
     end
 end

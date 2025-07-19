@@ -1,7 +1,7 @@
 local dialog = require 'dialog'
 local items = require 'items'
 local ctrl = require 'lib.controls'
-local char = require 'character'
+local character = require 'character'
 local state = require 'lib.state'
 local states = require 'states.index'
 local entity = require 'lib.entity'
@@ -14,6 +14,7 @@ local assets = require 'assets.index'
 local lume = require 'ext.lume'
 local easing = require 'lib.easing'
 local printc = require 'lib.printc'
+local errors = require 'lib.errors'
 
 local lerp = lume.lerp
 
@@ -56,7 +57,7 @@ return {
         render.reset()
 
         -- create player
-        char.create()
+        character.create()
         
         local starters = items.get_all_starters()
         starting_items = {}
@@ -79,7 +80,7 @@ return {
     end,
 
     update = function (dt)
-        local player = char.get_player()
+        local player = character.get_player()
         if not player then
             return
         end
@@ -126,11 +127,12 @@ return {
             end
         end
 
+        local selected = starting_items[selected_index]
         if ctrl:pressed 'select' then
-            local item = items.get_by_id(starting_items[selected_index].item.id)
-            if item then
-                local idx = char.add_item_to_inventory(player._id, {id=item.id})
-                char.equip_item(player._id, idx)
+            local item = items.get(selected.item.id)
+            if not log.error_if(not item, errors.not_found('starting_item', selected.item.id)) then
+                local idx = character.add_item_to_inventory(player._id, {id=selected.item.id})
+                character.equip_item(player._id, idx)
                 state.pop()
                 state.push(states.game)
             end

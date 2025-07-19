@@ -19,7 +19,7 @@ local max = math.max
 ---@field type 'weapon'|'armor'|'ring'|'passive'
 ---@field label? PrintcText[]
 ---@field stats_ratio? Stats
----@field mitigate_damage? fun(src:Entity, damage:number): number mitigate damage before an attack lands
+---@field defense? number
 ---@field shop_disabled? boolean can appear in the shop
 ---@field image? Image
 ---@field rarity? Rarity
@@ -80,7 +80,7 @@ end
 
 ---@param id string
 ---@return Item?
-function M.get_by_id(id)
+function M.get(id)
     for _, item in ipairs(items) do
         if item.id == id then
             return item
@@ -179,5 +179,5 @@ M.ability = log.log_methods('items.ability', M.ability, {
     
 })
 return log.log_methods('items', M, {
-    exclude={'get_by_id', 'storage'}
+    exclude={'id', 'storage', 'get'}
 })

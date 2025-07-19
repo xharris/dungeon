@@ -4,7 +4,7 @@ return {
     ---@type LogLevel
     LOG_METHODS_LEVEL = 'debug',
     ---@type LogLevel
-    LOG_CONSOLE_LEVEL = 'info',
+    LOG_CONSOLE_LEVEL = 'debug',
     WRITE_LOGS_APPEND = false,
     HEALTH = 100,
     FLOOR_Y = 160,
@@ -30,4 +30,5 @@ return {
     },
     MAX_EQUIPPED_ITEMS = 5,
     MAX_INVENTORY_ITEMS = 5,
+    PROJECTILE_DURATION = 1000,
 }

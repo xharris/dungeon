@@ -36,7 +36,8 @@ return {
 
         combat.enemy.add{
             id = 'goblin',
-            items = {{id='big_stick'}},
+            inventory = {{id='big_stick'}},
+            equipped_items = {1},
             stats = {agi=100, str=10, int=0},
             image = {
                 path = assets.dk_items,
@@ -66,7 +67,7 @@ return {
                 if ctrl:pressed 'select' then
                     local choice_id = dialog.selected_choice()
                     if choice_id == "rest" then
-                        char.add_health(e, REST_HEAL_AMOuNT)
+                        char.add_health(e._id, REST_HEAL_AMOuNT)
                         dialog.add{texts={{text="You healed "..tostring(REST_HEAL_AMOuNT).." hp."}}}
                     
                     elseif choice_id == "pass" then

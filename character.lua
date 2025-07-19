@@ -1,6 +1,5 @@
 local M = {}
 
--- local render = require 'render'
 local log = require 'lib.log'
 local entity = require 'lib.entity'
 local lume = require 'ext.lume'
@@ -14,10 +13,12 @@ local errors = require 'lib.errors'
 local items = require 'items'
 local signal = require 'lib.signal'
 local zindex = require 'zindex'
+local stats = require 'stats'
 
 local abs = math.abs
 local min = math.min
 local max = math.max
+local floor = math.floor
 
 ---@class CharacterEscortClient
 ---@field name string
@@ -28,7 +29,7 @@ local max = math.max
 
 M.signals = signal.create 'character'
 M.SIGNALS = {
-    change_health = 'change_health' -- Entity, number
+    change_health = 'change_health' -- entity_id, number
 }
 
 ---@param e Entity
@@ -43,13 +44,17 @@ function M.add_money(e, v)
     return true
 end
 
----@param e Entity
+---@param entity_id string
 ---@param v number can be negative to lose health
----@return boolean ok
-function M.add_health(e, v)
+---@return string? error
+function M.add_health(entity_id, v)
+    local e = entity.get(entity_id)
+    if not e then return errors.not_found('entity', entity_id) end
+
+    v = floor(v)
+
     e.health.current = max(0, min(e.health.max, e.health.current + v))
-    M.signals.emit(M.SIGNALS.change_health, e, v)
-    return true
+    M.signals.emit(M.SIGNALS.change_health, e._id, v)
 end
 
 ---@return Entity|false
@@ -77,6 +82,7 @@ function M.add_escort_client(escort_id, client)
         return false
     end
     local client_entity = entity.add{
+        tag = 'escortclient-'..client.name,
         group = 'ally',
         name = client.name,
         health = client.health,
@@ -127,11 +133,15 @@ end
 
 ---@param v Entity?
 ---@param renderable Renderable?
+---@return Entity
 function M.create(v, renderable)
+    local name = v and v.name or 'player'
+    log.debug('name =', name)
     local e = entity.add(lume.extend(
         {
+            tag = v and v.tag or name,
             group = 'player',
-            name = 'Player',
+            name = name,
             class = 'warrior',
             inventory = {},
             equipped_items = {},
@@ -185,7 +195,7 @@ function M.create(v, renderable)
     render.set_collection()
     -- add weapon sprite
     for _, data in ipairs(e.inventory) do
-        local item = items.get_by_id(data.id)
+        local item = items.get(data.id)
         if item and item.class_starter then
             local idx = M.add_item_to_inventory(e._id, data)
             M.equip_item(e._id, idx)
@@ -196,9 +206,13 @@ function M.create(v, renderable)
 end
 
 ---@param e Entity
+---@return string? error
 local function position_equipped_items(e)
+    if not e.equipped_items then
+        return "entity does not have equipped_items"
+    end
     for _, equip in ipairs(e.equipped_items) do
-        local item = items.get_by_id(equip.id)
+        local item = items.get(equip.id)
         local r_equip = render.get(equip.renderable)
         if item and r_equip and e.x and e.y then
             local cx, cy = 
@@ -238,7 +252,7 @@ function M.equip_item(entity_id, idx, swap_idx)
         render.remove(equipped_data.renderable)
     end
 
-    local inventory_item = items.get_by_id(inventory_data.id)
+    local inventory_item = items.get(inventory_data.id)
     if not inventory_item then
         return "inventory item not found"
     end
@@ -247,7 +261,11 @@ function M.equip_item(entity_id, idx, swap_idx)
         if e.screen_id then
             render.set_collection(e.screen_id)
         end
-        inventory_data.renderable = render.add(images.renderable(inventory_item.image))
+        inventory_data.renderable = render.add(
+            images.renderable(inventory_item.image, {
+                tag = inventory_item.id
+            })
+        )
         render.set_collection()
     end
 
@@ -269,7 +287,7 @@ function M.add_item_to_inventory(entity_id, item_data)
     if #e.inventory >= e.max_inventory_items then
         return 0, "reached max inventory items"
     end
-    local item = items.get_by_id(item_data.id)
+    local item = items.get(item_data.id)
     if not item then
         return 0, "item not found"
     end
@@ -286,19 +304,47 @@ function M.kill(entity_id)
     end
 end
 
+---@param args {equipped_items?:ItemData[], stats?:Stats, inventory?:ItemData[]}
+---@return number power
+function M.power_level(args)
+    local power = 0
+    local count = 0
+
+    for _, data in ipairs(args.inventory or {}) do
+        local item = items.get(data.id)
+        if item then
+            power = power + stats.apply(item.stats_ratio, args.stats)
+            count = count + 1
+        end
+    end
+
+    for _, data in ipairs(args.equipped_items or {}) do
+        local item = items.get(data.id)
+        if item then
+            power = power + stats.apply(item.stats_ratio, args.stats)
+            count = count + 1
+        end
+    end
+
+    return power / count
+end
+
 ---@param dt number
 function M.update(dt)
     for _, e in ipairs(entity.all()) do
         -- character physics
-        local on_floor = (e.y or const.FLOOR_Y) >= (e.floor_y or const.FLOOR_Y)
+        local on_floor = e.floor_y and e.y and e.y >= e.floor_y
         local should_stand = not e.floor_behavior or e.floor_behavior == 'stand'
         local should_bounce = e.floor_behavior == 'bounce'
         local can_jump = e.jump_velocity and e.jump_velocity ~= 0
-        local has_jumps_left = (e.jumps or const.MAX_JUMPS) < (e.max_jumps or const.MAX_JUMPS)
+        local has_jumps_left = e.jumps and e.max_jumps and e.jumps < e.max_jumps
         local is_falling = e.vy and e.vy > 0
 
+        -- apply velocity
+        if e.x and e.vx then
+            e.x = e.x + e.vx * dt
+        end
         if e.y and e.vy then
-            -- apply velocity
             e.y = e.y + e.vy * dt
         end
 
@@ -342,6 +388,13 @@ function M.update(dt)
         if r and e.x and e.y then
             r.x = e.x
             r.y = e.y
+        end
+
+        -- text rendering
+        local r_text = e.render_text and render.get(e.render_text)
+        if r_text and e.x and e.y then
+            r_text.x = e.x
+            r_text.y = e.y
         end
 
         -- rendering for equipped items

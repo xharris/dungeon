@@ -1,5 +1,6 @@
 ---@class Entity
 ---@field _id? string
+---@field tag? string appended to _id
 ---@field health? Health
 ---@field name? string
 ---@field group? 'player'|'enemy'|'ally'
@@ -15,6 +16,7 @@
 ---@field escort_clients? string[] ids of characters being escorted
 ---@field x? number
 ---@field y? number
+---@field vx? number
 ---@field vy? number
 ---@field gravity? number
 ---@field floor_y? number
@@ -24,6 +26,8 @@
 ---@field jumps? number
 ---@field class? Class
 ---@field subclass? string
+---@field render_text? string
+---@field render_text_animation? string Animation
 
 ---@alias Class 'warrior'|'archer'|'mage'|'rogue' base classs
 

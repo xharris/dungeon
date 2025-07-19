@@ -86,12 +86,12 @@ end
 
 ---@generic T
 ---@param id string
----@param t T
-function M.create(id, t)
+---@param object T object that will be updated
+function M.create(id, object)
     ---@type Animation
     local a = {
         id = id,
-        object = t,
+        object = object,
         step = 1,
         speed = 1,
         enabled = false,
@@ -135,7 +135,7 @@ function M.create(id, t)
 
     function N.start()
         a.enabled = true
-        return N
+        return a.id
     end
 
     ---@param fn fun()
@@ -144,7 +144,7 @@ function M.create(id, t)
         return N
     end
 
-    return N
+    return log.log_methods('animation.'..id, N)
 end
 
 function M.draw() end
