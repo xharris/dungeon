@@ -138,13 +138,13 @@ function M.log_methods(name, t, keys, level)
                 -- print fn name + arguments
                 _print(const.LOG_HEADER[l], '('..name..'.'..k..')', ...)
                 local ret = {v(...)}
+                d = d - 1
                 -- print return values
                 if count(ret) > 0 then
                     for _, r in ipairs(ret) do
                         _print(const.LOG_HEADER[l], '|->', r)
                     end
                 end
-                d = d - 1
                 ---@diagnostic disable-next-line: deprecated
                 return unpack(ret)
             end

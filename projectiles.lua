@@ -68,6 +68,7 @@ local projectiles = {}
 function M.create(from, to, v, extra)
     extra = extra or {}
     v.curve_sy = v.curve_sy or 0
+    v.speed = v.speed or 'normal'
 
     -- shoot projectile
     local _, r = render.add(

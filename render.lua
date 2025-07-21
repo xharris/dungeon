@@ -300,6 +300,7 @@ function M.update(dt)
             else
                 -- need sorting?
                 if r.z ~= r._last_z then
+                    r.z = floor(r.z + 0.5)
                     r._last_z = r.z
                     need_z_sort = true
                 end

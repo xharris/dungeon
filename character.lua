@@ -189,6 +189,7 @@ function M.create(v, renderable)
             y = e.y,
             ox = 8, oy = 8,
             sx = 2, sy = 2,
+            z = zindex.character,
         } --[[@as Renderable]],
         renderable or {}
     ))
@@ -218,14 +219,16 @@ local function position_equipped_items(e)
             local cx, cy = 
                 (item.render_on_character and item.render_on_character.x or 0),
                 (item.render_on_character and item.render_on_character.y or 0)
-            local z = 
+            local z =
                 item.render_on_character and
                 item.render_on_character.z or
                 zindex.equipped_item_back
-                
+
             r_equip.x = e.x + cx
             r_equip.y = e.y + cy
-            r_equip.z = z
+            if not r_equip.z then
+                r_equip.z = z
+            end
         end
     end
 end
@@ -310,20 +313,27 @@ function M.power_level(args)
     local power = 0
     local count = 0
 
-    for _, data in ipairs(args.inventory or {}) do
+    ---@param data ItemData
+    local add_item_power = function (data)
         local item = items.get(data.id)
-        if item then
+        if not item then
+            return
+        end
+        if item and item.stats_ratio and args.stats then
             power = power + stats.apply(item.stats_ratio, args.stats)
+            count = count + 1
+        elseif item and item.defense then
+            power = power + stats.diminishing(item.defense)
             count = count + 1
         end
     end
 
+    for _, data in ipairs(args.inventory or {}) do
+        add_item_power(data)
+    end
+
     for _, data in ipairs(args.equipped_items or {}) do
-        local item = items.get(data.id)
-        if item then
-            power = power + stats.apply(item.stats_ratio, args.stats)
-            count = count + 1
-        end
+        add_item_power(data)
     end
 
     return power / count
@@ -398,7 +408,7 @@ function M.update(dt)
         end
 
         -- rendering for equipped items
-        position_equipped_items(e)
+        -- position_equipped_items(e)
     end
 end
 

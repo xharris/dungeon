@@ -53,7 +53,7 @@ function M.update(dt)
             local step = a.steps[a.step]
             if step then
                 local object = step.object or a.object
-                local t = max(0, a._t - (step.delay or 0))
+                local t = a._t - (step.delay or 0)
                 local ease_fn = step.ease_fn or linear
 
                 if t > step.duration then
@@ -70,8 +70,8 @@ function M.update(dt)
                 else
                     -- animate
                     t = t + (dt * 1000 * a.speed)
-                    local amt = min(1, max(0, ease_fn(t / step.duration)))
-                    if step.to then
+                    if t >= 0 and step.to then
+                        local amt = min(1, max(0, ease_fn(t / step.duration)))
                         -- interpolate between 2 values
                         for k, v in pairs(step.to) do
                             object[k] = lerp(step._from[k], v, amt)

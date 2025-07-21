@@ -3,6 +3,8 @@ local sin = math.sin
 local tan = math.tan
 local pi = math.pi
 
+local c1, c3, c4
+
 return {
     linear = function(x)
         return x
@@ -24,5 +26,17 @@ return {
     end,
     ease_in_circ = function (x)
         return 1 - (1 - (x^2))
+    end,
+    ease_out_elastic = function (x)
+        c4 = (2 * pi) / 3
+        return
+            x == 0 and 0 or
+            x == 1 and 1 or
+            2^(-10 * x) * sin((x * 10 - 0.75) * c4) + 1
+    end,
+    ease_out_back = function (x)
+        c1 = 1.70158
+        c3 = c1 + 1
+        return 1 + c3 * ((x-1)^3) + c1 * ((x-1)^2)
     end
 }

@@ -14,6 +14,8 @@ local animation = require 'lib.animation'
 local stats = require 'stats'
 local projectiles = require 'projectiles'
 local const       = require 'const'
+local easing      = require 'lib.easing'
+local zindex      = require 'zindex'
 
 local rad = math.rad
 local deg = math.deg
@@ -243,11 +245,35 @@ function M.use_item(source_id, target_id, item_data)
             local err = M.process_attack(data)
             if err then return err end
 
+            local angle1 = rad(-45)
+            local angle2 = rad(-45+360)
+            local render_x = item.render_on_character and item.render_on_character.x or 0
+            local render_y = item.render_on_character and item.render_on_character.y or 0
+            
             -- swing weapon
             animation
                 .create(r.id, r)
                 .add(
-                    {to={r=deg(r.r) >= (45+135)/2 and rad(45) or rad(135)}, duration=1000, data=data}
+                    {
+                        to=r.r >= (angle1+angle2)/2 and
+                        -- swing up
+                        {
+                            r=angle1,
+                            x=source.x + render_x,
+                            y=source.y - render_y,
+                            z=zindex.equipped_item_back,
+                        } or 
+                        -- swing down
+                        {
+                            r=angle2,
+                            x=source.x - render_x,
+                            y=source.y + render_y,
+                            z=zindex.equipped_item_front,
+                        },
+                        duration=750 / stats.attack_speed(source.stats),
+                        data=data,
+                        ease_fn=easing.ease_out_back
+                    }
                 )
                 .on_end(function ()
                     if item.attack_landed then
@@ -259,7 +285,6 @@ function M.use_item(source_id, target_id, item_data)
         end
 
         if shoot and r_weapon then
-            local r = r_weapon
             -- TODO recoil
             -- animation
             --     .create(r.id, r)

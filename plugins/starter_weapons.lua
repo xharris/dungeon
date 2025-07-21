@@ -26,7 +26,7 @@ return {
                 ox = 8, oy = -4,
             },
             stats_ratio = items.stats{str=WPN_STATS_RATIO},
-            render_on_character = {x=16, y=0, z=zindex.equipped_item_back},
+            render_on_character = {x=4, y=4, z=zindex.equipped_item_back},
             attack_animation = {
                 swing = {}
             },
@@ -40,119 +40,109 @@ return {
         -- double edged
 
         -- archer
-        items.add{
-            id = "starter_bow",
-            type = 'weapon',
-            class_starter = 'archer',
-            stats_ratio = items.stats{str=WPN_STATS_RATIO},
-            label = {
-                {text='Beginner\'s Bow\n'},
-                {text='May your aim be true'}
-            },
-            image = {
-                path = assets.dk_items,
-                frames = {{x=144, y=106, w=16, h=22}},
-                sx = WPN_SCALE,
-                ox = 8, oy = 11,
-            },
-            render_on_character = {x=16, y=0, z=zindex.equipped_item_back},
-            attack_animation = {
-                shoot = {
-                    projectile = {
-                        image = {
-                            path = assets.dk_items,
-                            frames = {{x=161, y=128, w=14, h=16}},
-                            sx = WPN_SCALE,
-                            ox = 7, oy = 8,
-                        },
-                        ease_fn = easing.ease_in_quad,
-                        face_direction = true,
-                        curve = {
-                            0,      0,
-                            0.5, -0.5,
-                            1,      0,
-                        },
-                        curve_sy = 200,
-                    },
-                },
-            },
-        }
+        -- items.add{
+        --     id = "starter_bow",
+        --     type = 'weapon',
+        --     class_starter = 'archer',
+        --     stats_ratio = items.stats{str=WPN_STATS_RATIO},
+        --     label = {
+        --         {text='Beginner\'s Bow\n'},
+        --         {text='May your aim be true'}
+        --     },
+        --     image = {
+        --         path = assets.dk_items,
+        --         frames = {{x=144, y=106, w=16, h=22}},
+        --         sx = WPN_SCALE,
+        --         ox = 8, oy = 11,
+        --     },
+        --     render_on_character = {x=16, y=0, z=zindex.equipped_item_back},
+        --     attack_animation = {
+        --         shoot = {
+        --             projectile = {
+        --                 image = {
+        --                     path = assets.dk_items,
+        --                     frames = {{x=161, y=128, w=14, h=16}},
+        --                     sx = WPN_SCALE,
+        --                     ox = 7, oy = 8,
+        --                 },
+        --                 ease_fn = easing.ease_in_quad,
+        --                 face_direction = true,
+        --                 curve = {
+        --                     0,      0,
+        --                     0.5, -0.5,
+        --                     1,      0,
+        --                 },
+        --                 curve_sy = 200,
+        --             },
+        --         },
+        --     },
+        -- }
 
         -- mage
-        items.add{
-            id = 'starter_tome',
-            type = 'weapon',
-            class_starter = 'mage',
-            stats_ratio = items.stats{int=WPN_STATS_RATIO},
-            label = {
-                {text='Beginner\'s Tome\n'},
-                -- TODO event
-                -- A fallen lord hides his name among twisted words.
-                --
-                -- Im truly old 
-                -- - Bad Tom
-                {text="A strange quote is written on the first page"}
-            },
-            render_on_character = {x=15, y=4, z=zindex.equipped_item_front},
-            image = {
-                path = assets.dk_items,
-                frames = {{x=208, y=128, w=13, h=16}},
-                sx = 1.25,
-                ox = 6.5, oy = 8,
-                r = 45/2,
-            },
-            attack_animation = {
-                shoot = {
-                    projectile = {
-                        image = {
-                            path = assets.dk_items,
-                            frames = {{x=226, y=67, w=11, h=11}},
-                            ox = 5.5, oy = 5.5,
-                        }
-                    }
-                }
-            }
-        }
+        -- items.add{
+        --     id = 'starter_tome',
+        --     type = 'weapon',
+        --     class_starter = 'mage',
+        --     stats_ratio = items.stats{int=WPN_STATS_RATIO},
+        --     label = {
+        --         {text='Beginner\'s Tome\n'},
+        --         -- TODO event
+        --         -- A fallen lord hides his name among twisted words.
+        --         --
+        --         -- Im truly old 
+        --         -- - Bad Tom
+        --         {text="A strange quote is written on the first page"}
+        --     },
+        --     render_on_character = {x=15, y=4, z=zindex.equipped_item_front},
+        --     image = {
+        --         path = assets.dk_items,
+        --         frames = {{x=208, y=128, w=13, h=16}},
+        --         sx = 1.25,
+        --         ox = 6.5, oy = 8,
+        --         r = 45/2,
+        --     },
+        --     attack_animation = {
+        --         shoot = {
+        --             projectile = {
+        --                 image = {
+        --                     path = assets.dk_items,
+        --                     frames = {{x=226, y=67, w=11, h=11}},
+        --                     ox = 5.5, oy = 5.5,
+        --                 }
+        --             }
+        --         }
+        --     }
+        -- }
 
-        -- rogue
-        items.add{
-            id = 'starter_knife',
-            type = 'weapon',
-            class_starter = 'rogue',
-            stats_ratio = items.stats{str=WPN_STATS_RATIO},
-            label = {
-                {text='Beginner\'s Knife\n'},
-                {text='Sharpens as you use it!'}
-            },
-            render_on_character = {x=0, y=0, z=zindex.equipped_item_back},
-            image = {
-                path = assets.dk_items,
-                frames = {{x=48, y=144, w=16, h=16}},
-                sx = WPN_SCALE,
-                ox = 8, oy = -3,
-            },
-            attack_animation = {
-                shoot = {
-                    projectile = {
-                        image = {
-                            path = assets.dk_items,
-                            frames = {{x=48, y=144, w=16, h=16}},
-                            sx = WPN_SCALE,
-                            ox = 8, oy = -3,
-                        },
-                    }
-                }
-            }
-        }
- 
-        items.add{
-            id = 'chain_vest',
-            type = 'armor',
-            label = {
-                {text='Chain Vest\n'},
-                {text='Blocks some damage'}
-            },
-            defense = 10,
-        }
+        -- -- rogue
+        -- items.add{
+        --     id = 'starter_knife',
+        --     type = 'weapon',
+        --     class_starter = 'rogue',
+        --     stats_ratio = items.stats{str=WPN_STATS_RATIO},
+        --     label = {
+        --         {text='Beginner\'s Knife\n'},
+        --         {text='Sharpens as you use it!'}
+        --     },
+        --     render_on_character = {x=0, y=0, z=zindex.equipped_item_back},
+        --     image = {
+        --         path = assets.dk_items,
+        --         frames = {{x=48, y=144, w=16, h=16}},
+        --         sx = WPN_SCALE,
+        --         ox = 8, oy = -3,
+        --     },
+        --     attack_animation = {
+        --         shoot = {
+        --             projectile = {
+        --                 image = {
+        --                     path = assets.dk_items,
+        --                     frames = {{x=48, y=144, w=16, h=16}},
+        --                     sx = WPN_SCALE,
+        --                     ox = 8, oy = -3,
+        --                 },
+        --             }
+        --         }
+        --     }
+        -- }
     end
 } --[[@as PluginOptions]]
