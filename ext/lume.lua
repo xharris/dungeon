@@ -271,7 +271,9 @@ function lume.map(t, fn)
   return rtn
 end
 
-
+---@generic V
+---@param t V[]
+---@param fn fun(v:V):boolean
 function lume.all(t, fn)
   fn = iteratee(fn)
   local iter = getiter(t)
@@ -281,7 +283,9 @@ function lume.all(t, fn)
   return true
 end
 
-
+---@generic V
+---@param t V[]
+---@param fn fun(v:V):boolean
 function lume.any(t, fn)
   fn = iteratee(fn)
   local iter = getiter(t)

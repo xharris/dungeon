@@ -9,6 +9,7 @@ local log = require 'lib.log'
 ---@field pre_draw? fun()
 ---@field draw? fun()
 ---@field leave? fun()
+---@field _skip_first_update? boolean
 
 ---@type table<string, State>
 local states = {}
@@ -34,6 +35,7 @@ function M.push(require_path, ...)
     local state = get(require_path)
     if not M.is_active(require_path) then
         table.insert(stack, require_path)
+        state._skip_first_update = true
         if state.enter then
             state.enter(...)
         end
@@ -62,9 +64,10 @@ end
 function M.update(dt)
     for _, path in ipairs(stack) do
         local state = get(path)
-        if state.update then
+        if state.update and not state._skip_first_update then
             state.update(dt)
         end
+        state._skip_first_update = false
     end
 end
 

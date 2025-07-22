@@ -9,43 +9,50 @@ local lerp = lume.lerp
 local max = math.max
 local min = math.min
 
----@alias RarityLevel 'common'|'normal'|'rare'|'super_rare'
+---@alias RarityLevel 'common'|'rare'|'super_rare'
 
 ---@type table<RarityLevel, number>
 M.RARITY_CHANCE = {
-    common      = 200,
-    normal      = 100,
-    rare        = 60,
-    super_rare  = 20,
+    common      = 100,
+    rare        = 40,
+    super_rare  = 5,
 }
 
 ---@enum Rarity
 M.RARITY = {
     common      = 'common',
-    normal      = 'normal',
     rare        = 'rare',
     super_rare  = 'super_rare',
 }
 
 ---@type RarityLevel[]
-M.RARITY_ORDER = {'common', 'normal', 'rare', 'super_rare'}
+M.RARITY_ORDER = {'common', 'rare', 'super_rare'}
 
 ---@param scale number [0,1] closer to 1 yields higher chance of rarity
 function M.random(scale)
-    local chance = lume.clone(M.RARITY_CHANCE)
+    ---@type table<RarityLevel, number>
+    local chance = {}
     local len = #M.RARITY_ORDER
     scale = min(1, max(0, scale))
     local rarity_max = const.RARITY_SCALE_MAX - scale
     local rarity_min = const.RARITY_SCALE_MIN + scale
     for i, v in ipairs(M.RARITY_ORDER) do
-        chance[v] = floor(chance[v] * lerp(rarity_max, rarity_min, i/len))
+        chance[v] = floor(M.RARITY_CHANCE[v] * lerp(rarity_max, rarity_min, i/len))
     end
+    log.debug('chance', chance)
     return lume.weightedchoice(chance)
 end
 
 ---@param rarity Rarity
 function M.get_chance(rarity)
     return M.RARITY_CHANCE[rarity]
+end
+
+---common < rare = true
+---@param a RarityLevel
+---@param b RarityLevel
+function M.le(a, b)
+    return lume.find(M.RARITY_ORDER, a) < lume.find(M.RARITY_ORDER, b)
 end
 
 return log.log_methods('rarity', M)

@@ -24,14 +24,14 @@ return {
                 frames = {{x=160, y=128, w=16, h=16}},
             },
             shop_disabled = true,
-            stats_ratio = {agi=0, int=0, str=0.2},
+            damage_scaling = {agi=0, int=0, str=0.2},
         }
 
         items.add{
             id = 'slime_shot',
             type = 'weapon',
             shop_disabled = true,
-            stats_ratio = {agi=0, int=0, str=1},
+            damage_scaling = {agi=0, int=0, str=1},
         }
 
         combat.enemy.add{

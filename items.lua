@@ -11,23 +11,32 @@ local lume = require 'ext.lume'
 local images = require 'lib.images'
 local assets = require 'assets.index'
 local render = require 'render'
+local errors = require 'lib.errors'
+local entity = require 'lib.entity'
 
 local max = math.max
 
+---@alias ItemTransformOperation 'add'|'sub'|'mult'|'set'
+---@alias ItemTransformKey 'stats.str'|'stats.int'|'stats.agi'|'stats.crit'|'health.max'|'defense'
+
+---@class ItemTransform
+---@field operation ItemTransformOperation
+---@field value number
+
 ---@class Item
 ---@field id string
----@field type 'weapon'|'armor'|'ring'|'passive'
 ---@field label? PrintcText[]
----@field stats_ratio? Stats
+---@field damage_scaling? Stats ratio of damage item does
+---@field transform_stats? table<ItemTransformKey, ItemTransform>
 ---@field defense? number
 ---@field shop_disabled? boolean can appear in the shop
 ---@field image? Image
----@field rarity? Rarity
+---@field rarity? RarityLevel
 ---@field is_ability? boolean TODO does not appear in shop, offered every X combats?
 ---@field charges_required? number TODO in combat, item activates after X cycles
----@field class_starter? Class starter item for class
+---@field is_starter? boolean
 ---@field subclass? string replaces class starter item
----@field upgrade_from? string[] TODO can only be accepted/offered if player has item in list
+---@field requires_items? string[] TODO can only be accepted/offered if player has item in list
 ---@field attack_animation? ItemAttackAnimation
 ---@field render_on_character? Vector3
 ---@field attack_landed? fun(target:Entity, projectiles:Renderable[])
@@ -66,9 +75,6 @@ local DEFAULT_IMAGE = {
 ---@type Item[]
 local items = {}
 
----@type Ability[]
-local abilities = {}
-
 local entity_storage = datastore.create{
     gain_ability_cooldown = const.GAIN_ABILITY_COOLDOWN,
 } --[[@as Datastore<AbilityData>]]
@@ -88,20 +94,17 @@ function M.get(id)
     end
 end
 
+M.starters = {}
+
 ---Get starting item for each class
 ---@return Item[]
-function M.get_all_starters()
-    ---@type table<Class, Item>
-    local class_items = {}
-    for _, item in ipairs(items) do
-        if item.class_starter then
-            class_items[item.class_starter] = item
-        end
-    end
+function M.starters.all()
     ---@type Item[]
     local out = {}
-    for _, item in pairs(class_items) do
-        table.insert(out, item)
+    for _, item in ipairs(items) do
+        if item.is_starter then
+            table.insert(out, item)
+        end
     end
     return out
 end
@@ -110,45 +113,80 @@ end
 function M.add(v)
     v.label = v.label or {{text=v.id}} --[[@as PrintcText[] ]]
     v.image = v.image or DEFAULT_IMAGE
-    if v.is_ability then
-        table.insert(abilities, v)
-    else
-        table.insert(items, v)
-    end
+    table.insert(items, v)
 end
 
 function M.all()
     return items
 end
 
-function M.abilities()
-    return abilities
+---@param entity_id string
+---@param item_id any
+---@return boolean yes, string? error
+function M.can_use(entity_id, item_id)
+    local e = entity.get(entity_id)
+    if not e then
+        return false, errors.not_found('entity', entity_id)
+    end
+    local item = M.get(item_id) or M.abilities.get(item_id)
+    if not item then
+        return false, errors.not_found('item', item_id)
+    end
+    if item.requires_items then
+        return lume.all(item.requires_items, function (v)
+            return
+                lume.any(e.inventory, function (d) return d.id == v end) or
+                lume.any(e.equipped_items, function (d) return d.id == v end)
+        end)
+    end
+    return true
 end
 
----shortcut to create Stats object
----@param v {agi?:number, str?:number, int?:number}
----@return Stats
-function M.stats(v)
-    v.agi = v.agi or 0
-    v.int = v.int or 0
-    v.str = v.str or 0
-    return v
+M.abilities = {}
+
+---@param v Ability
+function M.abilities.add(v)
+    v.is_ability = true
+    return M.add(v)
 end
 
-M.ability = {}
+function M.abilities.all()
+    local out = {}
+    for _, item in ipairs(items) do
+        if item.is_ability then
+            table.insert(out, item)
+        end
+    end
+    return out
+end
+
+M.abilities.get = M.get
 
 ---@param n number
----@param rarity_scale number [0,1]
-function M.ability.random(n, rarity_scale)
-    ---@type Ability[]
+---@param rarity_scale number [0,1], 1 is rarer
+---@param entity_id? string
+function M.abilities.random(n, rarity_scale, entity_id)
+    ---@type string[]
     local out = {}
+    ---@type table<string, boolean>
+    local exclude = {} -- avoid adding duplicates
     for _ = 1, n do
         local r = rarity.random(rarity_scale)
-        local possible_items = {}
-        for _, a in ipairs(abilities) do
-            if a.rarity == r then
-                table.insert(out, lume.randomchoice(possible_items))
+        local possible = {}
+        for _, a in ipairs(items) do
+            if
+                not exclude[a.id] and
+                a.is_ability and
+                (not a.rarity or rarity.le(a.rarity, r)) and
+                (not entity_id or M.can_use(entity_id, a.id))
+            then
+                table.insert(possible, a)
             end
+        end
+        if #possible > 0 then
+            local choice = lume.randomchoice(possible)
+            exclude[choice.id] = true
+            table.insert(out, choice.id)
         end
     end
     return out
@@ -157,10 +195,9 @@ end
 ---@param entity_id string
 ---@param x? number
 ---@return number cooldown
-function M.ability.reduce_gain_ability_cooldown(entity_id, x)
+function M.abilities.reduce_gain_ability_cooldown(entity_id, x)
     x = x or 1
     local data = entity_storage(entity_id)
-    log.debug('ability cooldown', data.gain_ability_cooldown)
     data.gain_ability_cooldown = max(0, data.gain_ability_cooldown - x)
     if data.gain_ability_cooldown < 0 then
         M.signals.emit(M.SIGNALS.gain_ability_ready, entity_id)
@@ -169,13 +206,13 @@ function M.ability.reduce_gain_ability_cooldown(entity_id, x)
 end
 
 ---@param entity_id string
-function M.ability.show_ability_gain_screen(entity_id)
-    if not state.is_active(states.gain_ability) then
-        state.push(states.gain_ability, entity_id)
+function M.abilities.show_ability_gain_screen(entity_id)
+    if not state.is_active(states.pick_next_ability) then
+        state.push(states.pick_next_ability, entity_id)
     end
 end
 
-M.ability = log.log_methods('items.ability', M.ability, {
+M.abilities = log.log_methods('items.abilities', M.abilities, {
     
 })
 return log.log_methods('items', M, {

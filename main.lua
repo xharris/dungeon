@@ -25,7 +25,7 @@ projectiles.DURATION = const.PROJECTILE_DURATION
 
 function love.load()
     plugin.add(require 'plugins.global_events')
-    plugin.add(require 'plugins.starter_weapons')
+    plugin.add(require 'plugins.base_classes')
     plugin.add(require 'plugins.forest')
 
     shop.load()
@@ -44,12 +44,12 @@ function love.load()
     ---@param _ DungeonRoom
     ---@param entity Entity
     function (_, entity)
-        items.ability.reduce_gain_ability_cooldown(entity._id)
+        items.abilities.reduce_gain_ability_cooldown(entity._id)
     end)
     items.signals.on(items.SIGNALS.gain_ability_ready,
     ---@param entity_id string
     function (entity_id)
-        items.ability.show_ability_gain_screen(entity_id)
+        items.abilities.show_ability_gain_screen(entity_id)
     end)
 
     state.push(states.pick_starter_weapon)
@@ -99,10 +99,10 @@ function love.draw()
 
     state.pre_draw()
     render.draw()
-    state.draw()
     dialog.draw()
     animation.draw()
-    projectiles.draw()
+    state.draw()
+    projectiles.debug_draw()
 end
 
 function love.quit()

@@ -8,13 +8,21 @@ local stats  = require 'stats'
 local WPN_STATS_RATIO = 0.25
 local WPN_SCALE = 2
 
+--[[
+CLASS_STATS = {
+    warrior     = {agi=0,  int=0,     str=75},
+    archer      = {agi=0,  int=25,    str=50},
+    mage        = {agi=0,  int=75,    str=0},
+    rogue       = {agi=10, int=25,    str=50},
+}
+]]
+
 return {
     on_load = function ()
         -- warrior
         items.add{
             id = "starter_sword",
-            type = "weapon",
-            class_starter = 'warrior',
+            is_starter = true,
             label = {
                 {text='Beginner\'s Sword\n'},
                 {text='Rusty, but gets the job done'},
@@ -25,7 +33,10 @@ return {
                 sx = WPN_SCALE,
                 ox = 8, oy = -4,
             },
-            stats_ratio = items.stats{str=WPN_STATS_RATIO},
+            transform_stats = {
+                ['stats.str'] = {operation='add', value=75},
+            },
+            damage_scaling = stats.create{str=WPN_STATS_RATIO},
             render_on_character = {x=4, y=4, z=zindex.equipped_item_back},
             attack_animation = {
                 swing = {}
@@ -33,8 +44,33 @@ return {
         }
         -- warrior abilities
         --
-        -- [crit|hp|agi] * 2
+        -- add stats
+        for _, stat in ipairs{'str', 'agi', 'crit'} do
+            items.abilities.add{
+                id = 'more_'..stat,
+                requires_items = {'starter_sword'},
+                label = {
+                    {text=stat..' + 20'..(stat == 'crit' and '%' or '')}, -- TODO auto-create from transform_stats
+                },
+                transform_stats = {
+                    [stat] = {operation='add', value=20}
+                }
+            }
+        end
+        -- add hp
+        items.abilities.add{
+            id = 'more_hp',
+            requires_items = {'starter_sword'},
+            label = {
+                {text='max hp + 20'}, -- TODO auto-create from add_stats
+            },
+            transform_stats = {
+                ['health.max'] = {operation='add', value=20}
+            }
+        }
         -- 5% parry chance (reflect 100% damage)
+        
+
         -- cannot die for 2 sec
         -- weapon mastery: every 5 seconds switch to a special random sword (super_rare)
         -- double edged
@@ -42,7 +78,6 @@ return {
         -- archer
         -- items.add{
         --     id = "starter_bow",
-        --     type = 'weapon',
         --     class_starter = 'archer',
         --     stats_ratio = items.stats{str=WPN_STATS_RATIO},
         --     label = {
@@ -81,7 +116,6 @@ return {
         -- mage
         -- items.add{
         --     id = 'starter_tome',
-        --     type = 'weapon',
         --     class_starter = 'mage',
         --     stats_ratio = items.stats{int=WPN_STATS_RATIO},
         --     label = {
@@ -117,7 +151,6 @@ return {
         -- -- rogue
         -- items.add{
         --     id = 'starter_knife',
-        --     type = 'weapon',
         --     class_starter = 'rogue',
         --     stats_ratio = items.stats{str=WPN_STATS_RATIO},
         --     label = {

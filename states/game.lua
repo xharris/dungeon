@@ -6,7 +6,7 @@ local combat = require 'combat'
 local dungeon = require 'dungeon'
 local dialog = require 'dialog'
 local entity = require 'lib.entity'
-local char = require 'character'
+local character = require 'character'
 local screens = require 'screens'
 local images = require 'lib.images'
 local render = require 'render'
@@ -141,7 +141,7 @@ local function on_projectile_reached_target(data)
 end
 
 enter_room = function(room_id)
-    local player = char.get_player()
+    local player = character.get_player()
     local room
     if player then
         room = dungeon.move_to_room(room_id, player)
@@ -193,11 +193,11 @@ return {
         events.signals.on(events.SIGNALS.on_end, show_room_choices)
         combat.signals.on(combat.SIGNALS.ended, show_room_choices)
         dungeon.signals.on(dungeon.SIGNALS.enter_zone, show_room_choices)
-        char.signals.on(char.SIGNALS.change_health, M.on_change_health)
+        character.signals.on(character.SIGNALS.change_health, M.on_change_health)
         projectiles.signals.on(projectiles.SIGNALS.reached_target, on_projectile_reached_target)
 
         -- start game
-        local player = char.get_player()
+        local player = character.get_player()
         if not player then
             log.error("player entity not created")
             state.pop()
@@ -217,7 +217,7 @@ return {
     end,
     
     update = function (dt)
-        local player = char.get_player()
+        local player = character.get_player()
 
         if player then
             events.update(dt, player)

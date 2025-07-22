@@ -177,8 +177,9 @@ function M.process_attack(data)
 
     if data.type == 'attack' then
         -- take damage from attack
-        local damage = stats.apply(item.stats_ratio, source.stats)
-        local mitigation = 0
+        local damage = stats.apply(item.damage_scaling, source.stats)
+        local mitigation = target.defense
+        
         for _, e in ipairs(target.equipped_items or {}) do
             local target_item = items.get(e.id)
             if target_item and target_item.defense then
@@ -249,7 +250,7 @@ function M.use_item(source_id, target_id, item_data)
             local angle2 = rad(-45+360)
             local render_x = item.render_on_character and item.render_on_character.x or 0
             local render_y = item.render_on_character and item.render_on_character.y or 0
-            
+
             -- swing weapon
             animation
                 .create(r.id, r)

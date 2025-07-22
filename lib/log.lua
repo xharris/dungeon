@@ -12,9 +12,6 @@ io.stdout:setvbuf("no")
 M.LOG_METHODS_LEVEL = 'info'
 M.LOG_CONSOLE_LEVEL = 'info'
 
----@type string?
-M.error = nil
-
 ---@type table<LogLevel, number>
 local levels = {
     debug = 1,
@@ -102,6 +99,14 @@ function M.error_if(stmt, ...)
         return true
     end
     return false
+end
+
+--- returns true if statment is printed
+---@param ... string|number
+function M.error(...)
+    if cmp_level('error', M.LOG_CONSOLE_LEVEL) then
+        _print(const.LOG_HEADER.error, ...)
+    end
 end
 
 function M.debug(...)

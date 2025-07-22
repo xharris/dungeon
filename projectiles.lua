@@ -137,7 +137,7 @@ function M.update(dt)
     end
 end
 
-function M.draw()
+function M.debug_draw()
     if M.DEBUG then
         love.graphics.push('all')
         for _, p in ipairs(projectiles) do
@@ -149,5 +149,5 @@ function M.draw()
 end
 
 return log.log_methods('projectiles', M, {
-    exclude={'update', 'draw'}
+    exclude={'update', 'debug_draw'}
 })

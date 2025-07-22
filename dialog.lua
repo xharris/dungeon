@@ -4,6 +4,8 @@ local log = require "lib.log"
 local easing = require 'lib.easing'
 local lume = require 'ext.lume'
 local printc = require 'lib.printc'
+local color  = require 'lib.color'
+local theme  = require 'theme'
 
 local min = math.min
 local max = math.max
@@ -58,17 +60,17 @@ local function draw_box_with_text(texts, y, limit, opts)
     h = h + (2 * padding)
 
     -- box
-    love.graphics.setColor(0, 0, 0, 0.8)
+    color.set(theme.color.dialog_bg)
     love.graphics.rectangle('fill', margin, y, w + (2 * padding), h)
 
     -- text
-    love.graphics.setColor(1, 1, 1, 1.0)
+    color.set(theme.color.dialog_text)
     printc.draw(texts, margin + padding, y + padding, w, opts.char_limit)
 
     -- selected?
     if opts.selected then
         love.graphics.setLineWidth(2)
-        love.graphics.setColor(1, 1, 1, 0.9)
+        color.set(theme.color.dialog_selected_outline)
         love.graphics.rectangle('line', margin, y, w + (2 * padding), h)
     end
 
@@ -289,13 +291,13 @@ function M.draw()
                 -- draw choices
                 for i = 1, M.IMAGE_ONLY_CHOICES do
                     -- box
-                    love.graphics.setColor(0, 0, 0, 0.8)
+                    color.set(theme.color.dialog_bg)
                     love.graphics.rectangle('fill', x, y, choice_size, choice_size)
 
                     -- selected?
                     if i == (first._choice_index % M.IMAGE_ONLY_CHOICES) then
                         love.graphics.setLineWidth(2)
-                        love.graphics.setColor(1, 1, 1, 0.9)
+                        color.set(theme.color.dialog_selected_outline)
                         love.graphics.rectangle('line', x, y, choice_size, choice_size)
                     end
 

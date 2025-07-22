@@ -142,7 +142,6 @@ function M.create(v, renderable)
             tag = v and v.tag or name,
             group = 'player',
             name = name,
-            class = 'warrior',
             inventory = {},
             equipped_items = {},
             max_equipped_items = const.MAX_EQUIPPED_ITEMS,
@@ -159,14 +158,11 @@ function M.create(v, renderable)
             vy = 0,
             jump_velocity = const.JUMP_VELOCITY,
             max_jumps = const.MAX_JUMPS,
+            stats = lume.clone(const.BASE_STATS),
+            defense = 0,
         } --[[@as Entity]],
         v or {}
     ))
-    -- default class stats
-    if e.class then
-        e.stats = const.CLASS_STATS[e.class]
-        log.warn_if(not e.stats, 'default stats not found for class:', e.class)
-    end
     -- set screen
     local screen_id = M.get_screen_id(e._id)
     if e.group ~= 'player' then
@@ -197,7 +193,7 @@ function M.create(v, renderable)
     -- add weapon sprite
     for _, data in ipairs(e.inventory) do
         local item = items.get(data.id)
-        if item and item.class_starter then
+        if item and item.is_starter then
             local idx = M.add_item_to_inventory(e._id, data)
             M.equip_item(e._id, idx)
         end
@@ -233,6 +229,84 @@ local function position_equipped_items(e)
     end
 end
 
+---update stats based on item effects
+---@param e Entity
+local function update_stats(e)
+    e.stats = lume.clone(const.BASE_STATS)
+    local all_items = M.all_items(e._id)
+
+    ---@param base_value number
+    ---@param transform_field string
+    ---@param operation ItemTransformOperation
+    local function update_stat(base_value, transform_field, operation)
+        local value = base_value
+        for _, data in ipairs(all_items) do
+            local item = items.get(data.id)
+            local transform_stats = item and item.transform_stats and item.transform_stats[transform_field]
+            local operation = (transform_stats and transform_stats.operation == operation) and transform_stats.operation or nil
+            local v = transform_stats and transform_stats.value
+
+            if v then
+                if operation == 'add' then
+                    value = value + v
+                elseif operation == 'sub' then
+                    value = value - v
+                elseif operation == 'mult' then
+                    value = value * v
+                elseif operation == 'set' then
+                    value = v
+                end
+            end
+        end
+        return value
+    end
+
+    ---@type Health
+    local new_hp = {current=0, max=const.HEALTH}
+    e.health.max = const.HEALTH
+
+    new_hp.max = update_stat(new_hp.max, 'health.max', 'add')
+    new_hp.max = update_stat(new_hp.max, 'health.max', 'sub')
+    new_hp.max = update_stat(new_hp.max, 'health.max', 'mult')
+
+    for _, s in ipairs{'str', 'int', 'agi'} do
+        e.stats[s] = update_stat(e.stats[s], 'stats.'..s, 'add')
+        e.stats[s] = update_stat(e.stats[s], 'stats.'..s, 'sub')
+        e.stats[s] = update_stat(e.stats[s], 'stats.'..s, 'mult')
+    end
+
+    -- scale up/down current hp
+    new_hp.current = (new_hp.max / e.health.max) * e.health.current
+    e.health = new_hp
+
+    log.debug('update stats', {id=e._id,stats=e.stats,health=e.health})
+end
+
+---@param entity_id string
+---@return ItemData[], string? error
+function M.all_items(entity_id)
+    ---@type ItemData[]
+    local out = {}
+    local e = entity.get(entity_id)
+    if not e then
+        return out, errors.not_found("entity", entity_id)
+    end
+    local added = {}
+    for _, data in ipairs(e.inventory) do
+        if not added[data.id] then
+            added[data.id] = true
+            table.insert(out, data)
+        end
+    end
+    for _, data in ipairs(e.equipped_items) do
+        if not added[data.id] then
+            added[data.id] = true
+            table.insert(out, data)
+        end
+    end
+    return out
+end
+
 ---@param entity_id string
 ---@param idx number inventory index
 ---@param swap_idx? number
@@ -250,15 +324,14 @@ function M.equip_item(entity_id, idx, swap_idx)
     local inventory_data = e.inventory[idx]
     local equipped_data = e.equipped_items[swap_idx]
 
-    if equipped_data and equipped_data.renderable then
-        -- remove renderable for previously equipped item
-        render.remove(equipped_data.renderable)
-    end
-
     local inventory_item = items.get(inventory_data.id)
     if not inventory_item then
         return "inventory item not found"
     end
+    if inventory_item.is_ability then
+        return "cannot equip ability"
+    end
+
     if inventory_item.render_on_character then
         -- add renderable for newly equipped item
         if e.screen_id then
@@ -272,11 +345,18 @@ function M.equip_item(entity_id, idx, swap_idx)
         render.set_collection()
     end
 
+    -- remove previously equipped item renderable
+    if equipped_data and equipped_data.renderable then
+        -- remove renderable for previously equipped item
+        render.remove(equipped_data.renderable)
+    end
+    
     -- swap items
     e.inventory[idx] = equipped_data
     e.equipped_items[swap_idx] = inventory_data
 
     position_equipped_items(e)
+    update_stats(e)
 end
 
 ---@param entity_id string
@@ -295,6 +375,9 @@ function M.add_item_to_inventory(entity_id, item_data)
         return 0, "item not found"
     end
     table.insert(e.inventory, item_data)
+
+    update_stats(e)
+
     return #e.inventory
 end
 
@@ -319,8 +402,8 @@ function M.power_level(args)
         if not item then
             return
         end
-        if item and item.stats_ratio and args.stats then
-            power = power + stats.apply(item.stats_ratio, args.stats)
+        if item and item.damage_scaling and args.stats then
+            power = power + stats.apply(item.damage_scaling, args.stats)
             count = count + 1
         elseif item and item.defense then
             power = power + stats.diminishing(item.defense)

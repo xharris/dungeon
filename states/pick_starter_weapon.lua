@@ -59,7 +59,7 @@ return {
         -- create player
         character.create()
         
-        local starters = items.get_all_starters()
+        local starters = items.starters.all()
         starting_items = {}
         for _, item in ipairs(starters) do
             local r = images.renderable(item.image)

@@ -1,7 +1,6 @@
 ---@class Entity
 ---@field _id? string
 ---@field tag? string appended to _id
----@field health? Health
 ---@field name? string
 ---@field group? 'player'|'enemy'|'ally'
 ---@field inventory? ItemData[]
@@ -10,7 +9,9 @@
 ---@field max_equipped_items? number
 ---@field screen_id? string id of the screen this entity is in
 ---@field render_character? string id of character sprite renderable
+---@field health? Health
 ---@field stats? Stats
+---@field defense? number
 ---@field attack_timer? number
 ---@field money? number
 ---@field escort_clients? string[] ids of characters being escorted
@@ -24,7 +25,6 @@
 ---@field floor_behavior? 'stand'|'bounce'|'fall'
 ---@field max_jumps? number
 ---@field jumps? number
----@field class? Class
 ---@field subclass? string
 ---@field render_text? string
 ---@field render_text_animation? string Animation
