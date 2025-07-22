@@ -12,6 +12,7 @@
 ---@field health? Health
 ---@field stats? Stats
 ---@field defense? number
+---@field critical? Critical
 ---@field attack_timer? number
 ---@field money? number
 ---@field escort_clients? string[] ids of characters being escorted
@@ -34,5 +35,9 @@
 ---@class Health
 ---@field current number
 ---@field max number
+
+---@class Critical
+---@field chance number [0,1]
+---@field damage number
 
 ---@alias Room 'combat'|'shop'|'rest'|'event'

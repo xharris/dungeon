@@ -160,6 +160,10 @@ function M.create(v, renderable)
             max_jumps = const.MAX_JUMPS,
             stats = lume.clone(const.BASE_STATS),
             defense = 0,
+            critical = {
+                chance = 0,
+                damage = const.CRITICAL_DAMAGE,
+            }
         } --[[@as Entity]],
         v or {}
     ))
@@ -274,6 +278,13 @@ local function update_stats(e)
         e.stats[s] = update_stat(e.stats[s], 'stats.'..s, 'sub')
         e.stats[s] = update_stat(e.stats[s], 'stats.'..s, 'mult')
     end
+
+    for _, s in ipairs{'chance', 'damage'} do
+        e.critical[s] = update_stat(e.critical[s], 'critical.'..s, 'add')
+        e.critical[s] = update_stat(e.critical[s], 'critical.'..s, 'sub')
+        e.critical[s] = update_stat(e.critical[s], 'critical.'..s, 'mult')
+    end
+    e.critical.chance = min(1, max(0, e.critical.chance))
 
     -- scale up/down current hp
     new_hp.current = (new_hp.max / e.health.max) * e.health.current

@@ -23,6 +23,7 @@ return {
     ---@type Stats
     BASE_STATS = {agi=0, int=0, str=0},
     HEALTH = 100,
+    CRITICAL_DAMAGE = 1.5,
     MAX_EQUIPPED_ITEMS = 5,
     MAX_INVENTORY_ITEMS = 5,
     PROJECTILE_DURATION = 1000,

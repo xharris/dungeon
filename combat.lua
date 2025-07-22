@@ -176,20 +176,26 @@ function M.process_attack(data)
     end
 
     if data.type == 'attack' then
-        -- take damage from attack
+        -- calculate damage from attack
         local damage = stats.apply(item.damage_scaling, source.stats)
+        -- crit?
+        local is_critical_hit = math.random() <= source.critical.chance
+        if is_critical_hit then
+            damage = damage * source.critical.damage
+        end
+        -- damage mitigation
         local mitigation = target.defense
-        
         for _, e in ipairs(target.equipped_items or {}) do
             local target_item = items.get(e.id)
             if target_item and target_item.defense then
                 mitigation = mitigation + stats.defense(target_item.defense)
             end
         end
+        -- take damage
         character.add_health(target._id, min(0, -(damage - mitigation)))
+        -- trigger signal
         data.damage = damage
         data.mitigation = mitigation
-        
         log.debug('data after', data)
         M.signals.emit(M.SIGNALS.attack_landed, data)
     end

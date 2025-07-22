@@ -45,7 +45,7 @@ return {
         -- warrior abilities
         --
         -- add stats
-        for _, stat in ipairs{'str', 'agi', 'crit'} do
+        for _, stat in ipairs{'str', 'agi'} do
             items.abilities.add{
                 id = 'more_'..stat,
                 requires_items = {'starter_sword'},
@@ -57,6 +57,17 @@ return {
                 }
             }
         end
+        -- add crit chance
+        items.abilities.add{
+            id = 'more_crit_chance',
+            requires_items = {'starter_sword'},
+            label = {
+                {text='crit chance + 20%'},
+            },
+            transform_stats = {
+                ['critical.chance'] = {operation='add', value=20}
+            }
+        }
         -- add hp
         items.abilities.add{
             id = 'more_hp',

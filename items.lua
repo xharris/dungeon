@@ -17,7 +17,7 @@ local entity = require 'lib.entity'
 local max = math.max
 
 ---@alias ItemTransformOperation 'add'|'sub'|'mult'|'set'
----@alias ItemTransformKey 'stats.str'|'stats.int'|'stats.agi'|'stats.crit'|'health.max'|'defense'
+---@alias ItemTransformKey 'stats.str'|'stats.int'|'stats.agi'|'stats.crit'|'health.max'|'defense'|'critical.chance'|'critical.damage'
 
 ---@class ItemTransform
 ---@field operation ItemTransformOperation
