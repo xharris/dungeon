@@ -1,12 +1,16 @@
 local items = require 'items'
 local assets = require 'assets.index'
 local zindex = require 'zindex'
-local render = require 'render'
-local easing = require 'lib.easing'
 local stats  = require 'stats'
+local game = require 'game'
+local lang = require 'lib.i18n'
+local const= require 'const'
 
 local WPN_STATS_RATIO = 0.25
 local WPN_SCALE = 2
+
+---@class CursedSwordData
+---@field no_death_time_left? number
 
 --[[
 CLASS_STATS = {
@@ -19,14 +23,27 @@ CLASS_STATS = {
 
 return {
     on_load = function ()
+        lang.set('en', {
+            -- adventurer
+            ---- warrior
+            warrior_starter = 'Wooden Sword',
+            warrior_starter_description = 'Capable of dealing some damage',
+            ------ fighter
+            fighter = 'Fighter Training',
+            fighter_description = 'Crit Chance + 15%',
+            fighter_2 = 'Fast Fighter',
+            fighter_2_description = 'Critical strikes deal no bonus damage, but grant +1 AGI',
+            fighter_3 = 'Brutal Fighter',
+            fighter_3_description = 'Critical strikes deal no bonus damage, but grant +1 STR',
+            ------ shield
+            shield = 'Hero Shield',
+        })
+
         -- warrior
         items.add{
-            id = "starter_sword",
+            id = "warrior_starter",
             is_starter = true,
-            label = {
-                {text='Beginner\'s Sword\n'},
-                {text='Rusty, but gets the job done'},
-            },
+            class = 'adventurer',
             image = {
                 path = assets.dk_items,
                 frames = {{x=48, y=104, w=16, h=24}},
@@ -42,49 +59,36 @@ return {
                 swing = {}
             },
         }
-        -- warrior abilities
-        --
-        -- add stats
-        for _, stat in ipairs{'str', 'agi'} do
-            items.abilities.add{
-                id = 'more_'..stat,
-                requires_items = {'starter_sword'},
-                label = {
-                    {text=stat..' + 20'..(stat == 'crit' and '%' or '')}, -- TODO auto-create from transform_stats
-                },
-                transform_stats = {
-                    [stat] = {operation='add', value=20}
-                }
-            }
-        end
-        -- add crit chance
+        -- warrior subclasses
         items.abilities.add{
-            id = 'more_crit_chance',
-            requires_items = {'starter_sword'},
-            label = {
-                {text='crit chance + 20%'},
-            },
+            id = 'fighter',
+            class = "warrior",
+            requires_items = {'warrior_starter'},
+            requires_class = {'adventurer'},
             transform_stats = {
-                ['critical.chance'] = {operation='add', value=20}
-            }
+                ['stats.str'] = {operation='add', value=120},
+            },
+            rarity = 'rare',
+            user_will_die = function (data, e)
+                ---@cast data CursedSwordData
+                if data.no_death_time_left == nil then
+                    data.no_death_time_left = 3000
+                    return true
+                end
+                if data.no_death_time_left <= 0 then
+                    return false -- times up
+                end
+                data.no_death_time_left = data.no_death_time_left - (game.dt * 1000)
+                e.health.current = 1
+            end
         }
-        -- add hp
         items.abilities.add{
-            id = 'more_hp',
-            requires_items = {'starter_sword'},
-            label = {
-                {text='max hp + 20'}, -- TODO auto-create from add_stats
-            },
-            transform_stats = {
-                ['health.max'] = {operation='add', value=20}
-            }
+            id = "shield",
+            class = "warrior",
+            requires_items = {'warrior_starter'},
+            requires_class = {'adventurer'},
         }
-        -- 5% parry chance (reflect 100% damage)
         
-
-        -- cannot die for 2 sec
-        -- weapon mastery: every 5 seconds switch to a special random sword (super_rare)
-        -- double edged
 
         -- archer
         -- items.add{

@@ -15,7 +15,7 @@ return {
         items.add{
             id = 'big_stick',
             type = 'weapon',
-            label = {
+            description = {
                 {text='Big Stick\n'},
                 {text='Found somewhere in the forest'}
             },
@@ -106,19 +106,19 @@ return {
             end
         }
 
-        events.add{
-            id = 'lost_kid',
-            on_start = function (e)
+        -- events.add{
+        --     id = 'lost_kid',
+        --     on_start = function (e)
                 
-            end
-        }
+        --     end
+        -- }
 
-        events.add{
-            id = 'combat_assist',
-            on_start = function (e)
+        -- events.add{
+        --     id = 'combat_assist',
+        --     on_start = function (e)
 
-            end
-        }
+        --     end
+        -- }
 
         dungeon.add_zone{
             id = 'forest',

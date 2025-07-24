@@ -29,7 +29,8 @@ local floor = math.floor
 
 M.signals = signal.create 'character'
 M.SIGNALS = {
-    change_health = 'change_health' -- entity_id, number
+    change_health = 'change_health', -- entity_id, number
+    death = 'death' -- entity_id,
 }
 
 ---@param e Entity
@@ -146,6 +147,7 @@ function M.create(v, renderable)
             equipped_items = {},
             max_equipped_items = const.MAX_EQUIPPED_ITEMS,
             max_inventory_items = const.MAX_INVENTORY_ITEMS,
+            class = 'adventurer',
             health = {
                 current = const.HEALTH,
                 max = const.HEALTH,
@@ -237,14 +239,13 @@ end
 ---@param e Entity
 local function update_stats(e)
     e.stats = lume.clone(const.BASE_STATS)
-    local all_items = M.all_items(e._id)
 
     ---@param base_value number
     ---@param transform_field string
     ---@param operation ItemTransformOperation
     local function update_stat(base_value, transform_field, operation)
         local value = base_value
-        for _, data in ipairs(all_items) do
+        for _, data in M.all_items(e._id) do
             local item = items.get(data.id)
             local transform_stats = item and item.transform_stats and item.transform_stats[transform_field]
             local operation = (transform_stats and transform_stats.operation == operation) and transform_stats.operation or nil
@@ -294,29 +295,52 @@ local function update_stats(e)
 end
 
 ---@param entity_id string
----@return ItemData[], string? error
 function M.all_items(entity_id)
-    ---@type ItemData[]
-    local out = {}
+    -- ---@type ItemData[]
+    -- local out = {}
+    -- local e = entity.get(entity_id)
+    -- if not e then
+    --     return out, errors.not_found("entity", entity_id)
+    -- end
+    -- local added = {}
+    -- for _, data in ipairs(e.inventory) do
+    --     if not added[data.id] then
+    --         added[data.id] = true
+    --         table.insert(out, data)
+    --     end
+    -- end
+    -- for _, data in ipairs(e.equipped_items) do
+    --     if not added[data.id] then
+    --         added[data.id] = true
+    --         table.insert(out, data)
+    --     end
+    -- end
+    -- return out
     local e = entity.get(entity_id)
-    if not e then
-        return out, errors.not_found("entity", entity_id)
-    end
-    local added = {}
-    for _, data in ipairs(e.inventory) do
-        if not added[data.id] then
-            added[data.id] = true
-            table.insert(out, data)
+    local i = 0
+    local equip_n = e and e.equipped_items and #e.equipped_items or 0
+    local inventory_n = e and e.inventory and #e.inventory or 0
+    return function ()
+        i = i + 1
+        if e and i <= equip_n then
+            return i, e.equipped_items[i]
+        end
+        if e and i > equip_n and i <= inventory_n then
+            return i - equip_n, e.inventory[i - equip_n]
         end
     end
-    for _, data in ipairs(e.equipped_items) do
-        if not added[data.id] then
-            added[data.id] = true
-            table.insert(out, data)
-        end
-    end
-    return out
 end
+
+--[[
+    function list_iter (t)
+      local i = 0
+      local n = table.getn(t)
+      return function ()
+               i = i + 1
+               if i <= n then return t[i] end
+             end
+    end
+]]
 
 ---@param entity_id string
 ---@param idx number inventory index
@@ -361,13 +385,56 @@ function M.equip_item(entity_id, idx, swap_idx)
         -- remove renderable for previously equipped item
         render.remove(equipped_data.renderable)
     end
+
+    -- default data value
+    if equipped_data then
+        equipped_data.data = equipped_data.data or {}
+    end
+    inventory_data.data = inventory_data.data or {}
     
     -- swap items
     e.inventory[idx] = equipped_data
     e.equipped_items[swap_idx] = inventory_data
 
+    -- update class
+    if inventory_item.class then
+        e.class = inventory_item.class
+    end
+
     position_equipped_items(e)
     update_stats(e)
+end
+
+---@param entity_id string
+---@param item_id string
+---@return boolean
+function M.has_item_equipped(entity_id, item_id)
+    local e = entity.get(entity_id)
+    if not e or not e.equipped_items then
+        return false
+    end
+    for _, data in ipairs(e.equipped_items) do
+        if data.id == item_id then
+            return true
+        end
+    end
+    return false
+end
+
+---@param entity_id string
+---@param item_id string
+---@return boolean
+function M.has_item_in_inventory(entity_id, item_id)
+    local e = entity.get(entity_id)
+    if not e or not e.inventory then
+        return false
+    end
+    for _, data in ipairs(e.inventory) do
+        if data.id == item_id then
+            return true
+        end
+    end
+    return false
 end
 
 ---@param entity_id string
@@ -385,6 +452,7 @@ function M.add_item_to_inventory(entity_id, item_data)
     if not item then
         return 0, "item not found"
     end
+    item_data.data = item_data.data or {}
     table.insert(e.inventory, item_data)
 
     update_stats(e)
@@ -399,6 +467,16 @@ function M.kill(entity_id)
     if not e then
         return errors.not_found("entity", entity_id)
     end
+    -- check if items will allow it
+    for _, data in M.all_items(entity_id) do
+        local item = items.get(data.id)
+        if item and item.user_will_die and item.user_will_die(data, e) then
+            return "death cancelled"
+        end
+    end
+    -- remove sprite
+    render.remove(e.render_character)
+    entity.remove(e._id)
 end
 
 ---@param args {equipped_items?:ItemData[], stats?:Stats, inventory?:ItemData[]}
@@ -503,6 +581,11 @@ function M.update(dt)
 
         -- rendering for equipped items
         -- position_equipped_items(e)
+
+        -- dead
+        if e.health and e.health.current <= 0 then
+            M.kill(e._id)
+        end
     end
 end
 

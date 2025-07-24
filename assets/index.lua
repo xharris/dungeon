@@ -5,4 +5,5 @@ return {
     space = 'assets/space.jpg',
     tinypixelhero = 'assets/tinypixelhero.jpg',
     volcano = 'assets/volcano.jpg',
+    yoster_island = 'assets/yoster-island/yoster.ttf',
 }

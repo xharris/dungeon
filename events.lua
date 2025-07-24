@@ -7,7 +7,7 @@ local ds = require 'lib.datastore'
 
 ---@class Event
 ---@field id string
----@field rarity? Rarity
+---@field rarity? RarityLevel
 ---@field disabled? boolean
 ---@field only_zones? string[] only allow this event to happen in specified zones
 ---@field on_start fun(e:Entity)

@@ -15,6 +15,7 @@ local lume = require 'ext.lume'
 local easing = require 'lib.easing'
 local printc = require 'lib.printc'
 local errors = require 'lib.errors'
+local lang = require 'lib.i18n'
 
 local lerp = lume.lerp
 
@@ -63,8 +64,8 @@ return {
         starting_items = {}
         for _, item in ipairs(starters) do
             local r = images.renderable(item.image)
-            r.sx = r.sx * SCALE
-            r.sy = r.sy * SCALE
+            r.sx = (r.sx or 1) * SCALE
+            r.sy = (r.sy or r.sx or 1) * SCALE
             table.insert(starting_items, {
                 item = item,
                 x = 0,
@@ -165,7 +166,7 @@ return {
             love.graphics.push('all')
             color.set(color.MUI.GREY_900)
             local w = gw / 3
-            printc.draw(selected_item.item.label, (gw/2) - (w/2), 20, w)
+            printc.draw(items.label(selected_item.item.id), (gw/2) - (w/2), 20, w)
             love.graphics.pop()
         end
     end,

@@ -24,7 +24,7 @@ function M.enter()
                 image_frames = {
                     {x=16, y=64, w=16, h=32},
                 },
-                texts = item.label,
+                texts = items.label(item.id),
             }
             table.insert(choices, choice)
             table.insert(available_items, {id=item.id})

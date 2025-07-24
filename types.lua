@@ -7,6 +7,7 @@
 ---@field max_inventory_items? number
 ---@field equipped_items? ItemData[]
 ---@field max_equipped_items? number
+---@field class? Class
 ---@field screen_id? string id of the screen this entity is in
 ---@field render_character? string id of character sprite renderable
 ---@field health? Health
@@ -30,7 +31,7 @@
 ---@field render_text? string
 ---@field render_text_animation? string Animation
 
----@alias Class 'warrior'|'archer'|'mage'|'rogue' base classs
+---@alias Class 'adventurer'|'warrior'|'archer'|'mage'|'rogue' base classs
 
 ---@class Health
 ---@field current number

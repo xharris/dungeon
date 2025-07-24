@@ -9,24 +9,19 @@ local lerp = lume.lerp
 local max = math.max
 local min = math.min
 
----@alias RarityLevel 'common'|'rare'|'super_rare'
+---@alias RarityLevel 'common'|'rare'|'super_rare'|'ultra_rare'|'legendary'
 
 ---@type table<RarityLevel, number>
 M.RARITY_CHANCE = {
     common      = 100,
-    rare        = 40,
-    super_rare  = 5,
-}
-
----@enum Rarity
-M.RARITY = {
-    common      = 'common',
-    rare        = 'rare',
-    super_rare  = 'super_rare',
+    rare        = 50,
+    super_rare  = 12.5,
+    ultra_rare = 3,
+    legendary = 1,
 }
 
 ---@type RarityLevel[]
-M.RARITY_ORDER = {'common', 'rare', 'super_rare'}
+M.RARITY_ORDER = {'common', 'rare', 'super_rare', 'ultra_rare', 'legendary'}
 
 ---@param scale number [0,1] closer to 1 yields higher chance of rarity
 function M.random(scale)
@@ -43,7 +38,7 @@ function M.random(scale)
     return lume.weightedchoice(chance)
 end
 
----@param rarity Rarity
+---@param rarity RarityLevel
 function M.get_chance(rarity)
     return M.RARITY_CHANCE[rarity]
 end

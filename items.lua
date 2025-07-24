@@ -13,6 +13,7 @@ local assets = require 'assets.index'
 local render = require 'render'
 local errors = require 'lib.errors'
 local entity = require 'lib.entity'
+local lang = require 'lib.i18n'
 
 local max = math.max
 
@@ -25,7 +26,6 @@ local max = math.max
 
 ---@class Item
 ---@field id string
----@field label? PrintcText[]
 ---@field damage_scaling? Stats ratio of damage item does
 ---@field transform_stats? table<ItemTransformKey, ItemTransform>
 ---@field defense? number
@@ -35,11 +35,13 @@ local max = math.max
 ---@field is_ability? boolean TODO does not appear in shop, offered every X combats?
 ---@field charges_required? number TODO in combat, item activates after X cycles
 ---@field is_starter? boolean
----@field subclass? string replaces class starter item
+---@field class? Class replaces class starter item
+---@field subclass? string shown when character is inspected
 ---@field requires_items? string[] TODO can only be accepted/offered if player has item in list
+---@field requires_class? Class[] TODO
 ---@field attack_animation? ItemAttackAnimation
 ---@field render_on_character? Vector3
----@field attack_landed? fun(target:Entity, projectiles:Renderable[])
+---@field user_will_die? fun(data:ItemData, e:Entity):boolean? return true to prevent character death
 
 ---@class ItemAttackAnimation
 ---@field swing? {}
@@ -111,7 +113,6 @@ end
 
 ---@param v Item
 function M.add(v)
-    v.label = v.label or {{text=v.id}} --[[@as PrintcText[] ]]
     v.image = v.image or DEFAULT_IMAGE
     table.insert(items, v)
 end
@@ -141,6 +142,15 @@ function M.can_use(entity_id, item_id)
     end
     return true
 end
+
+---@param item_id string
+function M.label(item_id)
+    return {
+        {text=lang.get(item_id)..'\n'},
+        {text=lang.get(item_id..'_description')}
+    } --[[@as PrintcText[] ]]
+end
+M.label = lume.memoize(M.label)
 
 M.abilities = {}
 

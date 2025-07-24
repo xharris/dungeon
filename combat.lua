@@ -283,9 +283,6 @@ function M.use_item(source_id, target_id, item_data)
                     }
                 )
                 .on_end(function ()
-                    if item.attack_landed then
-                        item.attack_landed(target, {})
-                    end
                     M.signals.emit(M.SIGNALS.attack_landed, data)
                 end)
                 .start()
@@ -337,13 +334,6 @@ function M.update(dt)
     local no_enemies_left = true
 
     for _, e in ipairs(combat_entities) do
-        -- dead
-        if e.health and e.health.current <= 0 and e.group ~= 'player' then
-            -- remove sprite
-            log.info(e.name or e._id, "died")
-            render.remove(e.render_character)
-            entity.remove(e._id)
-        end
         if e.health and e.health.current > 0 and e.stats then
             if e.group == 'enemy' then
                 no_enemies_left = false

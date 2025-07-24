@@ -2,6 +2,7 @@ local M = {}
 
 local lume = require 'ext.lume'
 local log  = require 'lib.log'
+local assets = require 'lib.assets'
 
 ---@class Image
 ---@field path string
@@ -17,32 +18,45 @@ local log  = require 'lib.log'
 ---@type table<string, any>
 local images = {}
 
----@param t Image
----@return any image love.Image
-function M.get(t)
-    t.filter = t.filter or {}
-    t.filter.min = t.filter.min or 'linear'
-    t.filter.max = t.filter.max or 'nearest'
-    t.ox = t.ox or 0
-    t.oy = t.oy or 0
-    t.sx = t.sx or 1
-    t.sy = t.sy or t.sx or 1
-    t.r = t.r or 0
+---returns love.Image
+---@type AssetLoader<Image>
+M.get = assets.create{
+    default = {
+        path = '',
+        filter = {
+            min = 'linear',
+            max = 'nearest',
+        },
+        ox = 0,
+        oy = 0,
+        sx = 1,
+        sy = 1,
+        r = 0,
+    } --[[@as Image]],
 
-    local key = table.concat({t.path, t.filter.min, t.filter.max, t.ox, t.oy, t.sx, t.sy, t.r}, ',')
-    
-    local img = images[key]
-    if not img then
-        img = love.graphics.newImage(t.path)
+    ---@param t Image
+    key = function (t)
+        return {
+            t.path,
+            t.filter.min,
+            t.filter.max,
+             t.ox, t.oy,
+             t.sx, t.sy,
+             t.r,
+        }
+    end,
+
+    ---@param t Image
+    create = function (t)
+        local img = love.graphics.newImage(t.path)
         img:setFilter(t.filter.min, t.filter.max)
-        images[key] = img
+        return img
     end
-    return img
-end
+}
 
 ---@param image Image?
 ---@param v Renderable?
----@return Renderable
+---@return Renderable, string? error
 function M.renderable(image, v)
     if not image then
         return v or {}
@@ -54,8 +68,8 @@ function M.renderable(image, v)
             oy = image.oy,
             frames = image.frames,
             current_frame = image.current_frame,
-            sx = image.sx,
-            sy = image.sy,
+            sx = image.sx or 1,
+            sy = image.sy or image.sy,
             r = image.r,
         } --[[@as Renderable]],
         v or {}

@@ -503,6 +503,9 @@ end
 local memoize_fnkey = {}
 local memoize_nil = {}
 
+---@generic F : function
+---@param fn F
+---@return F
 function lume.memoize(fn)
   local cache = {}
   return function(...)

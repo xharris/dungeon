@@ -46,11 +46,11 @@ return {
         for _, id in ipairs(abilities) do
             local a = items.abilities.get(id)
             if a then
-                local _, h = printc.dimensions(a.label or {{text=a.id}})
+                local _, h = printc.dimensions(a.description or {{text=a.id}})
                 ---@type NextAbility
                 local next_ability = {
                     id = a.id,
-                    label = a.label,
+                    label = a.description,
                     border_color = theme.color.dialog_selected_outline,
                     x = 0,
                     y = y,

@@ -16,16 +16,22 @@ local log     = require 'lib.log'
 local const   = require 'const'
 local animation = require 'lib.animation'
 local projectiles = require 'projectiles'
+local game        = require 'game'
+local fonts = require 'lib.fonts'
+local assets= require 'assets.index'
 
 log.LOG_METHODS_LEVEL = const.LOG_METHODS_LEVEL
 log.LOG_CONSOLE_LEVEL = const.LOG_CONSOLE_LEVEL
 render.DEBUG = const.DEBUG_RENDER
 projectiles.DEBUG = const.DEBUG_PROJECTILES
 projectiles.DURATION = const.PROJECTILE_DURATION
+fonts.FONT_SIZE = const.FONT_SIZE
 
 function love.load()
+    fonts.set{path=assets.yoster_island}
+
     plugin.add(require 'plugins.global_events')
-    plugin.add(require 'plugins.base_classes')
+    plugin.add(require 'plugins.classes')
     plugin.add(require 'plugins.forest')
 
     shop.load()
@@ -56,6 +62,7 @@ function love.load()
 end
 
 function love.update(dt)
+    game.update(dt)
     render.update(dt)
     screens.update(dt)
     ctrl:update()
