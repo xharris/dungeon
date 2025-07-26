@@ -287,10 +287,12 @@ return {
     end,
 
     pre_draw = function ()
-        love.graphics.push('all')
-        color.set(color.MUI.BLACK)
-        love.graphics.rectangle('fill', 0, const.FLOOR_Y, game.width, game.height)
-        love.graphics.pop()
+        if const.FLOOR_VISIBLE then
+            love.graphics.push('all')
+            color.set(color.MUI.BLACK)
+            love.graphics.rectangle('fill', 0, const.FLOOR_Y, game.width, game.height)
+            love.graphics.pop()
+        end
     end
 
 } --[[@as State]]

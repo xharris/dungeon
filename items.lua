@@ -40,7 +40,7 @@ local max = math.max
 ---@field requires_items? string[] TODO can only be accepted/offered if player has item in list
 ---@field requires_class? Class[] TODO
 ---@field attack_animation? ItemAttackAnimation
----@field render_on_character? {x:number, y:number, z?:number, r?:number}
+---@field render_on_character? {x?:number, y?:number, z?:number, r?:number}
 ---@field user_will_die? fun(data:ItemData, e:Entity):boolean? return true to prevent character death
 
 ---@class ItemAttackAnimation
@@ -128,6 +128,11 @@ end
 ---@param v Item
 function M.add(v)
     v.image = v.image or DEFAULT_IMAGE
+    if v.render_on_character and v.damage_scaling and not v.attack_animation then
+        v.attack_animation = {
+            swing = {}
+        }
+    end
     table.insert(items, v)
 end
 

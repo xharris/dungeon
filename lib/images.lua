@@ -15,9 +15,6 @@ local assets = require 'lib.assets'
 ---@field sy? number
 ---@field r? number
 
----@type table<string, any>
-local images = {}
-
 ---returns love.Image
 ---@type AssetLoader<Image>
 M.get = assets.create{

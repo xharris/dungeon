@@ -739,7 +739,9 @@ function lume.hotswap(modname)
   return oldmod
 end
 
-
+---@generic V
+---@param t V[]
+---@param i number
 local ripairs_iter = function(t, i)
   i = i - 1
   local v = t[i]
@@ -748,6 +750,9 @@ local ripairs_iter = function(t, i)
   end
 end
 
+---@generic V
+---@param t V[]
+---@return (fun(t:V[], i:number):i:number,v:V), V[], number
 function lume.ripairs(t)
   return ripairs_iter, t, (#t + 1)
 end

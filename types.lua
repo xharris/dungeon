@@ -10,7 +10,7 @@
 ---@field class? Class
 ---@field screen_id? string id of the screen this entity is in
 ---@field health? Health
----@field stats? Stats
+---@field stats? Stats base stats after calling transform_stats for each item
 ---@field defense? number
 ---@field critical? Critical
 ---@field attack_timer? number

@@ -8,22 +8,17 @@ local signal = require 'lib.signal'
 local easing = require 'lib.easing'
 local const  = require 'const'
 local fonts  = require 'lib.fonts'
+local errors = require 'lib.errors'
+local util   = require 'lib.util'
 
 local abs = math.abs
 
 ---@alias RenderableEaseFn 'linear'|'ease_in_out_sine'
 
----@class RenderableEasing
----@field a number
----@field b number
----@field ease_fn RenderableEaseFn
----@field duration number ms
----@field _t number ms
----@field _vertices? number[]
-
 ---@class Renderable
 ---@field id? string
 ---@field created_at? number
+---@field parent? string 'attach' to another renderable
 ---@field tag? string
 ---@field collection_id? string
 ---@field data? table arbitrary value that does nothing
@@ -45,15 +40,17 @@ local abs = math.abs
 ---@field ox? number
 ---@field oy? number
 ---@field _remove? boolean
----@field _easing? table<string, RenderableEasing>
 ---@field w? number
 ---@field h? number
 ---@field z? number
 ---@field _last_z? number
 ---@field _last_x? number
 ---@field _last_y? number
+---@field _debug_color? Color
 ---@field angle? number direction of renderable movement (radians)
 ---@field face_direction? boolean
+---@field rect? {mode?:'line'|'fill', w:number, h:number}
+---@field disabled? boolean do not render
 
 ---@class RenderableFrame
 ---@field x number
@@ -83,8 +80,8 @@ local current_collection = DEFAULT_COLLECTION
 local renderable_map = {}
 
 local quad
-local curve
 local debug_canvas
+local transform -- love.math.Transform
 
 M.signals = signal.create('render')
 
@@ -149,10 +146,11 @@ function M.move_to_collection(render_id, collection_id)
     return true
 end
 
----@param t Renderable
+---@param t? Renderable
 ---@return string, Renderable
 function M.add(t)
     local id = genid()
+    t = t or {}
     t.tag = t.tag or 'renderable'
     t.id = t.tag..':'..tostring(id)
 
@@ -184,6 +182,7 @@ function M.add(t)
     t._last_x = t.x
     t._last_y = t.y
     t.created_at = os.time()
+    t._debug_color = t._debug_color or {math.random(20, 80)/100, 0, 0, 1}
     z_sort(collection[current_collection])
 
     -- negative offsets
@@ -201,6 +200,7 @@ function M.add(t)
     return t.id, t
 end
 
+---@param id? string
 function M.get(id)
     return id and renderable_map[id] or nil
 end
@@ -215,20 +215,71 @@ function M.remove(id)
     return "renderable not found"
 end
 
-local transform
 
----@param id any
+---@param id string
 ---@param x? number
 ---@param y? number
 ---@return number, number, Renderable
 function M.transform_point(id, x, y)
     local r = renderable_map[id]
-    assert(r, 'renderable not found, id:', id)
+    assert(r, errors.not_found('renderable', id))
     x = x or 0
     y = y or 0
-    transform:setTransformation(r.x or 0, r.y or 0, r.r, r.sx, r.sy, r.ox, r.oy)
-    x, y = transform:transformPoint(x, y)
+    local tf = M.get_transform(id)
+    x, y = tf:transformPoint(x, y)
     return x, y, r
+end
+
+---@type Renderable[]
+local nodes = {}
+---@type table<string, boolean>
+local ids = {} -- keep track of renderables encountered
+
+---love.math.Transform
+---@type table<string, any>
+local memo_get_transform = {}
+
+---@param id string
+---@return any transform
+function M.get_transform(id)
+    if memo_get_transform[id] then
+        return memo_get_transform[id]
+    end
+    local r = M.get(id)
+    local depth = 0
+    local x, y, ox, oy = 0, 0, 0, 0
+    ids = {}
+    ---@type Renderable[]
+    nodes = {}
+    transform:reset()
+    while r and not ids[r.id] do
+        table.insert(nodes, r)
+        ids[r.id] = true
+        depth = depth + 1
+        r = r.parent and M.get(r.parent) or nil
+    end
+    for _, n in lume.ripairs(nodes) do
+        x, y = n.x or 0, n.y or 0
+        ox, oy = n.ox or 0, n.oy or 0
+        if M.ROUND_POSITION then
+            x = round(x)
+            y = round(y)
+            ox = round(ox)
+            oy = round(oy)
+        end
+
+        transform:translate(x, y)
+        transform:translate(ox, oy)
+        transform:scale(n.sx, n.sy)
+        transform:rotate(n.r or 0)
+        transform:translate(-ox, -oy)
+    end
+    memo_get_transform[id] = transform:clone()
+    if depth > 1 and r and ids[r.id] then
+        log.error("parent cycle for", id, "("..table.concat(lume.keys(ids), ', ')..")")
+        return memo_get_transform[id]
+    end
+    return memo_get_transform[id]
 end
 
 ---@param r Renderable
@@ -245,8 +296,26 @@ function M.dimensions(r, ignore_scaling)
         local sw, sh = r.tex:getDimensions()
         r.w = abs(sw * sx)
         r.h = abs(sh * sy)
+    elseif r.rect then
+        r.w = r.rect.w * sx
+        r.h = r.rect.h * sy
     end
     return r.w, r.h
+end
+
+---@deprecated
+---@param t table<string, Renderable>
+function M.group(t)
+    local root = M.add(
+        util.merge({tag='root'}, t['root'] or {})
+    )
+    local ids = {root=root}
+    for k, v in pairs(t) do
+        if k ~= 'root' then
+            ids[k] = M.add(v)
+        end
+    end
+    return ids
 end
 
 function M.reset()
@@ -256,47 +325,7 @@ function M.reset()
     M.set_collection(DEFAULT_COLLECTION)
 end
 
----@param id any
----@param property string
----@param to number
----@param opts? {duration?:number, ease_fn?:RenderableEaseFn}
-function M.ease(id, property, to, opts)
-    opts = opts or {}
-    opts.duration = opts.duration or 1000
-    opts.ease_fn = opts.ease_fn or 'linear'
-
-    local r = M.get(id)
-    r._easing = r._easing or {}
-    if not r._easing[property] then
-        local start = r[property] or to
-        r._easing[property] = {
-            a = start,
-            b = to,
-            ease_fn = opts.ease_fn,
-            duration = opts.duration,
-            _t = 0,
-        }
-    end
-end
-
----@param id any renderable to ease
----@param target any renderable id
----@param opts? {duration?:number, ease_fn?:RenderableEaseFn, transform_target?:fun(r:Renderable, x:number,y:number):number,number}
-function M.move_to(id, target, opts)
-    local r = M.get(id)
-    local r_target = M.get(target)
-    assert(r and r_target, 'invalid renderable id')
-
-    local target_x, target_y = M.transform_point(target, 0, 0)
-    if opts and opts.transform_target then
-        target_x, target_y = opts.transform_target(r, target_x, target_y)
-    end
-    M.ease(id, 'x', target_x, opts)
-    M.ease(id, 'y', target_y, opts)
-end
-
 function M.load()
-    curve = love.math.newBezierCurve(0, 0, 0, 0, 0, 0)
     transform = love.math.newTransform()
     M.set_collection(DEFAULT_COLLECTION)
     quad = love.graphics.newQuad(0,0,0,0,1,1)
@@ -329,21 +358,6 @@ function M.update(dt)
                 r._last_x = r.x
                 r._last_y = r.y
 
-                -- easing
-                if r._easing then
-                    for property, ease in pairs(r._easing) do
-                        local fn = easing[ease.ease_fn]
-                        ease._t = ease._t + (dt * 1000)
-                        local ratio = min(1, max(0, fn(ease._t / ease.duration)))
-                        r[property] = ease.a + ((ease.b - ease.a) * ratio)
-
-                        if ratio >= 1 then
-                            r._easing[property] = nil
-                            M.signals.emit(M.SIGNALS.easing_done, r.id, r)
-                        end
-                    end
-                end
-
                 -- calculate size
                 M.dimensions(r)
             end
@@ -357,6 +371,7 @@ function M.update(dt)
 end
 
 function M.draw()
+    memo_get_transform = {}
     if not debug_canvas then
         debug_canvas = love.graphics.newCanvas()
     end
@@ -364,87 +379,88 @@ function M.draw()
         love.graphics.clear()
     end)
     for _, r in ipairs(collection[current_collection]) do
-        love.graphics.push('all')
-        color.reset()
+        if not r.disabled then
+            love.graphics.push('all')
+            color.reset()
+            local tf = M.get_transform(r.id)
 
-        if r.font then
-            fonts.set(r.font)
-        end
-
-        local frame = r.frames and r.frames[r.current_frame or 1]
-        local ox, oy = r.ox or 1, r.oy or 1
-
-        local x, y = M.transform_point(r.id, ox, oy)
-        if M.ROUND_POSITION then
-            x = round(x)
-            y = round(y)
-        end
-
-        if M.ROUND_POSITION then
-            ox = round(ox)
-            oy = round(oy)
-        end
-
-        -- set color
-        color.set(r.color or color.MUI.WHITE, r.opacity or 1)
-
-        if frame and r.tex then
-            -- draw frame of texture
-            local sw, sh = r.tex:getDimensions()
-            quad:setViewport(frame.x, frame.y, frame.w, frame.h, sw, sh)
-            love.graphics.draw(r.tex, quad, x, y, r.r, r.sx, r.sy, ox, oy)
-        elseif r.tex then
-            -- draw texture
-            love.graphics.draw(r.tex, x, y, r.r, r.sx, r.sy, ox, oy)
-        end
-
-        local text = r.text and tostring(r.text)
-        if text then
-            -- print text
-            love.graphics.print(text, x, y, r.r, r.sx, r.sy, ox, oy)
-            if r.text_shadow_color then
-                love.graphics.push()
-                color.set(r.text_shadow_color, r.opacity or 1)
-                for i = 1, r.text_shadow_size or 1 do
-                    love.graphics.print(text, x - i, y - i, r.r, r.sx, r.sy, ox, oy)
-                end
-                love.graphics.pop()
+            if r.font then
+                fonts.set(r.font)
             end
-        end
-        
-        if M.DEBUG then
-            debug_canvas:renderTo(function()
-                love.graphics.push('all')
-                fonts.set()
-                local w, h = M.dimensions(r, true)
 
-                -- draw rectangle around texture with origin point
-                love.graphics.setColor(1, 0, 0, 1)
+            local frame = r.frames and r.frames[r.current_frame or 1]
 
-                transform:setTransformation(x, y, r.r, 1, 1, ox, oy)
-                love.graphics.replaceTransform(transform)
-                if M.DEBUG_SHOW_ID then
-                    love.graphics.print(r.id, 0, 0)
-                end
-                love.graphics.circle('fill', ox, oy, 2)
+            love.graphics.replaceTransform(tf)
 
-                transform:setTransformation(x, y, r.r, r.sx, r.sy, ox, oy)
-                love.graphics.replaceTransform(transform)
-                love.graphics.rectangle('line', 0, 0, w, h)
+            -- set color
+            color.set(r.color or color.MUI.WHITE, r.opacity or 1)
 
-                if r._easing then
-                    -- draw position transition
-                    local x, y = r._easing['x'], r._easing['y']
-                    if x and y then
-                        love.graphics.setColor(0, 1, 0, 1)
-                        love.graphics.line(x.a, y.a, x.b, y.b)
+            if frame and r.tex then
+                -- draw frame of texture
+                local sw, sh = r.tex:getDimensions()
+                quad:setViewport(frame.x, frame.y, frame.w, frame.h, sw, sh)
+                love.graphics.draw(r.tex, quad)
+            elseif r.tex then
+                -- draw texture
+                love.graphics.draw(r.tex)
+            end
+
+            -- draw rect
+            local rect = r.rect
+            if rect then
+                love.graphics.rectangle(rect.mode or 'line', 0, 0, max(1, rect.w), max(1, rect.h))
+            end
+
+            -- print text
+            local text = r.text and tostring(r.text)
+            if text then
+                love.graphics.print(text)
+                if r.text_shadow_color then
+                    love.graphics.push()
+                    color.set(r.text_shadow_color, r.opacity or 1)
+                    for i = 1, r.text_shadow_size or 1 do
+                        love.graphics.print(text)
                     end
+                    love.graphics.pop()
                 end
-                love.graphics.pop()
-            end)
-        end
+            end
+            
+            if M.DEBUG then
+                -- TODO update for new transform stuff
+                debug_canvas:renderTo(function()
+                    love.graphics.push('all')
+                    fonts.set()
+                    local w, h = M.dimensions(r, true)
+                    local px, py = M.transform_point(r.id, 0, 0)
 
-        love.graphics.pop()
+                    -- draw rectangle around texture with origin point
+                    love.graphics.setColor(r._debug_color)
+                    love.graphics.rectangle('line', 0, 0, w, h)
+
+                    love.graphics.push('all')
+                    love.graphics.origin()
+                    local pox, poy = M.transform_point(r.id, r.ox, r.oy)
+                        love.graphics.circle('fill', pox, poy, 3)
+                    if not r.tex or rect or text then
+                        -- root node probably
+                        love.graphics.circle('line', pox, poy, 5)
+                    end
+                    love.graphics.pop()
+            
+                    -- transform:setTransformation(x, y, rot, 1, 1, ox, oy)
+                    -- love.graphics.replaceTransform(transform)
+                    if M.DEBUG_SHOW_ID then
+                        love.graphics.origin()
+                        love.graphics.print(r.id, px, py)
+                        love.graphics.scale(r.sx, r.sy)
+                    end
+
+                    love.graphics.pop()
+                end)
+            end
+
+            love.graphics.pop()
+        end
     end
 
     if M.DEBUG then
@@ -453,5 +469,5 @@ function M.draw()
 end
 
 return log.log_methods('render', M, {
-    exclude={'draw', 'update', 'get', 'transform_point', 'set_collection', 'dimensions'}
+    exclude={'draw', 'update', 'get', 'transform_point', 'get_transform', 'set_collection', 'dimensions'}
 })

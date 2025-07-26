@@ -7,7 +7,6 @@ local lang = require 'lib.i18n'
 local const= require 'const'
 
 local WPN_STATS_RATIO = 0.25
-local WPN_SCALE = 2
 
 ---@class CursedSwordData
 ---@field no_death_time_left? number
@@ -47,14 +46,13 @@ return {
             image = {
                 path = assets.dk_items,
                 frames = {{x=48, y=104, w=16, h=24}},
-                sx = WPN_SCALE,
                 ox = 8, oy = -2,
             },
             transform_stats = {
                 ['stats.str'] = {operation='add', value=75},
             },
             damage_scaling = stats.create{str=WPN_STATS_RATIO},
-            render_on_character = {x=0, y=0, z=zindex.equipped_item_back, r=math.rad(45)},
+            render_on_character = {},
             attack_animation = {
                 swing = {}
             },

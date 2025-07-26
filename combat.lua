@@ -168,6 +168,7 @@ function M.start(zone, enemy_types, screen_id)
         end
     end
 
+    in_combat = true
     M.signals.emit(M.SIGNALS.on_start)
 end
 
@@ -256,6 +257,7 @@ function M.use_item(source_id, target_id, item_data)
             custom(source, target, duration, item_data)
         end
 
+        local spr = source.character_sprite
         if swing and r_weapon then
             local r = r_weapon
             r.r = r.r or 0
@@ -266,58 +268,59 @@ function M.use_item(source_id, target_id, item_data)
             
             -- swing arm
             local hand_l = character.sprite.renderables(source_id).hand_l
-            if hand_l then
-                animation
-                    .create(hand_l.id, hand_l)
-                    .add(
-                        {
-                            to=r.r >= (angle1+angle2)/2 and
-                            -- swing up
-                            {
-                                r=rad(-45),
-                                z=zindex.character_hand_back,
-                            } or
-                            -- swing down
-                            {
-                                r=rad(95),
-                                z=zindex.character_hand_front2,
-                            },
-                            duration=duration,
-                            data=data,
-                            ease_fn=easing.ease_in_out_quint,
-                        }
-                    )
-                    .start()
-            end
+            local swing_up = false
+            -- if hand_l then
+            --     animation
+            --         .create(hand_l.id, hand_l)
+            --         .add(
+            --             {
+            --                 to=swing_up and
+            --                 -- swing up
+            --                 {
+            --                     r=rad(-45),
+            --                     z=zindex.character_hand_back,
+            --                 } or
+            --                 -- swing down
+            --                 {
+            --                     r=rad(95),
+            --                     z=zindex.character_hand_front2,
+            --                 },
+            --                 duration=duration,
+            --                 data=data,
+            --                 ease_fn=easing.ease_in_out_quint,
+            --             }
+            --         )
+            --         .on_step(function (me)
+            --             if me.progress > 0.5 and not attack_landed then
+            --                 attack_landed = true
+            --                 M.process_attack(data)
+            --             end
+            --         end)
+            --         .start()
+            -- end
 
             -- rotate weapon
-            animation
-                .create(r.id, r)
-                .add(
-                    {
-                        to=r.r >= (angle1+angle2)/2 and
-                        -- swing up
-                        {
-                            r=angle1,
-                            z=zindex.equipped_item_back,
-                        } or 
-                        -- swing down
-                        {
-                            r=angle2,
-                            z=zindex.equipped_item_front2,
-                        },
-                        duration=duration,
-                        data=data,
-                        ease_fn=easing.ease_in_out_quint,
-                    }
-                )
-                .on_step(function (me)
-                    if me.progress > 0.5 and not attack_landed then
-                        attack_landed = true
-                        M.process_attack(data)
-                    end
-                end)
-                .start()
+            -- animation
+            --     .create(r.id, r)
+            --     .add(
+            --         {
+            --             to=swing_up and
+            --             -- swing up
+            --             {
+            --                 r=angle1,
+            --                 z=zindex.equipped_item_back,
+            --             } or 
+            --             -- swing down
+            --             {
+            --                 r=angle2,
+            --                 z=zindex.equipped_item_front2,
+            --             },
+            --             duration=duration,
+            --             data=data,
+            --             ease_fn=easing.ease_in_out_quint,
+            --         }
+            --     )
+            --     .start()
         end
 
         if shoot and r_weapon then
@@ -369,13 +372,16 @@ function M.update(dt)
             -- attack
             if e.stats and e.attack_timer >= 1000 then
                 e.attack_timer = 0
-            
                 -- process items
                 for _, data in ipairs(e.equipped_items) do
                     -- get target
                     local target --[[@as Entity?]]
                     for _, other in entity.filter('health', 'group') do
-                        if other._id ~= e._id then
+                        local different =
+                            e._id ~= other._id and
+                            (e.group == 'enemy' and other.group ~= 'enemy') or
+                            (e.group ~= 'enemy' and other.group == 'enemy')
+                        if different then
                             target = other
                         end
                     end

@@ -1,6 +1,6 @@
 return {
     DEBUG_RENDER = {
-        ENABLED = false,
+        ENABLED = true,
         SHOW_ID = false,
     },
     COMBAT = {
@@ -13,6 +13,7 @@ return {
     LOG_CONSOLE_LEVEL = 'debug',
     WRITE_LOGS_APPEND = false,
     FLOOR_Y = 160,
+    FLOOR_VISIBLE = false,
     JUMP_VELOCITY = -300,
     MAX_JUMPS = 0,
     BOUNCE_VY_THRESHOLD = -70,
@@ -27,7 +28,7 @@ return {
     RARITY_SCALE_MAX = 1,
     RARITY_SCALE_MIN = 0.5,
     ---@type Stats
-    BASE_STATS = {agi=0, int=0, str=0},
+    BASE_STATS = {agi=5, int=0, str=5},
     HEALTH = 100,
     CRITICAL_DAMAGE = 1.5,
     MAX_EQUIPPED_ITEMS = 5,

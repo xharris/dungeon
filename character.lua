@@ -15,6 +15,7 @@ local signal = require 'lib.signal'
 local zindex = require 'zindex'
 local stats = require 'stats'
 local util  = require 'lib.util'
+local game  = require 'game'
 
 local abs = math.abs
 local min = math.min
@@ -39,7 +40,7 @@ local rad = math.rad
 ---@field expression? CharacterExpression
 ---@field hand_r? Vector2 position relative to center of body
 ---@field hand_l? Vector2 position relative to center of body
----@field renderables? {body?:string, eyes?:string, hand_r?:string, hand_l?:string}
+---@field renderables? {root?:string, body?:string, eyes?:string, arm_r?:string, arm_l?:string, hand_r?:string, hand_l?:string}
 ---@field sx? number
 ---@field sy? number
 ---@field oy? number offset from parent entity
@@ -73,6 +74,15 @@ local hand_image = {
     ox = 4, oy = 4,
 }
 
+---@type Image
+local body_image = {
+    path = assets.character_template,
+    frames = {
+        {x=0, y=0, w=32, h=32},
+    },
+    ox = 16, oy = 16,
+}
+
 ---set character expression (eyes)
 ---@param entity_id string
 ---@param v? CharacterExpression
@@ -92,7 +102,10 @@ function M.sprite.expression(entity_id, v)
     local r = spr.renderables.eyes and render.get(spr.renderables.eyes)
     if not r then
         -- create new renderable
-        _, r = render.add(images.renderable(image, {tag='char_eyes'}))
+        _, r = render.add(images.renderable(image, {
+            tag='char_eyes',
+            parent=e.character_sprite.renderables.root,
+        }))
     else
         -- update existing renderable
         r = lume.extend(r, images.renderable(image))
@@ -107,26 +120,29 @@ end
 ---@return string? error
 function M.sprite.reset_hands(entity_id)
     local e = entity.get(entity_id)
-    local hand_l = e and e.character_sprite and e.character_sprite.renderables and e.character_sprite.renderables.hand_l
-    local hand_r = e and e.character_sprite and e.character_sprite.renderables and e.character_sprite.renderables.hand_r
+    local spr = e and e.character_sprite
 
     if not e then return errors.not_found('entity', entity_id) end
-    if not e.character_sprite then return errors.missing_field('character_sprite', e) end
+    if not spr then return errors.missing_field('character_sprite', e) end
 
     render.set_collection(e.screen_id)
     -- get/create renderables
-    local r_hand_l, r_hand_r
-    if not hand_l then
-        hand_l, r_hand_l = render.add(images.renderable(hand_image, {tag='char_hand_l'}))
-    else
-        r_hand_l = render.get(hand_l)
+    if not spr.renderables.hand_l then
+        spr.renderables.hand_l = render.add(images.renderable(hand_image, {
+            tag='char_hand_l',
+            parent=e.character_sprite.renderables.root
+        }))
     end
-    if not hand_r then
-        hand_r, r_hand_r = render.add(images.renderable(hand_image, {tag='char_hand_r'}))
-    else
-        r_hand_r = render.get(hand_r)
+    if not spr.renderables.hand_r then
+        spr.renderables.hand_r = render.add(images.renderable(hand_image, {
+            tag='char_hand_r',
+            parent=e.character_sprite.renderables.root,
+        }))
     end
     render.set_collection()
+
+    local r = M.sprite.renderables(entity_id)
+    local r_hand_l, r_hand_r = r.hand_l, r.hand_r
 
     local has_item_with_swing_animation =
         e.equipped_items and
@@ -135,34 +151,56 @@ function M.sprite.reset_hands(entity_id)
             return item and item.attack_animation and item.attack_animation.swing ~= nil or false
         end)
 
-    if e.is_in_combat and has_item_with_swing_animation then
-        r_hand_l.r = rad(-45)
-        r_hand_r.r = rad(135)
-    else
-        r_hand_l.r = rad(-45)
-        r_hand_r.r = rad(-135)
-    end
-    r_hand_l.ox = -2
-    r_hand_r.ox = -2
+    -- if e.is_in_combat and has_item_with_swing_animation then
+    --     r_hand_l.r = rad(-45)
+    --     r_hand_r.r = rad(135)
+    -- else
+        -- r_hand_l.r = rad(45)
+        -- r_hand_r.r = rad(90)
+    -- end
     r_hand_l.z = zindex.character_hand_back
     r_hand_r.z = zindex.character_hand_front
-    
-    e.character_sprite.renderables.hand_l = hand_l
-    e.character_sprite.renderables.hand_r = hand_r
 end
 
 ---@param entity_id string
----@return {body?:Renderable, eyes?:Renderable, hand_l?:Renderable, hand_r?:Renderable}, string? error
+function M.sprite.body(entity_id)
+    local e = entity.get(entity_id)
+    local spr = e and e.character_sprite
+
+    if not e then return errors.not_found('entity', entity_id) end
+    if not spr then return errors.missing_field('character_sprite', e) end
+
+    local r_body
+    if not spr.renderables.body then
+        render.set_collection(e.screen_id)
+        spr.renderables.body, r_body = render.add(
+            images.renderable(body_image, {
+                tag='char_body', 
+                parent=e.character_sprite.renderables.root,
+            })
+        )
+        render.set_collection()
+    else
+        r_body = render.get(spr.renderables.body)
+    end
+    r_body.z = zindex.character_body
+end
+
+---@param entity_id string
+---@return {root?:Renderable, body?:Renderable, eyes?:Renderable, hand_l?:Renderable, hand_r?:Renderable}, string? error
 function M.sprite.renderables(entity_id)
     local e = entity.get(entity_id)
-    local ids = e and e.character_sprite and e.character_sprite.renderables
+    local spr = e and e.character_sprite
+    local ids = e and spr and spr.renderables
     if not e then return {}, errors.not_found('entity', entity_id) end
     if not ids then return {}, errors.missing_field('entity.character_sprite.renderables', e) end
+
     return {
-        body = ids.body and render.get(ids.body),
-        eyes = ids.eyes and render.get(ids.eyes),
-        hand_l = ids.hand_l and render.get(ids.hand_l),
-        hand_r = ids.hand_r and render.get(ids.hand_r),
+        root = render.get(ids.root),
+        body = render.get(ids.body),
+        eyes = render.get(ids.eyes),
+        hand_l = render.get(ids.hand_l),
+        hand_r = render.get(ids.hand_r),
     }
 end
 
@@ -189,7 +227,7 @@ function M.add_health(entity_id, v)
     local e = entity.get(entity_id)
     if not e then return errors.not_found('entity', entity_id) end
 
-    v = floor(v)
+    -- v = floor(v)
 
     e.health.current = max(0, min(e.health.max, e.health.current + v))
     M.signals.emit(M.SIGNALS.change_health, e._id, v)
@@ -309,21 +347,11 @@ function M.create(v, renderable)
             },
             character_sprite = {
                 default_expression = 'neutral',
-                body = {
-                    path = assets.character_template,
-                    frames = {
-                        {x=0, y=0, w=32, h=32},
-                    },
-                    ox = 16, oy = 16,
-                },
                 facing = 'right',
                 looking = 'straight',
-                hand_l = {x=0, y=0},
-                hand_r = {x=0, y=0},
-                renderables = {},
-                sx = 2,
-                sy = 2,
-                oy = 32 - 12,
+                renderables = {
+                    root = render.add{tag='char_root', sx=3, sy=3, ox=16, oy=16},
+                },
             }
         } --[[@as Entity]],
         v or {}
@@ -341,14 +369,7 @@ function M.create(v, renderable)
     -- add character sprites
     M.sprite.expression(e._id)
     M.sprite.reset_hands(e._id)
-    
-    render.set_collection(screen_id)
-    local r_body
-    e.character_sprite.renderables.body, r_body = render.add(
-        images.renderable(e.character_sprite.body, {tag='char_body'})
-    )
-    r_body.z = zindex.character_body
-    render.set_collection()
+    M.sprite.body(e._id)
 
     -- add weapon sprite
     for _, data in ipairs(e.inventory) do
@@ -457,26 +478,6 @@ end
 
 ---@param entity_id string
 function M.all_items(entity_id)
-    -- ---@type ItemData[]
-    -- local out = {}
-    -- local e = entity.get(entity_id)
-    -- if not e then
-    --     return out, errors.not_found("entity", entity_id)
-    -- end
-    -- local added = {}
-    -- for _, data in ipairs(e.inventory) do
-    --     if not added[data.id] then
-    --         added[data.id] = true
-    --         table.insert(out, data)
-    --     end
-    -- end
-    -- for _, data in ipairs(e.equipped_items) do
-    --     if not added[data.id] then
-    --         added[data.id] = true
-    --         table.insert(out, data)
-    --     end
-    -- end
-    -- return out
     local e = entity.get(entity_id)
     local i = 0
     local equip_n = e and e.equipped_items and #e.equipped_items or 0
@@ -491,17 +492,6 @@ function M.all_items(entity_id)
         end
     end
 end
-
---[[
-    function list_iter (t)
-      local i = 0
-      local n = table.getn(t)
-      return function ()
-               i = i + 1
-               if i <= n then return t[i] end
-             end
-    end
-]]
 
 ---@param entity_id string
 ---@param idx number inventory index
@@ -535,7 +525,8 @@ function M.equip_item(entity_id, idx, swap_idx)
         end
         inventory_data.renderable = render.add(
             images.renderable(inventory_item.image, {
-                tag = inventory_item.id
+                tag = inventory_item.id,
+                disabled = true,
             })
         )
         render.set_collection()
@@ -667,6 +658,8 @@ function M.power_level(args)
         end
     end
 
+    power = power + stats.apply({agi=1, int=1, str=1, crit=0}, args.stats)
+
     for _, data in ipairs(args.inventory or {}) do
         add_item_power(data)
     end
@@ -734,48 +727,36 @@ function M.update(dt)
 
         -- character sprite
         local spr = e.character_sprite
-        if spr then
+        local r = M.sprite.renderables(e._id)
+        if r.root then
             -- face direction
             if spr.facing == 'left' then
-                spr.sx = -abs(spr.sx)
+                r.root.sx = -abs(r.root.sx)
             elseif spr.facing == 'right' then
-                spr.sx = abs(spr.sx)
+                r.root.sx = abs(r.root.sx)
             end
-            -- update renderables
-            local r = M.sprite.renderables(e._id)
-            local y = e.y - spr.oy
-            if r.body then
-                r.body.x, r.body.y, r.body.sx, r.body.sy = e.x, y, spr.sx, spr.sy
-            end
-            if r.eyes then
-                r.eyes.x, r.eyes.y, r.eyes.sx, r.eyes.sy = e.x, y - 12, spr.sx, spr.sy
-            end
-            if r.hand_l then
-                r.hand_l.x, r.hand_l.y, r.hand_l.sx, r.hand_l.sy = e.x, y, spr.sx, spr.sy
-            end
-            if r.hand_r then
-                r.hand_r.x, r.hand_r.y, r.hand_r.sx, r.hand_r.sy = e.x, y, spr.sx, spr.sy
-            end
+            -- position
+            r.root.x = e.x
+            r.root.y = e.y
+        end
+        if r.root then
+            r.root.r = (r.root.r or 0) + rad(10) * dt
         end
 
         -- held weapons
-        if e.equipped_items then
+        if spr and e.equipped_items then
             for _, data in ipairs(e.equipped_items) do
                 local item = items.get(data.id)
-                local r = item and data.renderable and render.get(data.renderable)
-                local x, y = e.x, e.y
-
-                -- get position of left hand
-                local hand_l = e.character_sprite and e.character_sprite.renderables and e.character_sprite.renderables.hand_l
-                if hand_l then
-                    x, y = render.transform_point(hand_l, hand_image.ox, hand_image.oy)
-                end
-
-                if item and item.render_on_character then
-                    local render_x = item.render_on_character.x or 0
-                    local render_y = item.render_on_character.y or 0
-                    r.x = x + render_x
-                    r.y = y + render_y
+                local r_item = item and data.renderable and render.get(data.renderable)
+                
+                if item and r_item and item.render_on_character then
+                    -- attach to left hand
+                    r_item.parent = spr.renderables.hand_l or spr.renderables.root
+                    -- offset
+                    if item and item.render_on_character then
+                        r_item.x = item.render_on_character.x or 0
+                        r_item.y = item.render_on_character.y or 0
+                    end
                 end
             end
         end

@@ -16,40 +16,20 @@ local easing = require 'lib.easing'
 local printc = require 'lib.printc'
 local errors = require 'lib.errors'
 local lang = require 'lib.i18n'
+local game = require 'game'
 
 local lerp = lume.lerp
 
 ---@class StarterItem
+---@field renderables {root:string,square:string,weapon:string}
 ---@field item Item
----@field r_weapon string
----@field x number
----@field y number
----@field scale number
----@field sx number
----@field sy number
----@field shadow_offset number
 
 local RECT_SIZE = 32
-local SEP_SCALE = 0.6
-
-local SCALE = 1
-local SELECTED_SCALE = 2
-
-local SHADOW_OFFSET = 0
-local SELECTED_SHADOW_OFFSET = 10
 
 ---@type StarterItem[]
 local starting_items = {}
 
 local selected_index = 1
-
-local x_offset = {
-    current = 0,
-    target = 0,
-}
-
-local t = 0
-local ease_duration = 1000
 
 return {
 
@@ -63,19 +43,32 @@ return {
         local starters = items.starters.all()
         starting_items = {}
         for _, item in ipairs(starters) do
-            local r = images.renderable(item.image)
-            r.sx = (r.sx or 1) * SCALE
-            r.sy = (r.sy or r.sx or 1) * SCALE
-            table.insert(starting_items, {
+            local root = render.add{
+                tag='starting_item',
+                x=game.width/2, y=game.height/2,
+                sx = 2, sy = 2,
+            }
+            local starter = {
+                renderables = {
+                    root = root,
+                    square = render.add{
+                        tag = 'square',
+                        parent = root,
+                        rect = {mode='fill', w=RECT_SIZE, h=RECT_SIZE},
+                        color = color.MUI.GREY_900,
+                        opacity = 0.5,
+                        ox = RECT_SIZE/2,
+                        oy = RECT_SIZE/2,
+                    },
+                    weapon = render.add(images.renderable(item.image, {
+                        tag = 'weapon',
+                        parent = root,
+                    })),
+                },
                 item = item,
-                x = 0,
-                y = 0,
-                sx = r.sx,
-                sy = r.sy,
-                scale = SCALE,
-                shadow_offset = SHADOW_OFFSET,
-                r_weapon = render.add(r),
-            } --[[@as StarterItem]])
+            } --[[@as StarterItem]]
+
+            table.insert(starting_items, starter)
         end
         log.warn_if(#starting_items == 0, "no starting items added")
     end,
@@ -84,32 +77,6 @@ return {
         local player = character.get_player()
         if not player then
             return
-        end
-        if t < ease_duration then
-            t = t + (dt * 1000)
-        end
-        local gw, gh = love.graphics.getDimensions()
-        local sep = gw * SEP_SCALE
-
-        -- animate offset
-        local selected_index0 = selected_index - 1
-        x_offset.target = -(selected_index0 * (RECT_SIZE + sep))
-        x_offset.current = lerp(x_offset.current, x_offset.target, t / ease_duration)
-
-        for i, item in ipairs(starting_items) do
-            local i0 = i - 1
-            item.x = gw/2 + (i0 * (RECT_SIZE + sep))
-            item.y = gh/2
-
-            local r = render.get(item.r_weapon)
-            if r then
-                r.x = item.x + x_offset.current
-                r.y = item.y
-                local target_scale = i == selected_index and SELECTED_SCALE or SCALE
-                item.scale = lerp(item.scale, target_scale, easing.ease_in_out_sine(t / ease_duration))
-                r.sx = item.sx * item.scale
-                r.sy = item.sy * item.scale
-            end
         end
 
         if ctrl:pressed 'right' then
@@ -142,25 +109,7 @@ return {
 
     pre_draw = function ()
         ---@type number, number
-        local gw, gh = love.graphics.getDimensions()
-        for i, item in ipairs(starting_items) do
-            love.graphics.push('all')
-            love.graphics.translate(item.x + x_offset.current, item.y)
-            local size = RECT_SIZE * item.scale
-            local pos = -size / 2
-            item.shadow_offset = lerp(
-                item.shadow_offset,
-                selected_index == i and SELECTED_SHADOW_OFFSET or SHADOW_OFFSET,
-                easing.ease_in_out_sine(t / ease_duration)
-            )
-            -- draw box shadow
-            color.set(color.MUI.GREY_900, 0.5)
-            love.graphics.rectangle('fill', pos + item.shadow_offset, pos + item.shadow_offset, size, size)
-            -- draw box
-            color.set(color.MUI.GREY_900)
-            love.graphics.rectangle('fill', pos, pos, size, size)
-            love.graphics.pop()
-        end
+        local gw = game.width
         local selected_item = selected_index and starting_items[selected_index]
         if selected_item then
             love.graphics.push('all')
@@ -173,7 +122,9 @@ return {
 
     leave = function ()
         for _, item in ipairs(starting_items) do
-            render.remove(item.r_weapon)
+            for _, r in pairs(item.renderables) do
+                render.remove(r)
+            end
         end
         starting_items = {}
     end

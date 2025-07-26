@@ -11,7 +11,10 @@ local text = {}
 ---@param lang i18nLanguage
 ---@param texts table<string, string>
 function M.set(lang, texts)
-    text[lang] = texts
+    text[lang] = text[lang] or {}
+    for k, v in pairs(texts) do
+        text[lang][k] = v
+    end
 end
 
 function M.get(key)

@@ -7,24 +7,31 @@ local ctrl = require 'lib.controls'
 local char = require 'character'
 local assets = require 'assets.index'
 local theme = require 'theme'
+local lang = require 'lib.i18n'
 
 local REST_HEAL_AMOuNT = 20
 
 return {
     on_load = function ()
+        lang.set('en', {
+            big_stick = 'Big Stick',
+            big_stick_description = 'Brown and sticky',
+        })
+
         items.add{
             id = 'big_stick',
             type = 'weapon',
-            description = {
-                {text='Big Stick\n'},
-                {text='Found somewhere in the forest'}
-            },
             image = {
                 path = assets.dk_items,
-                frames = {{x=160, y=128, w=16, h=16}},
+                frames = {{x=48+16, y=104, w=16, h=24}},
+                ox = 8, oy = -2,
             },
             shop_disabled = true,
-            damage_scaling = {agi=0, int=0, str=0.2},
+            damage_scaling = {agi=0, int=0, str=0.1},
+            transform_stats = {
+                ['stats.str'] = {operation='add', value=50},
+            },
+            render_on_character = {}
         }
 
         items.add{
@@ -38,7 +45,6 @@ return {
             id = 'goblin',
             inventory = {{id='big_stick'}},
             equipped_items = {1},
-            stats = {agi=100, str=10, int=0},
             image = {
                 path = assets.dk_items,
                 frames = {{x=160, y=128, w=16, h=16}},
