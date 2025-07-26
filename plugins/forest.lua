@@ -43,6 +43,9 @@ return {
                 path = assets.dk_items,
                 frames = {{x=160, y=128, w=16, h=16}},
             },
+            character_sprite = {
+                default_expression = 'angry',
+            }
         }
 
         combat.enemy.add{

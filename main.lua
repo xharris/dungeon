@@ -27,6 +27,7 @@ render.DEBUG_SHOW_ID = const.DEBUG_RENDER.SHOW_ID
 projectiles.DEBUG = const.DEBUG_PROJECTILES
 projectiles.DURATION = const.PROJECTILE_DURATION
 fonts.FONT_SIZE = const.FONT_SIZE
+combat.BASE_ATTACK_DURATION = const.COMBAT.BASE_ATTACK_DURATION
 
 function love.load()
     game.load()

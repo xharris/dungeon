@@ -22,6 +22,8 @@ local deg = math.deg
 local max = math.max
 local min = math.min
 
+M.BASE_ATTACK_DURATION = 750
+
 ---@alias CombatEnemyType 'boss'
 
 ---@class CombatEnemy
@@ -33,6 +35,7 @@ local min = math.min
 ---@field equipped_items? number[]
 ---@field type? CombatEnemyType
 ---@field only_zones? string[] only allow this enemy to spawn in specified zones
+---@field character_sprite? CharacterSprite
 
 ---@class CombatUseItemData
 ---@field type 'attack'
@@ -86,6 +89,7 @@ function M.enemy.spawn(id, screen_id)
             health=enemy.health and lume.clone(enemy.health) or {current=const.HEALTH, max=const.HEALTH} --[[@as Health]],
             screen_id=screen_id,
             stats=enemy.stats and lume.clone(enemy.stats) or const.CLASS_STATS,
+            character_sprite=enemy.character_sprite,
         },
         {
             frames = {{x=48, y=144, w=16, h=16}},
@@ -140,14 +144,15 @@ function M.start(zone, enemy_types, screen_id)
     local player_level = character.power_level(player)
     local enemy_power = 0
     local max_iter = 30
-    while enemy_power < player_level and max_iter > 0 do
+    local max_enemies = 3
+    while enemy_power < player_level and max_iter > 0 and max_enemies > 0 do
         local id = M.enemy.random(zone, enemy_types)
         if id then
-            local e_id = M.enemy.spawn(id, screen_id)
-            local e = entity.get(e_id)
-
+            local e_id, err = M.enemy.spawn(id, screen_id)
+            local e = err == nil and entity.get(e_id)
             if e then
                 enemy_power = enemy_power + character.power_level(e)
+                max_enemies = max_enemies - 1
             end
         else
             log.error(errors.not_found('enemy', id))
@@ -245,7 +250,7 @@ function M.use_item(source_id, target_id, item_data)
             item = item_data,
             stats = lume.clone(src_stats),
         }
-        local duration = 750 / stats.attack_speed(source.stats)
+        local duration = M.BASE_ATTACK_DURATION / stats.attack_speed(source.stats)
 
         if custom then
             custom(source, target, duration, item_data)

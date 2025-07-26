@@ -23,6 +23,7 @@ local abs = math.abs
 
 ---@class Renderable
 ---@field id? string
+---@field created_at? number
 ---@field tag? string
 ---@field collection_id? string
 ---@field data? table arbitrary value that does nothing
@@ -100,6 +101,9 @@ end
 ---@param t Renderable[]
 local function z_sort(t)
     table.sort(t, function (a, b)
+        if a.z == b.z then
+            return (a.created_at or 0) < (b.created_at or 0)
+        end
         return (a.z or 0) < (b.z or 0)
     end)
 end
@@ -179,6 +183,7 @@ function M.add(t)
     t.angle = 0
     t._last_x = t.x
     t._last_y = t.y
+    t.created_at = os.time()
     z_sort(collection[current_collection])
 
     -- negative offsets

@@ -32,16 +32,17 @@ local rad = math.rad
 ---@alias CharacterExpression 'neutral'|'happy'|'ouch'|'angry'|'sad'|'blink'|'suspicious'
 
 ---@class CharacterSprite
----@field body Image
----@field facing 'left'|'right'
----@field looking 'straight'|'up'|'down'
----@field expression CharacterExpression
----@field hand_r Vector2 position relative to center of body
----@field hand_l Vector2 position relative to center of body
----@field renderables {body?:string, eyes?:string, hand_r?:string, hand_l?:string}
----@field sx number
----@field sy number
----@field oy number offset from parent entity
+---@field body? Image
+---@field facing? 'left'|'right'
+---@field looking? 'straight'|'up'|'down'
+---@field default_expression? CharacterExpression
+---@field expression? CharacterExpression
+---@field hand_r? Vector2 position relative to center of body
+---@field hand_l? Vector2 position relative to center of body
+---@field renderables? {body?:string, eyes?:string, hand_r?:string, hand_l?:string}
+---@field sx? number
+---@field sy? number
+---@field oy? number offset from parent entity
 
 M.signals = signal.create 'character'
 M.SIGNALS = {
@@ -58,6 +59,11 @@ local expression_images = {
         frames = {{x=64, y=16, w=8, h=7}},
         ox = 3, oy = 3.5,
     },
+    angry = {
+        path = assets.character_template,
+        frames = {{x=54, y=16, w=8, h=7}},
+        ox = 3, oy = 3.5,
+    }
 }
 
 ---@type Image
@@ -69,11 +75,12 @@ local hand_image = {
 
 ---set character expression (eyes)
 ---@param entity_id string
----@param v CharacterExpression
+---@param v? CharacterExpression
 ---@return string? error
 function M.sprite.expression(entity_id, v)
     local e = entity.get(entity_id)
     local spr = e and e.character_sprite
+    v = v or spr and spr.expression or spr and spr.default_expression or 'neutral'
     local image = expression_images[v]
 
     if not e then return errors.not_found('entity', entity_id) end
@@ -85,13 +92,14 @@ function M.sprite.expression(entity_id, v)
     local r = spr.renderables.eyes and render.get(spr.renderables.eyes)
     if not r then
         -- create new renderable
-        spr.renderables.eyes, r = render.add(images.renderable(image, {tag='char_eyes'}))
+        _, r = render.add(images.renderable(image, {tag='char_eyes'}))
     else
         -- update existing renderable
         r = lume.extend(r, images.renderable(image))
     end
     render.set_collection()
 
+    spr.renderables.eyes = r.id
     r.z = zindex.character_eyes
 end
 
@@ -227,26 +235,38 @@ end
 function M.arrange()
     local screen_x, _, w, _ = screens.rect()
     local player = M.get_player()
-    local sep = const.CHAR_ARRANGE_SEP
 
+    local ally_count, enemy_count = 0, 0
+    for _, e in entity.filter('character_sprite', 'group') do
+        if e.group == 'ally' or e.group == 'player' then
+            ally_count = ally_count + 1
+        end
+        if e.group == 'enemy' then
+            enemy_count =enemy_count + 1
+        end
+    end
+
+    local ally_sep = math.min(const.CHAR_ARRANGE_SEP, (0.25 * w) / ally_count)
+    local enemy_sep = math.min(const.CHAR_ARRANGE_SEP, (0.25 * w) / enemy_count)
+    
     local ally_x = (0.25 * w) + screen_x
     local enemy_x = (0.75 * w) + screen_x
 
     if player then
         player.x = ally_x
-        ally_x = ally_x - sep
+        ally_x = ally_x - ally_sep
     end
 
     for _, e in ipairs(entity.all()) do
         if not player or e._id ~= player._id then
             if e.group == 'ally' then
                 e.x = ally_x
-                ally_x = ally_x - sep
+                ally_x = ally_x - ally_sep
                 e.character_sprite.facing = 'right'
             end
             if e.group == 'enemy' then
                 e.x = enemy_x
-                enemy_x = enemy_x + sep
+                enemy_x = enemy_x + enemy_sep
                 e.character_sprite.facing = 'left'
             end
         end
@@ -259,7 +279,7 @@ end
 function M.create(v, renderable)
     local name = v and v.name or 'player'
     log.debug('name =', name)
-    local e = entity.add(lume.extend(
+    local e = entity.add(util.merge(
         {
             tag = v and v.tag or name,
             group = 'player',
@@ -288,6 +308,7 @@ function M.create(v, renderable)
                 damage = const.CRITICAL_DAMAGE,
             },
             character_sprite = {
+                default_expression = 'neutral',
                 body = {
                     path = assets.character_template,
                     frames = {
@@ -297,7 +318,6 @@ function M.create(v, renderable)
                 },
                 facing = 'right',
                 looking = 'straight',
-                expression = 'neutral',
                 hand_l = {x=0, y=0},
                 hand_r = {x=0, y=0},
                 renderables = {},
@@ -319,7 +339,7 @@ function M.create(v, renderable)
     e.screen_id = screen_id
 
     -- add character sprites
-    M.sprite.expression(e._id, 'neutral')
+    M.sprite.expression(e._id)
     M.sprite.reset_hands(e._id)
     
     render.set_collection(screen_id)
@@ -616,8 +636,8 @@ function M.kill(entity_id)
         end
     end
     -- remove sprite
-    if e.character_sprite then
-        local ids = e.character_sprite.renderables
+    local ids = e.character_sprite and e.character_sprite.renderables
+    if ids then
         render.remove(ids.body)
         render.remove(ids.eyes)
         render.remove(ids.hand_l)

@@ -1,6 +1,6 @@
 local M = {}
 
----@alias Iterator<V> fun(o?:{filter?: fun(i:number, v:V)}, ...:V[]): fun(table: V[], i?: integer):integer, V
+---@alias Iterator<V> fun(start?: integer):integer, V
 
 ---create an iterator from given tables
 ---@generic V : table
@@ -14,7 +14,10 @@ function M.iterator(o, ...)
     local table = tables[table_i]
     local len = #table
     local total_len = 0
-    return function()
+    return function(start)
+        if start and i < start then
+            i = start
+        end
         if o and o.filter then
             repeat
                 i = i + 1
@@ -41,6 +44,34 @@ end
 ---@return number [0, 1]
 function M.diminishing(x, max)
     return x / (x + (max or 100)) + 1
+end
+
+---https://gist.github.com/revolucas/184aec7998a6be5d2f61b984fac1d7f7
+---@generic V : table
+---@param into V
+---@param from V
+---@return V
+function M.merge(into, from)
+	local stack = {}
+	local node1 = into
+	local node2 = from
+	while (true) do
+		for k,v in pairs(node2) do
+			if (type(v) == "table" and type(node1[k]) == "table") then
+				table.insert(stack,{node1[k],node2[k]})
+			else
+				node1[k] = v
+			end
+		end
+		if (#stack > 0) then
+			local t = stack[#stack]
+			node1,node2 = t[1],t[2]
+			stack[#stack] = nil
+		else
+			break
+		end
+	end
+	return into
 end
 
 return M

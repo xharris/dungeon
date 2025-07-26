@@ -3,6 +3,9 @@ return {
         ENABLED = false,
         SHOW_ID = false,
     },
+    COMBAT = {
+        BASE_ATTACK_DURATION = 750,
+    },
     DEBUG_PROJECTILES = false,
     ---@type LogLevel
     LOG_METHODS_LEVEL = 'debug',
