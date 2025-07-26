@@ -24,6 +24,9 @@ local projectiles = require 'projectiles'
 local zindex      = require 'zindex'
 local animation = require 'lib.animation'
 local color = require 'lib.color'
+local fonts = require 'lib.fonts'
+local const = require 'const'
+local game  = require 'game'
 
 local max = math.max
 local min = math.min
@@ -106,12 +109,18 @@ function M.on_change_health(entity_id, change)
     local x, y = e.x, e.y
 
     -- show text animation
+    ---@type Font
+    local font = {path=assets.yoster_island, size=20}
+    local tw, th = fonts.dimensions(change, font)
     local r_id, text_render = render.add{
         tag = 'health-changed-text',
-        x = x,
-        y = y,
-        text = tostring(change),
-        color = color.MUI.RED_500,
+        x = x, y = y,
+        ox = tw / 2, oy = th / 2,
+        sx = 0.85, sy = 0.85,
+        font = font,
+        text = change,
+        text_shadow_color = color.MUI.RED_500,
+        color = color.MUI.BLACK,
         z = zindex.character_health_changed,
     }
     entity.add{
@@ -121,13 +130,14 @@ function M.on_change_health(entity_id, change)
         x = x,
         y = y,
         vx = lume.randomchoice{-30, 30},
-        vy = -150,
-        gravity = 300,
+        vy = -250,
+        gravity = 900,
         render_text = r_id,
         render_text_animation = animation
             .create(text_render.id, text_render)
             .add(
-                {to={opacity=0}, duration=1500}
+                {to={sx=1, sy=1}, duration=200},
+                {to={opacity=0}, duration=300}
             )
             .start()
     }
@@ -273,7 +283,14 @@ return {
                     }
                 }
             end
-        end 
+        end
+    end,
+
+    pre_draw = function ()
+        love.graphics.push('all')
+        color.set(color.MUI.BLACK)
+        love.graphics.rectangle('fill', 0, const.FLOOR_Y, game.width, game.height)
+        love.graphics.pop()
     end
 
 } --[[@as State]]

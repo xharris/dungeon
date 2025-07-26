@@ -2,6 +2,7 @@ local M = {}
 
 local lume = require 'ext.lume'
 local log  = require 'lib.log'
+local util = require 'lib.util'
 
 ---@type Entity[]
 local entities = {}
@@ -35,29 +36,26 @@ function M.all()
 end
 
 ---@param ... string
-function M.find(...)
+---@return Iterator<Entity>
+function M.filter(...)
     local components = {...}
-    ---@type Entity[]
-    local found = {}
-    local skip = false
-    for _, e in ipairs(entities) do
-        skip = false
-        for _, c in ipairs(components) do
-            if e[c] == nil then
-                skip = true
-                break
+    return util.iterator({
+        ---@param i number
+        ---@param v Entity
+        filter = function (i, v)
+            for c = 1, #components do
+                if v[components[c]] == nil then
+                    return false
+                end
             end
+            return true
         end
-        if not skip then
-            table.insert(found, e)
-        end
-    end
-    return found
+    }, entities)
 end
 
----@param id string
-function M.remove(id)
-    deleted[id] = true
+---@param entity_id string
+function M.remove(entity_id)
+    deleted[entity_id] = true
 end
 
 function M.remove_all()

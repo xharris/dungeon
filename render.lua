@@ -7,6 +7,7 @@ local log = require 'lib.log'
 local signal = require 'lib.signal'
 local easing = require 'lib.easing'
 local const  = require 'const'
+local fonts  = require 'lib.fonts'
 
 local abs = math.abs
 
@@ -26,7 +27,10 @@ local abs = math.abs
 ---@field collection_id? string
 ---@field data? table arbitrary value that does nothing
 ---@field tex? any love.Texture
----@field text? string
+---@field font? Font
+---@field text? any
+---@field text_shadow_color? Color
+---@field text_shadow_size? number
 ---@field frames? RenderableFrame[]
 ---@field current_frame? number
 ---@field color? Color
@@ -65,6 +69,7 @@ local floor = math.floor
 local DEFAULT_COLLECTION = '_default'
 
 M.DEBUG = false
+M.DEBUG_SHOW_ID = false
 M.ROUND_POSITION = true
 
 ---@type table<string, Renderable[]>
@@ -78,6 +83,7 @@ local renderable_map = {}
 
 local quad
 local curve
+local debug_canvas
 
 M.signals = signal.create('render')
 
@@ -184,6 +190,9 @@ function M.add(t)
         t.oy = h + t.oy
     end
 
+    if current_collection then
+        log.debug('collection:', current_collection)
+    end
     return t.id, t
 end
 
@@ -343,9 +352,19 @@ function M.update(dt)
 end
 
 function M.draw()
+    if not debug_canvas then
+        debug_canvas = love.graphics.newCanvas()
+    end
+    debug_canvas:renderTo(function()
+        love.graphics.clear()
+    end)
     for _, r in ipairs(collection[current_collection]) do
         love.graphics.push('all')
         color.reset()
+
+        if r.font then
+            fonts.set(r.font)
+        end
 
         local frame = r.frames and r.frames[r.current_frame or 1]
         local ox, oy = r.ox or 1, r.oy or 1
@@ -374,40 +393,57 @@ function M.draw()
             love.graphics.draw(r.tex, x, y, r.r, r.sx, r.sy, ox, oy)
         end
 
-        if r.text then
+        local text = r.text and tostring(r.text)
+        if text then
             -- print text
-            love.graphics.print(r.text, x, y, r.r, r.sx, r.sy, ox, oy)
-        end
-        
-        if M.DEBUG then
-            local w, h = M.dimensions(r, true)
-
-            -- draw rectangle around texture with origin point
-            love.graphics.push('all')
-            love.graphics.setColor(1, 0, 0, 1)
-
-            transform:setTransformation(x, y, r.r, r.sx, r.sy, ox, oy)
-            love.graphics.replaceTransform(transform)
-
-            love.graphics.print(r.id, 0, 0)
-            love.graphics.circle('fill', ox, oy, 2)
-            love.graphics.rectangle('line', 0, 0, w, h)
-            love.graphics.pop()
-        end
-        
-
-        if M.DEBUG and r._easing then
-            -- draw position transition
-            local x, y = r._easing['x'], r._easing['y']
-            if x and y then
-                love.graphics.push('all')
-                love.graphics.setColor(0, 1, 0, 1)
-                love.graphics.line(x.a, y.a, x.b, y.b)
+            love.graphics.print(text, x, y, r.r, r.sx, r.sy, ox, oy)
+            if r.text_shadow_color then
+                love.graphics.push()
+                color.set(r.text_shadow_color, r.opacity or 1)
+                for i = 1, r.text_shadow_size or 1 do
+                    love.graphics.print(text, x - i, y - i, r.r, r.sx, r.sy, ox, oy)
+                end
                 love.graphics.pop()
             end
         end
+        
+        if M.DEBUG then
+            debug_canvas:renderTo(function()
+                love.graphics.push('all')
+                fonts.set()
+                local w, h = M.dimensions(r, true)
+
+                -- draw rectangle around texture with origin point
+                love.graphics.setColor(1, 0, 0, 1)
+
+                transform:setTransformation(x, y, r.r, 1, 1, ox, oy)
+                love.graphics.replaceTransform(transform)
+                if M.DEBUG_SHOW_ID then
+                    love.graphics.print(r.id, 0, 0)
+                end
+                love.graphics.circle('fill', ox, oy, 2)
+
+                transform:setTransformation(x, y, r.r, r.sx, r.sy, ox, oy)
+                love.graphics.replaceTransform(transform)
+                love.graphics.rectangle('line', 0, 0, w, h)
+
+                if r._easing then
+                    -- draw position transition
+                    local x, y = r._easing['x'], r._easing['y']
+                    if x and y then
+                        love.graphics.setColor(0, 1, 0, 1)
+                        love.graphics.line(x.a, y.a, x.b, y.b)
+                    end
+                end
+                love.graphics.pop()
+            end)
+        end
 
         love.graphics.pop()
+    end
+
+    if M.DEBUG then
+        love.graphics.draw(debug_canvas)
     end
 end
 

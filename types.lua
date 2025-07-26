@@ -9,7 +9,6 @@
 ---@field max_equipped_items? number
 ---@field class? Class
 ---@field screen_id? string id of the screen this entity is in
----@field render_character? string id of character sprite renderable
 ---@field health? Health
 ---@field stats? Stats
 ---@field defense? number
@@ -30,6 +29,8 @@
 ---@field subclass? string
 ---@field render_text? string
 ---@field render_text_animation? string Animation
+---@field character_sprite? CharacterSprite
+---@field is_in_combat? boolean
 
 ---@alias Class 'adventurer'|'warrior'|'archer'|'mage'|'rogue' base classs
 

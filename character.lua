@@ -14,11 +14,13 @@ local items = require 'items'
 local signal = require 'lib.signal'
 local zindex = require 'zindex'
 local stats = require 'stats'
+local util  = require 'lib.util'
 
 local abs = math.abs
 local min = math.min
 local max = math.max
 local floor = math.floor
+local rad = math.rad
 
 ---@class CharacterEscortClient
 ---@field name string
@@ -27,11 +29,138 @@ local floor = math.floor
 ---@field items? ItemData[]
 ---@field money? number
 
+---@alias CharacterExpression 'neutral'|'happy'|'ouch'|'angry'|'sad'|'blink'|'suspicious'
+
+---@class CharacterSprite
+---@field body Image
+---@field facing 'left'|'right'
+---@field looking 'straight'|'up'|'down'
+---@field expression CharacterExpression
+---@field hand_r Vector2 position relative to center of body
+---@field hand_l Vector2 position relative to center of body
+---@field renderables {body?:string, eyes?:string, hand_r?:string, hand_l?:string}
+---@field sx number
+---@field sy number
+---@field oy number offset from parent entity
+
 M.signals = signal.create 'character'
 M.SIGNALS = {
     change_health = 'change_health', -- entity_id, number
     death = 'death' -- entity_id,
 }
+
+M.sprite = {}
+
+---@type table<CharacterExpression, Image>
+local expression_images = {
+    neutral = {
+        path = assets.character_template,
+        frames = {{x=64, y=16, w=8, h=7}},
+        ox = 3, oy = 3.5,
+    },
+}
+
+---@type Image
+local hand_image = {
+    path = assets.character_template,
+    frames = {{x=32, y=0, w=8, h=8}},
+    ox = 4, oy = 4,
+}
+
+---set character expression (eyes)
+---@param entity_id string
+---@param v CharacterExpression
+---@return string? error
+function M.sprite.expression(entity_id, v)
+    local e = entity.get(entity_id)
+    local spr = e and e.character_sprite
+    local image = expression_images[v]
+
+    if not e then return errors.not_found('entity', entity_id) end
+    if not spr then return errors.missing_field('character_sprite', e) end
+    if not image then return errors.not_found('expression image', v) end
+
+    render.set_collection(e.screen_id)
+    spr.expression = v
+    local r = spr.renderables.eyes and render.get(spr.renderables.eyes)
+    if not r then
+        -- create new renderable
+        spr.renderables.eyes, r = render.add(images.renderable(image, {tag='char_eyes'}))
+    else
+        -- update existing renderable
+        r = lume.extend(r, images.renderable(image))
+    end
+    render.set_collection()
+
+    r.z = zindex.character_eyes
+end
+
+---@param entity_id string
+---@return string? error
+function M.sprite.reset_hands(entity_id)
+    local e = entity.get(entity_id)
+    local hand_l = e and e.character_sprite and e.character_sprite.renderables and e.character_sprite.renderables.hand_l
+    local hand_r = e and e.character_sprite and e.character_sprite.renderables and e.character_sprite.renderables.hand_r
+
+    if not e then return errors.not_found('entity', entity_id) end
+    if not e.character_sprite then return errors.missing_field('character_sprite', e) end
+
+    render.set_collection(e.screen_id)
+    -- get/create renderables
+    local r_hand_l, r_hand_r
+    if not hand_l then
+        hand_l, r_hand_l = render.add(images.renderable(hand_image, {tag='char_hand_l'}))
+    else
+        r_hand_l = render.get(hand_l)
+    end
+    if not hand_r then
+        hand_r, r_hand_r = render.add(images.renderable(hand_image, {tag='char_hand_r'}))
+    else
+        r_hand_r = render.get(hand_r)
+    end
+    render.set_collection()
+
+    local has_item_with_swing_animation =
+        e.equipped_items and
+        lume.any(e.equipped_items, function (v)
+            local item = items.get(v.id)
+            return item and item.attack_animation and item.attack_animation.swing ~= nil or false
+        end)
+
+    if e.is_in_combat and has_item_with_swing_animation then
+        r_hand_l.r = rad(-45)
+        r_hand_r.r = rad(135)
+    else
+        r_hand_l.r = rad(-45)
+        r_hand_r.r = rad(-135)
+    end
+    r_hand_l.ox = -2
+    r_hand_r.ox = -2
+    r_hand_l.z = zindex.character_hand_back
+    r_hand_r.z = zindex.character_hand_front
+    
+    e.character_sprite.renderables.hand_l = hand_l
+    e.character_sprite.renderables.hand_r = hand_r
+end
+
+---@param entity_id string
+---@return {body?:Renderable, eyes?:Renderable, hand_l?:Renderable, hand_r?:Renderable}, string? error
+function M.sprite.renderables(entity_id)
+    local e = entity.get(entity_id)
+    local ids = e and e.character_sprite and e.character_sprite.renderables
+    if not e then return {}, errors.not_found('entity', entity_id) end
+    if not ids then return {}, errors.missing_field('entity.character_sprite.renderables', e) end
+    return {
+        body = ids.body and render.get(ids.body),
+        eyes = ids.eyes and render.get(ids.eyes),
+        hand_l = ids.hand_l and render.get(ids.hand_l),
+        hand_r = ids.hand_r and render.get(ids.hand_r),
+    }
+end
+
+M.sprite = log.log_methods('character.sprite', M.sprite, {
+    exclude = {'renderables'}
+})
 
 ---@param e Entity
 ---@param v number can be negative to lose money
@@ -60,7 +189,7 @@ end
 
 ---@return Entity|false
 function M.get_player()
-    for _, e in ipairs(entity.find('group')) do
+    for _, e in entity.filter('group') do
         if e.group == 'player' then
             return e
         end
@@ -113,20 +242,12 @@ function M.arrange()
             if e.group == 'ally' then
                 e.x = ally_x
                 ally_x = ally_x - sep
-                local r = e.render_character and render.get(e.render_character)
-                if r then
-                    -- ally faces to the right
-                    r.sx = abs(r.sx)
-                end
+                e.character_sprite.facing = 'right'
             end
             if e.group == 'enemy' then
                 e.x = enemy_x
                 enemy_x = enemy_x + sep
-                local r = e.render_character and render.get(e.render_character)
-                if r then
-                    -- enemy faces to the left
-                    r.sx = -abs(r.sx)
-                end
+                e.character_sprite.facing = 'left'
             end
         end
     end
@@ -134,7 +255,7 @@ end
 
 ---@param v Entity?
 ---@param renderable Renderable?
----@return Entity
+---@return Entity, string? error
 function M.create(v, renderable)
     local name = v and v.name or 'player'
     log.debug('name =', name)
@@ -165,6 +286,24 @@ function M.create(v, renderable)
             critical = {
                 chance = 0,
                 damage = const.CRITICAL_DAMAGE,
+            },
+            character_sprite = {
+                body = {
+                    path = assets.character_template,
+                    frames = {
+                        {x=0, y=0, w=32, h=32},
+                    },
+                    ox = 16, oy = 16,
+                },
+                facing = 'right',
+                looking = 'straight',
+                expression = 'neutral',
+                hand_l = {x=0, y=0},
+                hand_r = {x=0, y=0},
+                renderables = {},
+                sx = 2,
+                sy = 2,
+                oy = 32 - 12,
             }
         } --[[@as Entity]],
         v or {}
@@ -178,24 +317,19 @@ function M.create(v, renderable)
         end
     end
     e.screen_id = screen_id
-    -- add sprite
+
+    -- add character sprites
+    M.sprite.expression(e._id, 'neutral')
+    M.sprite.reset_hands(e._id)
+    
     render.set_collection(screen_id)
-    e.render_character = render.add(lume.extend(
-        {
-            tex = images.get{
-                path = assets.ohmydungeon_v11,
-            },
-            frames = {{x=0, y=144, w=16, h=16}},
-            current_frame = 1,
-            x = e.x,
-            y = e.y,
-            ox = 8, oy = 8,
-            sx = 2, sy = 2,
-            z = zindex.character,
-        } --[[@as Renderable]],
-        renderable or {}
-    ))
+    local r_body
+    e.character_sprite.renderables.body, r_body = render.add(
+        images.renderable(e.character_sprite.body, {tag='char_body'})
+    )
+    r_body.z = zindex.character_body
     render.set_collection()
+
     -- add weapon sprite
     for _, data in ipairs(e.inventory) do
         local item = items.get(data.id)
@@ -218,7 +352,7 @@ local function position_equipped_items(e)
         local item = items.get(equip.id)
         local r_equip = render.get(equip.renderable)
         if item and r_equip and e.x and e.y then
-            local cx, cy = 
+            local cx, cy =
                 (item.render_on_character and item.render_on_character.x or 0),
                 (item.render_on_character and item.render_on_character.y or 0)
             local z =
@@ -228,6 +362,13 @@ local function position_equipped_items(e)
 
             r_equip.x = e.x + cx
             r_equip.y = e.y + cy
+            r_equip.r =
+                item.render_on_character and
+                item.render_on_character.r or
+                rad(45)
+            if e.is_in_combat then
+                r_equip.r = rad(-45)
+            end
             if not r_equip.z then
                 r_equip.z = z
             end
@@ -326,7 +467,7 @@ function M.all_items(entity_id)
             return i, e.equipped_items[i]
         end
         if e and i > equip_n and i <= inventory_n then
-            return i - equip_n, e.inventory[i - equip_n]
+            return i, e.inventory[i - equip_n]
         end
     end
 end
@@ -475,7 +616,13 @@ function M.kill(entity_id)
         end
     end
     -- remove sprite
-    render.remove(e.render_character)
+    if e.character_sprite then
+        local ids = e.character_sprite.renderables
+        render.remove(ids.body)
+        render.remove(ids.eyes)
+        render.remove(ids.hand_l)
+        render.remove(ids.hand_r)
+    end
     entity.remove(e._id)
 end
 
@@ -495,7 +642,7 @@ function M.power_level(args)
             power = power + stats.apply(item.damage_scaling, args.stats)
             count = count + 1
         elseif item and item.defense then
-            power = power + stats.diminishing(item.defense)
+            power = power + util.diminishing(item.defense)
             count = count + 1
         end
     end
@@ -565,11 +712,52 @@ function M.update(dt)
             e.vy = e.jump_velocity
         end
 
-        -- character rendering
-        local r = e.render_character and render.get(e.render_character)
-        if r and e.x and e.y then
-            r.x = e.x
-            r.y = e.y
+        -- character sprite
+        local spr = e.character_sprite
+        if spr then
+            -- face direction
+            if spr.facing == 'left' then
+                spr.sx = -abs(spr.sx)
+            elseif spr.facing == 'right' then
+                spr.sx = abs(spr.sx)
+            end
+            -- update renderables
+            local r = M.sprite.renderables(e._id)
+            local y = e.y - spr.oy
+            if r.body then
+                r.body.x, r.body.y, r.body.sx, r.body.sy = e.x, y, spr.sx, spr.sy
+            end
+            if r.eyes then
+                r.eyes.x, r.eyes.y, r.eyes.sx, r.eyes.sy = e.x, y - 12, spr.sx, spr.sy
+            end
+            if r.hand_l then
+                r.hand_l.x, r.hand_l.y, r.hand_l.sx, r.hand_l.sy = e.x, y, spr.sx, spr.sy
+            end
+            if r.hand_r then
+                r.hand_r.x, r.hand_r.y, r.hand_r.sx, r.hand_r.sy = e.x, y, spr.sx, spr.sy
+            end
+        end
+
+        -- held weapons
+        if e.equipped_items then
+            for _, data in ipairs(e.equipped_items) do
+                local item = items.get(data.id)
+                local r = item and data.renderable and render.get(data.renderable)
+                local x, y = e.x, e.y
+
+                -- get position of left hand
+                local hand_l = e.character_sprite and e.character_sprite.renderables and e.character_sprite.renderables.hand_l
+                if hand_l then
+                    x, y = render.transform_point(hand_l, hand_image.ox, hand_image.oy)
+                end
+
+                if item and item.render_on_character then
+                    local render_x = item.render_on_character.x or 0
+                    local render_y = item.render_on_character.y or 0
+                    r.x = x + render_x
+                    r.y = y + render_y
+                end
+            end
         end
 
         -- text rendering
@@ -590,5 +778,5 @@ function M.update(dt)
 end
 
 return log.log_methods('character', M, {
-    exclude={'update', 'get_player'}
+    exclude={'update', 'get_player', 'all_items'}
 })

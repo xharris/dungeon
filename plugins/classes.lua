@@ -48,13 +48,13 @@ return {
                 path = assets.dk_items,
                 frames = {{x=48, y=104, w=16, h=24}},
                 sx = WPN_SCALE,
-                ox = 8, oy = -4,
+                ox = 8, oy = -2,
             },
             transform_stats = {
                 ['stats.str'] = {operation='add', value=75},
             },
             damage_scaling = stats.create{str=WPN_STATS_RATIO},
-            render_on_character = {x=4, y=4, z=zindex.equipped_item_back},
+            render_on_character = {x=0, y=0, z=zindex.equipped_item_back, r=math.rad(45)},
             attack_animation = {
                 swing = {}
             },

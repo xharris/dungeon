@@ -124,9 +124,6 @@ return {
             id = 'forest',
             enemies = {'goblin'},
             events = {'cozy_cabin', 'collect_sticks', 'lost_kid', 'combat_assist'},
-            default_background_image = {
-                path = assets.forest,
-            },
             can_return = true,
             setup_rooms = function (ctx, e)
                 ctx.add_room{

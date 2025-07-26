@@ -22,12 +22,14 @@ local assets= require 'assets.index'
 
 log.LOG_METHODS_LEVEL = const.LOG_METHODS_LEVEL
 log.LOG_CONSOLE_LEVEL = const.LOG_CONSOLE_LEVEL
-render.DEBUG = const.DEBUG_RENDER
+render.DEBUG = const.DEBUG_RENDER.ENABLED
+render.DEBUG_SHOW_ID = const.DEBUG_RENDER.SHOW_ID
 projectiles.DEBUG = const.DEBUG_PROJECTILES
 projectiles.DURATION = const.PROJECTILE_DURATION
 fonts.FONT_SIZE = const.FONT_SIZE
 
 function love.load()
+    game.load()
     fonts.set{path=assets.yoster_island}
 
     plugin.add(require 'plugins.global_events')
@@ -98,13 +100,13 @@ function love.update(dt)
 end
 
 function love.draw()
+    state.pre_draw()
     screens.draw(function (_, zone_id)
         render.set_collection(zone_id)
         render.draw()
     end)
     render.set_collection()
 
-    state.pre_draw()
     render.draw()
     dialog.draw()
     animation.draw()

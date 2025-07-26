@@ -40,14 +40,14 @@ local max = math.max
 ---@field requires_items? string[] TODO can only be accepted/offered if player has item in list
 ---@field requires_class? Class[] TODO
 ---@field attack_animation? ItemAttackAnimation
----@field render_on_character? Vector3
+---@field render_on_character? {x:number, y:number, z?:number, r?:number}
 ---@field user_will_die? fun(data:ItemData, e:Entity):boolean? return true to prevent character death
 
 ---@class ItemAttackAnimation
 ---@field swing? {}
 ---@field shoot? {projectile?:ProjectileAnimation, beam?:ItemBeamAnimation}
 ---@field stab? {}
----@field custom? fun(source:Entity, target:Entity, data:ItemData)
+---@field custom? fun(source:Entity, target:Entity, duration:number, data:ItemData)
 
 ---NOTE stops at target, does not pass through
 ---@class ItemBeamAnimation
@@ -94,6 +94,20 @@ function M.get(id)
             return item
         end
     end
+end
+
+---@param item_id string
+---@param animation_name? 'swing'|'shoot'|'stab'|'custom'
+---@return boolean
+function M.has_attack_animation(item_id, animation_name)
+    local item = M.get(item_id)
+    return 
+        not item or
+        not item.attack_animation or
+        not (
+            animation_name and
+            not item.attack_animation[animation_name]
+        )
 end
 
 M.starters = {}
@@ -226,5 +240,5 @@ M.abilities = log.log_methods('items.abilities', M.abilities, {
     
 })
 return log.log_methods('items', M, {
-    exclude={'id', 'storage', 'get'}
+    exclude={'id', 'storage', 'get', 'label'}
 })

@@ -38,5 +38,8 @@ return {
         c1 = 1.70158
         c3 = c1 + 1
         return 1 + c3 * ((x-1)^3) + c1 * ((x-1)^2)
+    end,
+    ease_in_out_quint = function (x)
+        return x < 0.5 and 16 * x * x * x * x * x or 1 - (-2 * x + 2)^5 / 2
     end
 }

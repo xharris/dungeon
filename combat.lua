@@ -155,7 +155,14 @@ function M.start(zone, enemy_types, screen_id)
         max_iter = max_iter - 1
     end
 
-    in_combat = true
+    -- reset hands for entities
+    for _, e in ipairs(entity.all()) do
+        e.is_in_combat = e.group and e.health and true
+        if e.is_in_combat then
+            character.sprite.reset_hands(e._id)
+        end
+    end
+
     M.signals.emit(M.SIGNALS.on_start)
 end
 
@@ -217,8 +224,6 @@ function M.use_item(source_id, target_id, item_data)
     if not target then return errors.not_found("target entity", target_id) end
     if not item then return errors.not_found("item", item_data.id) end
     if not item.image then return errors.missing_field("item.image") end
-    if not source.render_character then return errors.missing_field("source.render_character") end
-    if not target.render_character then return errors.missing_field("target.render_character") end
 
     -- animate attack
     if item.attack_animation then
@@ -240,24 +245,47 @@ function M.use_item(source_id, target_id, item_data)
             item = item_data,
             stats = lume.clone(src_stats),
         }
+        local duration = 750 / stats.attack_speed(source.stats)
 
         if custom then
-            custom(source, target, item_data)
+            custom(source, target, duration, item_data)
         end
 
-        if swing and r_weapon and source.render_character then
+        if swing and r_weapon then
             local r = r_weapon
             r.r = r.r or 0
 
-            local err = M.process_attack(data)
-            if err then return err end
-
             local angle1 = rad(-45)
-            local angle2 = rad(-45+360)
-            local render_x = item.render_on_character and item.render_on_character.x or 0
-            local render_y = item.render_on_character and item.render_on_character.y or 0
+            local angle2 = rad(-45+360-(45/2))
+            local attack_landed = false
+            
+            -- swing arm
+            local hand_l = character.sprite.renderables(source_id).hand_l
+            if hand_l then
+                animation
+                    .create(hand_l.id, hand_l)
+                    .add(
+                        {
+                            to=r.r >= (angle1+angle2)/2 and
+                            -- swing up
+                            {
+                                r=rad(-45),
+                                z=zindex.character_hand_back,
+                            } or
+                            -- swing down
+                            {
+                                r=rad(95),
+                                z=zindex.character_hand_front2,
+                            },
+                            duration=duration,
+                            data=data,
+                            ease_fn=easing.ease_in_out_quint,
+                        }
+                    )
+                    .start()
+            end
 
-            -- swing weapon
+            -- rotate weapon
             animation
                 .create(r.id, r)
                 .add(
@@ -266,24 +294,23 @@ function M.use_item(source_id, target_id, item_data)
                         -- swing up
                         {
                             r=angle1,
-                            x=source.x + render_x,
-                            y=source.y - render_y,
                             z=zindex.equipped_item_back,
                         } or 
                         -- swing down
                         {
                             r=angle2,
-                            x=source.x - render_x,
-                            y=source.y + render_y,
-                            z=zindex.equipped_item_front,
+                            z=zindex.equipped_item_front2,
                         },
-                        duration=750 / stats.attack_speed(source.stats),
+                        duration=duration,
                         data=data,
-                        ease_fn=easing.ease_out_back
+                        ease_fn=easing.ease_in_out_quint,
                     }
                 )
-                .on_end(function ()
-                    M.signals.emit(M.SIGNALS.attack_landed, data)
+                .on_step(function (me)
+                    if me.progress > 0.5 and not attack_landed then
+                        attack_landed = true
+                        M.process_attack(data)
+                    end
                 end)
                 .start()
         end
@@ -304,17 +331,6 @@ function M.use_item(source_id, target_id, item_data)
                     projectile,
                     {data=data, target=target}
                 )
-
-                -- animation
-                --     .create(r_projectile.id, r_projectile)
-                --     .add({to={x=target_x, y=target_y}, duration=1000, data=data, ease_fn=projectile.ease_fn})
-                --     .on_end(function ()
-                --         if item.attack_landed then
-                --             item.attack_landed(target, {r_projectile})
-                --         end
-                --         M.signals.emit(M.SIGNALS.attack_landed, data)
-                --     end)
-                --     .start()
             end
         end
     end
@@ -330,11 +346,12 @@ function M.load()
 end
 
 function M.update(dt)
-    local combat_entities = entity.find('health', 'group')
     local no_enemies_left = true
 
-    for _, e in ipairs(combat_entities) do
-        if e.health and e.health.current > 0 and e.stats then
+    for _, e in ipairs(entity.all()) do
+        e.is_in_combat = e.group and e.health and true
+
+        if e.is_in_combat and e.health.current > 0 and e.stats then
             if e.group == 'enemy' then
                 no_enemies_left = false
             end
@@ -352,7 +369,7 @@ function M.update(dt)
                 for _, data in ipairs(e.equipped_items) do
                     -- get target
                     local target --[[@as Entity?]]
-                    for _, other in ipairs(combat_entities) do
+                    for _, other in entity.filter('health', 'group') do
                         if other._id ~= e._id then
                             target = other
                         end

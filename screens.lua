@@ -90,38 +90,39 @@ function M.set(values)
     local no_animate = #instances == 0 and #values == 1
 
     for i, value in ipairs(values) do
-        if value.image then
-            local img = images.get(value.image)
+        local img = value.image and images.get(value.image) or nil
+        local tform = love.math.newTransform()
+        if img then
+            -- scale background image
             local w, h = img:getDimensions()
-            local tform = love.math.newTransform()
             local scale = math.abs(gw - w) > math.abs(gh - h) and gh / h or gw / w
 
             -- center
             local offx, offy = math.abs(gw - (w * scale)), math.abs(gh - (h * scale))
             tform:translate(-offx/2, -offy/2)
             tform:scale(scale)
+        end
 
-            ---@type Screen
-            local instance = {
-                id = value.id,
-                image = value.image,
-                transform = tform,
-                render = {angle1=-90,angle2=-90,ox=0,oy=0},
-                render_target = {angle1=0,angle2=0,ox=0,oy=0},
-                remove = false,
-                ox = 0,
-                oy = 0,
-            }
+        ---@type Screen
+        local instance = {
+            id = value.id,
+            image = img,
+            transform = tform,
+            render = {angle1=-90,angle2=-90,ox=0,oy=0},
+            render_target = {angle1=0,angle2=0,ox=0,oy=0},
+            remove = false,
+            ox = 0,
+            oy = 0,
+        }
 
-            if instances[i] then
-                new_instances[i] = instances[i]
-                new_instances[i].remove = false
-                if instances[i].id ~= value.id then
-                    new_instances[i].replace_with = instance
-                end
-            else
-                new_instances[i] = instance
+        if instances[i] then
+            new_instances[i] = instances[i]
+            new_instances[i].remove = false
+            if instances[i].id ~= value.id then
+                new_instances[i].replace_with = instance
             end
+        else
+            new_instances[i] = instance
         end
     end
 

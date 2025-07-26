@@ -1,6 +1,9 @@
 return {
-    DEBUG_RENDER = false,
-    DEBUG_PROJECTILES = true,
+    DEBUG_RENDER = {
+        ENABLED = false,
+        SHOW_ID = false,
+    },
+    DEBUG_PROJECTILES = false,
     ---@type LogLevel
     LOG_METHODS_LEVEL = 'debug',
     ---@type LogLevel

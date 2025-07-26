@@ -19,7 +19,9 @@ local abs = math.abs
 ---@field enabled boolean
 ---@field steps AnimationStep[]
 ---@field _t number
+---@field progress number [0, 1]
 ---@field on_end? fun()
+---@field on_step? fun(me:Animation)
 
 ---@class AnimationStep
 ---@field object? table
@@ -71,11 +73,14 @@ function M.update(dt)
                     -- animate
                     t = t + (dt * 1000 * a.speed)
                     if t >= 0 and step.to then
-                        local amt = min(1, max(0, ease_fn(t / step.duration)))
+                        a.progress = min(1, max(0, ease_fn(t / step.duration)))
                         -- interpolate between 2 values
                         for k, v in pairs(step.to) do
-                            object[k] = lerp(step._from[k], v, amt)
+                            object[k] = lerp(step._from[k], v, a.progress)
                         end
+                    end
+                    if a.on_step then
+                        a.on_step(a)
                     end
                 end
                 a._t = t
@@ -96,7 +101,8 @@ function M.create(id, object)
         speed = 1,
         enabled = false,
         steps = {},
-        _t = 0
+        _t = 0,
+        progress = 0,
     }
 
     table.insert(animations, a)
@@ -141,6 +147,12 @@ function M.create(id, object)
     ---@param fn fun()
     function N.on_end(fn)
         a.on_end = fn
+        return N
+    end
+
+    ---@param fn fun(me:Animation)
+    function N.on_step(fn)
+        a.on_step = fn
         return N
     end
 

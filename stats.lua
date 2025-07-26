@@ -1,4 +1,5 @@
 local log = require "lib.log"
+local util= require "lib.util"
 local M = {}
 
 M.stats_fields = {'str', 'int', 'agi', 'crit'}
@@ -22,17 +23,12 @@ end
 
 ---@param stats Stats
 function M.attack_speed(stats)
-    return M.diminishing(stats.agi)
+    return util.diminishing(stats.agi)
 end
 
 ---@param def number
 function M.defense(def)
-    return M.diminishing(def)
-end
-
----@param x number
-function M.diminishing(x)
-    return x / (x + 100) + 1
+    return util.diminishing(def)
 end
 
 ---@param ratio Stats
