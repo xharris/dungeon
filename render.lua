@@ -268,7 +268,16 @@ function M.get_transform(id)
             oy = round(oy)
         end
 
-        transform:translate(x, y)
+        -- draw at parent's origin
+        if n.parent then
+            local p = M.get(n.parent)
+            if p then
+                x = x + p.ox
+                y = y + p.oy
+            end
+        end
+
+        transform:translate(x - ox, y - oy)
         transform:translate(ox, oy)
         transform:scale(n.sx, n.sy)
         transform:rotate(n.r or 0)
@@ -301,21 +310,6 @@ function M.dimensions(r, ignore_scaling)
         r.h = r.rect.h * sy
     end
     return r.w, r.h
-end
-
----@deprecated
----@param t table<string, Renderable>
-function M.group(t)
-    local root = M.add(
-        util.merge({tag='root'}, t['root'] or {})
-    )
-    local ids = {root=root}
-    for k, v in pairs(t) do
-        if k ~= 'root' then
-            ids[k] = M.add(v)
-        end
-    end
-    return ids
 end
 
 function M.reset()
@@ -431,7 +425,7 @@ function M.draw()
                     love.graphics.push('all')
                     fonts.set()
                     local w, h = M.dimensions(r, true)
-                    local px, py = M.transform_point(r.id, 0, 0)
+                    local px, py = M.transform_point(r.id, r.ox, r.oy)
 
                     -- draw rectangle around texture with origin point
                     love.graphics.setColor(r._debug_color)

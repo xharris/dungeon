@@ -175,7 +175,7 @@ function M.sprite.body(entity_id)
         render.set_collection(e.screen_id)
         spr.renderables.body, r_body = render.add(
             images.renderable(body_image, {
-                tag='char_body', 
+                tag='char_body',
                 parent=e.character_sprite.renderables.root,
             })
         )
@@ -351,6 +351,8 @@ function M.create(v, renderable)
                 looking = 'straight',
                 renderables = {
                     root = render.add{tag='char_root', sx=3, sy=3, ox=16, oy=16},
+                    -- arm_l = render.add{tag='char_arm_l'},
+                    -- arm_r = render.add{tag='char_arm_r'},
                 },
             }
         } --[[@as Entity]],

@@ -47,6 +47,7 @@ return {
                 tag='starting_item',
                 x=game.width/2, y=game.height/2,
                 sx = 2, sy = 2,
+                ox=RECT_SIZE/2, oy=RECT_SIZE/2,
             }
             local starter = {
                 renderables = {
@@ -57,8 +58,7 @@ return {
                         rect = {mode='fill', w=RECT_SIZE, h=RECT_SIZE},
                         color = color.MUI.GREY_900,
                         opacity = 0.5,
-                        ox = RECT_SIZE/2,
-                        oy = RECT_SIZE/2,
+                        ox = RECT_SIZE/2, oy = RECT_SIZE/2,
                     },
                     weapon = render.add(images.renderable(item.image, {
                         tag = 'weapon',
