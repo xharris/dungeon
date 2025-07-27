@@ -109,6 +109,8 @@ function M.sprite.expression(entity_id, v)
     render.set_collection()
 
     spr.renderables.eyes = r.id
+    r.y = -6
+
     r.z = zindex.character_eyes
 end
 
@@ -128,9 +130,6 @@ function M.sprite.reset_hands(entity_id)
             tag='char_hand_l',
             parent=e.character_sprite.renderables.root,
             r2_radius = 6,
-            debug = {
-                enabled = true,
-            },
         }))
     end
     if not spr.renderables.hand_r then
@@ -138,9 +137,6 @@ function M.sprite.reset_hands(entity_id)
             tag='char_hand_r',
             parent=e.character_sprite.renderables.root,
             r2_radius = 6,
-            debug = {
-                enabled = true,
-            },
         }))
     end
     render.set_collection()
@@ -182,9 +178,6 @@ function M.sprite.body(entity_id)
             images.renderable(body_image, {
                 tag='char_body',
                 parent=e.character_sprite.renderables.root,
-                debug = {
-                    enabled = true,
-                },
             })
         )
         render.set_collection()
@@ -358,9 +351,7 @@ function M.create(v, renderable)
                 facing = 'right',
                 looking = 'straight',
                 renderables = {
-                    root = render.add{tag='char_root', sx=3, sy=3, ox=16, oy=16},
-                    -- arm_l = render.add{tag='char_arm_l'},
-                    -- arm_r = render.add{tag='char_arm_r'},
+                    root = render.add{tag='char_root', sx=2, sy=2, ox=16, oy=16},
                 },
             }
         } --[[@as Entity]],
@@ -391,33 +382,6 @@ function M.create(v, renderable)
     end
     M.arrange()
     return e
-end
-
----@param e Entity
----@return string? error
-local function position_equipped_items(e)
-    if not e.equipped_items then
-        return "entity does not have equipped_items"
-    end
-    for _, equip in ipairs(e.equipped_items) do
-        local item = items.get(equip.id)
-        local r_equip = render.get(equip.renderable)
-        if item and r_equip and e.x and e.y then
-            local cx, cy =
-                (item.render_on_character and item.render_on_character.x or 0),
-                (item.render_on_character and item.render_on_character.y or 0)
-            local z =
-                item.render_on_character and
-                item.render_on_character.z or
-                zindex.equipped_item_back
-
-            r_equip.x = e.x + cx
-            r_equip.y = e.y + cy
-            if not r_equip.z then
-                r_equip.z = z
-            end
-        end
-    end
 end
 
 ---update stats based on item effects
@@ -521,8 +485,9 @@ function M.equip_item(entity_id, idx, swap_idx)
         return "cannot equip ability"
     end
 
-    local root = e.character_sprite and e.character_sprite.renderables.root
-    if root and inventory_item.render_on_character then
+    local hand_l = e.character_sprite and e.character_sprite.renderables.hand_l
+    local render_on_character = inventory_item.render_on_character or {}
+    if hand_l and inventory_item.render_on_character then
         -- add renderable for newly equipped item
         if e.screen_id then
             render.set_collection(e.screen_id)
@@ -530,7 +495,10 @@ function M.equip_item(entity_id, idx, swap_idx)
         inventory_data.renderable = render.add(
             images.renderable(inventory_item.image, {
                 tag = inventory_item.id,
-                parent = root
+                parent = hand_l,
+                x = render_on_character.x or 0,
+                y = render_on_character.y or 0,
+                z = render_on_character.z or zindex.equipped_item_back
             })
         )
         render.set_collection()
@@ -557,7 +525,6 @@ function M.equip_item(entity_id, idx, swap_idx)
         e.class = inventory_item.class
     end
 
-    position_equipped_items(e)
     update_stats(e)
 end
 

@@ -98,7 +98,7 @@ function M.enemy.spawn(id, screen_id)
         }
     )
     for i in ipairs(e.inventory) do
-        character.equip_item(e._id, i)
+        character.equip_item(e._id, i) -- FIX only one enemy has a stick at a time
     end
     character.arrange()
     return e._id
