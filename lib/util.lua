@@ -74,4 +74,24 @@ function M.merge(into, from)
 	return into
 end
 
+---@param direction 'horizontal'|'vertical'
+---@param ... Color[]
+function M.gradient(direction, ...)
+    local colors = {...}
+    local horizontal = direction == "horizontal"
+    local result = love.image.newImageData(horizontal and 1 or #colors, horizontal and #colors or 1)
+    for i, color in ipairs(colors) do
+        local x, y
+        if horizontal then
+            x, y = 0, i - 1
+        else
+            x, y = i - 1, 0
+        end
+        result:setPixel(x, y, color[1], color[2], color[3], color[4] or 255)
+    end
+    result = love.graphics.newImage(result)
+    result:setFilter('linear', 'linear')
+    return result
+end
+
 return M

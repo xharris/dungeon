@@ -31,10 +31,12 @@ local rad = math.rad
 ---@field money? number
 
 ---@alias CharacterExpression 'neutral'|'happy'|'ouch'|'angry'|'sad'|'blink'|'suspicious'
+---@alias CharacterFacing 'left'|'right'
+---@alias CharacterLooking 'straight'|'up'|'down'
 
 ---@class CharacterSprite
----@field facing? 'left'|'right'
----@field looking? 'straight'|'up'|'down'
+---@field facing? CharacterFacing
+---@field looking? CharacterLooking
 ---@field default_expression? CharacterExpression
 ---@field expression? CharacterExpression
 ---@field hand_r? Vector2 position relative to center of body
@@ -205,6 +207,17 @@ function M.sprite.renderables(entity_id)
     }
 end
 
+---set direction character is facing
+---@param entity_id any
+---@param direction CharacterFacing
+---@return string? error
+function M.sprite.facing(entity_id, direction)
+    local e = entity.get(entity_id)
+    if not e then return errors.not_found('entity', entity_id) end
+    if not e.character_sprite then errors.missing_field('entity.character_sprite', e) end
+    e.character_sprite.facing = direction
+end
+
 M.sprite = log.log_methods('character.sprite', M.sprite, {
     exclude = {'renderables'}
 })
@@ -298,24 +311,26 @@ function M.arrange()
 
     for _, e in ipairs(entity.all()) do
         if not player or e._id ~= player._id then
+            local r = M.sprite.renderables(e._id)
             if e.group == 'ally' then
                 e.x = ally_x
+                e.y = e.floor_y or e.y
                 ally_x = ally_x - ally_sep
-                e.character_sprite.facing = 'right'
+                M.sprite.facing(e._id, 'right')
             end
             if e.group == 'enemy' then
                 e.x = enemy_x
+                e.y = e.floor_y or e.y
                 enemy_x = enemy_x + enemy_sep
-                e.character_sprite.facing = 'left'
+                M.sprite.facing(e._id, 'left')
             end
         end
     end
 end
 
 ---@param v Entity?
----@param renderable Renderable?
 ---@return Entity, string? error
-function M.create(v, renderable)
+function M.create(v)
     local name = v and v.name or 'player'
     log.debug('name =', name)
     local e = entity.add(util.merge(
@@ -334,8 +349,8 @@ function M.create(v, renderable)
             },
             money = 0,
             x = 0,
-            y = const.FLOOR_Y,
-            floor_y = const.FLOOR_Y,
+            y = const.FLOOR.Y,
+            floor_y = const.FLOOR.Y - 16,
             gravity = 700,
             vy = 0,
             jump_velocity = const.JUMP_VELOCITY,
@@ -357,6 +372,7 @@ function M.create(v, renderable)
         } --[[@as Entity]],
         v or {}
     ))
+
     -- set screen
     local screen_id = M.get_screen_id(e._id)
     if e.group ~= 'player' then
@@ -368,6 +384,7 @@ function M.create(v, renderable)
     e.screen_id = screen_id
 
     -- add character sprites
+    M.sprite.facing(e._id, 'right')
     M.sprite.expression(e._id)
     M.sprite.reset_hands(e._id)
     M.sprite.body(e._id)
@@ -645,8 +662,13 @@ end
 ---@param dt number
 function M.update(dt)
     for _, e in ipairs(entity.all()) do
+        local r = M.sprite.renderables(e._id)
+
+        e.floor_y = const.FLOOR.Y - (r.root and r.root.oy or 0)
+
         -- character physics
-        local on_floor = e.floor_y and e.y and e.y >= e.floor_y
+        local floor_y = e.floor_y
+        local on_floor = e.y and e.y >= floor_y
         local should_stand = not e.floor_behavior or e.floor_behavior == 'stand'
         local should_bounce = e.floor_behavior == 'bounce'
         local can_jump = e.jump_velocity and e.jump_velocity ~= 0
@@ -669,7 +691,7 @@ function M.update(dt)
         if on_floor and should_stand and is_falling then
             -- stand on floor
             e.vy = 0
-            e.y = e.floor_y or const.FLOOR_Y
+            e.y = floor_y
             if can_jump then
                 -- reset jumps
                 e.jumps = 0
@@ -679,7 +701,7 @@ function M.update(dt)
         if on_floor and should_bounce and is_falling then
             -- bounce off floor
             e.vy = -e.vy * 0.6
-            e.y = e.floor_y or const.FLOOR_Y
+            e.y = floor_y
             if e.vy < 0 and e.vy >= const.BOUNCE_VY_THRESHOLD then
                 -- stop bouncing
                 e.vy = 0
@@ -690,6 +712,10 @@ function M.update(dt)
             end
         end
 
+        if on_floor and not is_falling then
+            e.y = floor_y
+        end
+        
         if can_jump and has_jumps_left and ctrl:pressed 'up' then
             -- jump
             e.jumps = (e.jumps or 0) + 1
@@ -698,8 +724,7 @@ function M.update(dt)
 
         -- character sprite
         local spr = e.character_sprite
-        local r = M.sprite.renderables(e._id)
-        if r.root then
+        if r.root and spr then
             -- face direction
             if spr.facing == 'left' then
                 r.root.sx = -abs(r.root.sx)

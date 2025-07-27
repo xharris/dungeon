@@ -20,8 +20,10 @@ return {
             error       = '[ERROR]',
         }
     },
-    FLOOR_Y = 160,
-    FLOOR_VISIBLE = false,
+    FLOOR = {
+        Y = 160,
+        VISIBLE = true,
+    },
     JUMP_VELOCITY = -300,
     MAX_JUMPS = 0,
     BOUNCE_VY_THRESHOLD = -70,

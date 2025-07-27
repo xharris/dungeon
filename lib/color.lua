@@ -37,7 +37,8 @@ M.MUI = {
     RED_500 = {M.hex2rgba('#F44336')},
     GREY_900 = {M.hex2rgba('#212121')},
     GREEN_500 = {M.hex2rgba('#4CAF50')},
-    ORANGE_500 = {M.hex2rgba('#FF9800')}
+    ORANGE_500 = {M.hex2rgba('#FF9800')},
+    BROWN_900 = {M.hex2rgba('#3E2723')}
 }
 
 return M
