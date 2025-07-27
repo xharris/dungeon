@@ -20,8 +20,11 @@ local game        = require 'game'
 local fonts = require 'lib.fonts'
 local assets= require 'assets.index'
 
-log.LOG_METHODS_LEVEL = const.LOG_METHODS_LEVEL
-log.LOG_CONSOLE_LEVEL = const.LOG_CONSOLE_LEVEL
+log.LOG_METHODS_LEVEL = const.LOG.METHODS_LEVEL
+log.LOG_CONSOLE_LEVEL = const.LOG.CONSOLE_LEVEL
+log.LOG_ERROR_ROWS = const.LOG.ERROR_ROWS
+log.LOG_HEADER = const.LOG.HEADER
+
 render.DEBUG = const.DEBUG_RENDER.ENABLED
 render.DEBUG_SHOW_ID = const.DEBUG_RENDER.SHOW_ID
 projectiles.DEBUG = const.DEBUG_PROJECTILES
@@ -116,7 +119,7 @@ function love.draw()
 end
 
 function love.quit()
-    local err = log.write_to_file('logs.txt', const.WRITE_LOGS_APPEND)
+    local err = log.write_to_file('logs.txt', const.LOG.WRITE_APPEND)
     if err then print('could not write logs:', err) end
 end
 
@@ -128,7 +131,7 @@ local old_errorhandler = love.errorhandler or love.errhand
 
 function love.errorhandler(msg)
     log.add_line(error_printer(msg, 2))
-    local err = log.write_to_file('logs.txt', const.WRITE_LOGS_APPEND)
+    local err = log.write_to_file('logs.txt', const.LOG.WRITE_APPEND)
     if err then print('could not write logs:', err) end
     return old_errorhandler(msg)
 end

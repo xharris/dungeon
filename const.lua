@@ -1,17 +1,25 @@
+local rad = math.rad
 return {
     DEBUG_RENDER = {
-        ENABLED = true,
+        ENABLED = false,
         SHOW_ID = false,
     },
     COMBAT = {
-        BASE_ATTACK_DURATION = 750,
+        BASE_ATTACK_DURATION = 800, -- 750,
     },
     DEBUG_PROJECTILES = false,
-    ---@type LogLevel
-    LOG_METHODS_LEVEL = 'debug',
-    ---@type LogLevel
-    LOG_CONSOLE_LEVEL = 'debug',
-    WRITE_LOGS_APPEND = false,
+    LOG = {
+        METHODS_LEVEL = 'debug',
+        CONSOLE_LEVEL = 'debug',
+        ERROR_ROWS = 15,
+        WRITE_APPEND = false,
+        HEADER = {
+            debug       = '[DEBUG]',
+            info        = '[INFO]',
+            warn        = '[WARN]',
+            error       = '[ERROR]',
+        }
+    },
     FLOOR_Y = 160,
     FLOOR_VISIBLE = false,
     JUMP_VELOCITY = -300,
@@ -19,12 +27,6 @@ return {
     BOUNCE_VY_THRESHOLD = -70,
     CHAR_ARRANGE_SEP = 32,
     GAIN_ABILITY_COOLDOWN = 5,
-    LOG_HEADER = {
-        debug       = '[DEBUG]',
-        info        = '[INFO]',
-        warn        = '[WARN]',
-        error       = '[ERROR]',
-    },
     RARITY_SCALE_MAX = 1,
     RARITY_SCALE_MIN = 0.5,
     ---@type Stats
@@ -35,4 +37,8 @@ return {
     MAX_INVENTORY_ITEMS = 5,
     PROJECTILE_DURATION = 1000,
     FONT_SIZE = 12,
+    ITEM_SWING = {
+        UP_ANGLE = rad(-45),
+        DOWN_ANGLE = rad(130),
+    }
 }

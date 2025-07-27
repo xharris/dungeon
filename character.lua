@@ -33,7 +33,6 @@ local rad = math.rad
 ---@alias CharacterExpression 'neutral'|'happy'|'ouch'|'angry'|'sad'|'blink'|'suspicious'
 
 ---@class CharacterSprite
----@field body? Image
 ---@field facing? 'left'|'right'
 ---@field looking? 'straight'|'up'|'down'
 ---@field default_expression? CharacterExpression
@@ -41,9 +40,6 @@ local rad = math.rad
 ---@field hand_r? Vector2 position relative to center of body
 ---@field hand_l? Vector2 position relative to center of body
 ---@field renderables? {root?:string, body?:string, eyes?:string, arm_r?:string, arm_l?:string, hand_r?:string, hand_l?:string}
----@field sx? number
----@field sy? number
----@field oy? number offset from parent entity
 
 M.signals = signal.create 'character'
 M.SIGNALS = {
@@ -130,13 +126,21 @@ function M.sprite.reset_hands(entity_id)
     if not spr.renderables.hand_l then
         spr.renderables.hand_l = render.add(images.renderable(hand_image, {
             tag='char_hand_l',
-            parent=e.character_sprite.renderables.root
+            parent=e.character_sprite.renderables.root,
+            r2_radius = 6,
+            debug = {
+                enabled = true,
+            },
         }))
     end
     if not spr.renderables.hand_r then
         spr.renderables.hand_r = render.add(images.renderable(hand_image, {
             tag='char_hand_r',
             parent=e.character_sprite.renderables.root,
+            r2_radius = 6,
+            debug = {
+                enabled = true,
+            },
         }))
     end
     render.set_collection()
@@ -151,13 +155,14 @@ function M.sprite.reset_hands(entity_id)
             return item and item.attack_animation and item.attack_animation.swing ~= nil or false
         end)
 
-    -- if e.is_in_combat and has_item_with_swing_animation then
-    --     r_hand_l.r = rad(-45)
-    --     r_hand_r.r = rad(135)
-    -- else
-        -- r_hand_l.r = rad(45)
-        -- r_hand_r.r = rad(90)
-    -- end
+    if e.is_in_combat and has_item_with_swing_animation then
+        r_hand_l.r2 = const.ITEM_SWING.UP_ANGLE
+        r_hand_r.r2 = rad(135)
+    else
+        r_hand_l.r2 = rad(45)
+        r_hand_r.r2 = rad(135)
+    end
+
     r_hand_l.z = zindex.character_hand_back
     r_hand_r.z = zindex.character_hand_front
 end
@@ -177,6 +182,9 @@ function M.sprite.body(entity_id)
             images.renderable(body_image, {
                 tag='char_body',
                 parent=e.character_sprite.renderables.root,
+                debug = {
+                    enabled = true,
+                },
             })
         )
         render.set_collection()
@@ -405,13 +413,6 @@ local function position_equipped_items(e)
 
             r_equip.x = e.x + cx
             r_equip.y = e.y + cy
-            r_equip.r =
-                item.render_on_character and
-                item.render_on_character.r or
-                rad(45)
-            if e.is_in_combat then
-                r_equip.r = rad(-45)
-            end
             if not r_equip.z then
                 r_equip.z = z
             end
@@ -520,7 +521,8 @@ function M.equip_item(entity_id, idx, swap_idx)
         return "cannot equip ability"
     end
 
-    if inventory_item.render_on_character then
+    local root = e.character_sprite and e.character_sprite.renderables.root
+    if root and inventory_item.render_on_character then
         -- add renderable for newly equipped item
         if e.screen_id then
             render.set_collection(e.screen_id)
@@ -528,7 +530,7 @@ function M.equip_item(entity_id, idx, swap_idx)
         inventory_data.renderable = render.add(
             images.renderable(inventory_item.image, {
                 tag = inventory_item.id,
-                disabled = true,
+                parent = root
             })
         )
         render.set_collection()
@@ -740,9 +742,6 @@ function M.update(dt)
             -- position
             r.root.x = e.x
             r.root.y = e.y
-        end
-        if r.root then
-            r.root.r = (r.root.r or 0) + rad(10) * dt
         end
 
         -- held weapons

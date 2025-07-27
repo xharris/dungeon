@@ -1,6 +1,5 @@
 local M = {}
 local lume = require 'ext.lume'
-local const = require 'const'
 
 local count = lume.count
 
@@ -11,6 +10,13 @@ io.stdout:setvbuf("no")
 ---@type LogLevel
 M.LOG_METHODS_LEVEL = 'info'
 M.LOG_CONSOLE_LEVEL = 'info'
+M.LOG_ERROR_ROWS = 5
+M.LOG_HEADER = {
+    debug       = '[DEBUG]',
+    info        = '[INFO]',
+    warn        = '[WARN]',
+    error       = '[ERROR]',
+}
 
 ---@type table<LogLevel, number>
 local levels = {
@@ -57,19 +63,21 @@ local function _print(header, ...)
     return header.." "..indent..out
 end
 
+M.error_count = 0
+
 function M.add_line(str)
     table.insert(logs, str)
 end
 
 function M.info(...)
     if cmp_level('info', M.LOG_CONSOLE_LEVEL) then
-        _print(const.LOG_HEADER.info, ...)
+        _print(M.LOG_HEADER.info, ...)
     end
 end
 
 function M.warn(...)
     if cmp_level('warn', M.LOG_CONSOLE_LEVEL) then
-        _print(const.LOG_HEADER.warn, ...)
+        _print(M.LOG_HEADER.warn, ...)
     end
 end
 
@@ -93,25 +101,34 @@ end
 ---@return boolean
 function M.error_if(stmt, ...)
     if stmt then
-        if cmp_level('error', M.LOG_CONSOLE_LEVEL) then
-            M.error = _print(const.LOG_HEADER.error, ...)
-        end
+        M.error(...)
         return true
     end
     return false
 end
 
+local error_printed = {}
+
 --- returns true if statment is printed
 ---@param ... string|number
 function M.error(...)
+    M.error_count = M.error_count + 1
     if cmp_level('error', M.LOG_CONSOLE_LEVEL) then
-        _print(const.LOG_HEADER.error, ...)
+        local args = table.concat{...}
+        if not error_printed[args] then    
+            print(table.concat(logs, '\n', math.max(1, #logs-(M.LOG_ERROR_ROWS)), #logs))
+            print(_print(M.LOG_HEADER.error, ...))
+            print()
+        else
+            _print(M.LOG_HEADER.error, ...)
+        end
+        error_printed[args] = true
     end
 end
 
 function M.debug(...)
     if cmp_level('debug', M.LOG_CONSOLE_LEVEL) then
-        _print(const.LOG_HEADER.debug, ...)
+        _print(M.LOG_HEADER.debug, ...)
     end
 end
 
@@ -141,12 +158,12 @@ function M.log_methods(name, t, keys, level)
                 d = d + 1
                 indent = depth[d]
                 -- print fn name + arguments
-                _print(const.LOG_HEADER[l], '('..name..'.'..k..')', ...)
+                _print(M.LOG_HEADER[l], '('..name..'.'..k..')', ...)
                 local ret = {v(...)}
                 -- print return values
                 if count(ret) > 0 then
                     for _, r in ipairs(ret) do
-                        _print(const.LOG_HEADER[l], '|->', r)
+                        _print(M.LOG_HEADER[l], '|->', r)
                     end
                 end
                 d = d - 1

@@ -35,6 +35,8 @@ local abs = math.abs
 ---@field x? number
 ---@field y? number
 ---@field r? number radians
+---@field r2? number radians
+---@field r2_radius? number distance from origin to rotate around
 ---@field sx? number
 ---@field sy? number
 ---@field ox? number
@@ -51,6 +53,7 @@ local abs = math.abs
 ---@field face_direction? boolean
 ---@field rect? {mode?:'line'|'fill', w:number, h:number}
 ---@field disabled? boolean do not render
+---@field debug? {enabled?:boolean, show_id?:boolean}
 
 ---@class RenderableFrame
 ---@field x number
@@ -164,6 +167,8 @@ function M.add(t)
         t.sx = t.sx or r.sx
         t.sy = t.sy or r.sx
         t.r = t.r or r.r
+        t.r2 = t.r2 or r.r2
+        t.r2_radius = t.r2_radius or r.r2_radius
         t.ox = t.ox or r.ox
         t.oy = t.oy or r.ox
     end
@@ -172,6 +177,9 @@ function M.add(t)
     t.y = t.y or 0
     t.w = 0
     t.h = 0
+    t.r = t.r or 0
+    t.r2 = t.r2 or 0
+    t.r2_radius = t.r2_radius or 0
     t.ox = t.ox or 0
     t.oy = t.oy or 0
     t.sx = t.sx or 1
@@ -277,11 +285,20 @@ function M.get_transform(id)
             end
         end
 
-        transform:translate(x - ox, y - oy)
-        transform:translate(ox, oy)
-        transform:scale(n.sx, n.sy)
+        local rx, ry = 0, 0
+        if n.r2_radius then
+            rx, ry = lume.vector(n.r2 or 0, n.r2_radius)
+        end
+        
+        transform:translate(x, y)
+
+        transform:translate(rx, ry)
+        transform:rotate(n.r2 or 0)
+
         transform:rotate(n.r or 0)
+        transform:scale(n.sx, n.sy)
         transform:translate(-ox, -oy)
+
     end
     memo_get_transform[id] = transform:clone()
     if depth > 1 and r and ids[r.id] then
@@ -419,7 +436,8 @@ function M.draw()
                 end
             end
             
-            if M.DEBUG then
+            local debug = r.debug
+            if M.DEBUG or (debug and debug.enabled) then
                 -- TODO update for new transform stuff
                 debug_canvas:renderTo(function()
                     love.graphics.push('all')
@@ -443,7 +461,7 @@ function M.draw()
             
                     -- transform:setTransformation(x, y, rot, 1, 1, ox, oy)
                     -- love.graphics.replaceTransform(transform)
-                    if M.DEBUG_SHOW_ID then
+                    if M.DEBUG_SHOW_ID or (debug and debug.show_id) then
                         love.graphics.origin()
                         love.graphics.print(r.id, px, py)
                         love.graphics.scale(r.sx, r.sy)
@@ -457,9 +475,7 @@ function M.draw()
         end
     end
 
-    if M.DEBUG then
-        love.graphics.draw(debug_canvas)
-    end
+    love.graphics.draw(debug_canvas)
 end
 
 return log.log_methods('render', M, {

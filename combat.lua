@@ -16,6 +16,7 @@ local projectiles = require 'projectiles'
 local const       = require 'const'
 local easing      = require 'lib.easing'
 local zindex      = require 'zindex'
+local util        = require 'lib.util'
 
 local rad = math.rad
 local deg = math.deg
@@ -130,6 +131,8 @@ function M.enemy.random(zone, enemy_types)
     end
     return lume.randomchoice(possible_enemies)
 end
+
+M.enemy = log.log_methods('combat.enemy', M.enemy)
 
 ---@param zone DungeonZone?
 ---@param enemy_types CombatEnemyType[]?
@@ -257,70 +260,51 @@ function M.use_item(source_id, target_id, item_data)
             custom(source, target, duration, item_data)
         end
 
-        local spr = source.character_sprite
-        if swing and r_weapon then
-            local r = r_weapon
-            r.r = r.r or 0
+        local r = character.sprite.renderables(source_id)
+        local hand_l = r.hand_l
+        -- local weapon = item_data.renderable and render.get(item_data.renderable)
 
-            local angle1 = rad(-45)
-            local angle2 = rad(-45+360-(45/2))
+        if swing then
+            local angle1 = const.ITEM_SWING.UP_ANGLE
+            local angle2 = const.ITEM_SWING.DOWN_ANGLE
             local attack_landed = false
-            
-            -- swing arm
-            local hand_l = character.sprite.renderables(source_id).hand_l
-            local swing_up = false
-            -- if hand_l then
-            --     animation
-            --         .create(hand_l.id, hand_l)
-            --         .add(
-            --             {
-            --                 to=swing_up and
-            --                 -- swing up
-            --                 {
-            --                     r=rad(-45),
-            --                     z=zindex.character_hand_back,
-            --                 } or
-            --                 -- swing down
-            --                 {
-            --                     r=rad(95),
-            --                     z=zindex.character_hand_front2,
-            --                 },
-            --                 duration=duration,
-            --                 data=data,
-            --                 ease_fn=easing.ease_in_out_quint,
-            --             }
-            --         )
-            --         .on_step(function (me)
-            --             if me.progress > 0.5 and not attack_landed then
-            --                 attack_landed = true
-            --                 M.process_attack(data)
-            --             end
-            --         end)
-            --         .start()
-            -- end
 
-            -- rotate weapon
-            -- animation
-            --     .create(r.id, r)
-            --     .add(
-            --         {
-            --             to=swing_up and
-            --             -- swing up
-            --             {
-            --                 r=angle1,
-            --                 z=zindex.equipped_item_back,
-            --             } or 
-            --             -- swing down
-            --             {
-            --                 r=angle2,
-            --                 z=zindex.equipped_item_front2,
-            --             },
-            --             duration=duration,
-            --             data=data,
-            --             ease_fn=easing.ease_in_out_quint,
-            --         }
-            --     )
-            --     .start()
+            if hand_l then
+                -- swing arm
+                local swing_up = hand_l.r2 >= (angle1+angle2)/2 or hand_l.r >= (angle1+angle2)/2
+                animation
+                    .create(hand_l.id, hand_l)
+                    .add(
+                        {
+                            to=swing_up and
+                            -- swing up
+                            {
+                                r2=angle1,
+                                r=rad(0),
+                                z=zindex.character_hand_back,
+                            } or
+                            -- swing down
+                            {
+                                r2=angle2,
+                                r=rad(180),
+                                z=zindex.character_hand_front2,
+                            },
+                            duration=duration,
+                            data=data,
+                            ease_fn=easing.ease_in_out_quint,
+                        }
+                    )
+                    .on_step(function (me)
+                        if me.progress > 0.5 and not attack_landed then
+                            attack_landed = true
+                            M.process_attack(data)
+                        end
+                    end)
+                    .on_killed(function (me)
+                        hand_l = util.merge(hand_l, me.steps[1].to)
+                    end)
+                    .start()
+            end
         end
 
         if shoot and r_weapon then
