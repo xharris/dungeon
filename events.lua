@@ -93,7 +93,7 @@ function M.start_event(id, e)
     if state.current_event.on_start then
         state.current_event.on_start(e)
     end
-    state.current_event_entity = e._id
+    state.current_event_entity = e
     return true
 end
 

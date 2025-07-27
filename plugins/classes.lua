@@ -36,6 +36,7 @@ return {
             fighter_3_description = 'Critical strikes deal no bonus damage, but grant +1 STR',
             ------ shield
             shield = 'Hero Shield',
+            shield_description = 'It do stuff a normal shield dont do',
         })
 
         -- warrior

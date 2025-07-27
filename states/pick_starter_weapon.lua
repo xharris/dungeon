@@ -57,12 +57,12 @@ return {
                         parent = root,
                         rect = {mode='fill', w=RECT_SIZE, h=RECT_SIZE},
                         color = color.MUI.GREY_900,
-                        opacity = 0.5,
                         ox = RECT_SIZE/2, oy = RECT_SIZE/2,
                     },
                     weapon = render.add(images.renderable(item.image, {
                         tag = 'weapon',
                         parent = root,
+                        sx = 2, sy = 2,
                     })),
                 },
                 item = item,
