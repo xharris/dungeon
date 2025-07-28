@@ -32,7 +32,13 @@ function M.get(id)
 end
 
 function M.all()
-    return entities
+    return util.iterator({
+        ---@param i number
+        ---@param v Entity
+        filter = function (i, v)
+            return not deleted[v._id]
+        end
+    }, entities)
 end
 
 ---@param ... string

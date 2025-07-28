@@ -204,6 +204,15 @@ enter_room = function(room_id)
     end
 end
 
+local function on_combat_end()
+    for _, e in entity.all() do
+        if e.character_sprite then
+            character.sprite.hands(e._id)
+        end
+    end
+    show_room_choices()
+end
+
 return {
 
     enter = function ()
@@ -212,14 +221,14 @@ return {
         
         sky.add()
 
-        for _, e in ipairs(entity.all()) do
+        for _, e in entity.all() do
             if e.group ~= 'player' then
                 entity.remove(e._id)
             end
         end
 
         events.signals.on(events.SIGNALS.on_end, show_room_choices)
-        combat.signals.on(combat.SIGNALS.ended, show_room_choices)
+        combat.signals.on(combat.SIGNALS.ended, on_combat_end)
         dungeon.signals.on(dungeon.SIGNALS.enter_zone, show_room_choices)
         character.signals.on(character.SIGNALS.change_health, M.on_change_health)
         projectiles.signals.on(projectiles.SIGNALS.reached_target, on_projectile_reached_target)

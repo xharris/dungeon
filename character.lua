@@ -16,6 +16,7 @@ local zindex = require 'zindex'
 local stats = require 'stats'
 local util  = require 'lib.util'
 local game  = require 'game'
+local animation = require 'lib.animation'
 
 local abs = math.abs
 local min = math.min
@@ -118,13 +119,14 @@ end
 
 ---@param entity_id string
 ---@return string? error
-function M.sprite.reset_hands(entity_id)
+function M.sprite.hands(entity_id)
     local e = entity.get(entity_id)
     local spr = e and e.character_sprite
 
     if not e then return errors.not_found('entity', entity_id) end
     if not spr then return errors.missing_field('character_sprite', e) end
 
+    -- create hand sprites if needed
     render.set_collection(e.screen_id)
     -- get/create renderables
     if not spr.renderables.hand_l then
@@ -145,6 +147,8 @@ function M.sprite.reset_hands(entity_id)
 
     local r = M.sprite.renderables(entity_id)
     local r_hand_l, r_hand_r = r.hand_l, r.hand_r
+    if not r_hand_l then return errors.missing_field('hand_l', spr.renderables) end
+    if not r_hand_r then return errors.missing_field('hand_r', spr.renderables) end
 
     local has_item_with_swing_animation =
         e.equipped_items and
@@ -154,11 +158,25 @@ function M.sprite.reset_hands(entity_id)
         end)
 
     if e.is_in_combat and has_item_with_swing_animation then
-        r_hand_l.r2 = const.ITEM_SWING.UP_ANGLE
-        r_hand_r.r2 = rad(135)
+        log.debug('left hand up')
+        animation
+            .create(r_hand_l.id, r_hand_l)
+            .add({to={r2=const.ITEM_SWING.UP_ANGLE}, duration=200})
+            .start()
+        animation
+            .create(r_hand_r.id, r_hand_r)
+            .add({to={r2=rad(135)}, duration=200})
+            .start()
     else
-        r_hand_l.r2 = rad(45)
-        r_hand_r.r2 = rad(135)
+        log.debug('left hand down')
+        animation
+            .create(r_hand_l.id, r_hand_l)
+            .add({to={r2=rad(45)}, duration=200})
+            .start()
+        animation
+            .create(r_hand_r.id, r_hand_r)
+            .add({to={r2=rad(135)}, duration=200})
+            .start()
     end
 
     r_hand_l.z = zindex.character_hand_back
@@ -309,7 +327,7 @@ function M.arrange()
         ally_x = ally_x - ally_sep
     end
 
-    for _, e in ipairs(entity.all()) do
+    for _, e in entity.all() do
         if not player or e._id ~= player._id then
             local r = M.sprite.renderables(e._id)
             if e.group == 'ally' then
@@ -386,7 +404,7 @@ function M.create(v)
     -- add character sprites
     M.sprite.facing(e._id, 'right')
     M.sprite.expression(e._id)
-    M.sprite.reset_hands(e._id)
+    M.sprite.hands(e._id)
     M.sprite.body(e._id)
 
     -- add weapon sprite
@@ -661,7 +679,7 @@ end
 
 ---@param dt number
 function M.update(dt)
-    for _, e in ipairs(entity.all()) do
+    for _, e in entity.all() do
         local r = M.sprite.renderables(e._id)
 
         if e.floor_behavior then

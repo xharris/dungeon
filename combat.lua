@@ -161,10 +161,10 @@ function M.start(zone, enemy_types, screen_id)
     end
 
     -- reset hands for entities
-    for _, e in ipairs(entity.all()) do
+    for _, e in entity.all() do
         e.is_in_combat = e.group and e.health and true
         if e.is_in_combat then
-            character.sprite.reset_hands(e._id)
+            character.sprite.hands(e._id)
         end
     end
 
@@ -271,7 +271,9 @@ function M.use_item(source_id, target_id, item_data)
 
             if hand_l then
                 -- swing arm
-                local swing_up = hand_l.r2 >= (angle1+angle2)/2 or hand_l.r >= (angle1+angle2)/2
+                local swing_up =
+                    hand_l.r2 >= (angle1+angle2)/2 or
+                    hand_l.r >= (angle1+angle2)/2
                 animation
                     .create(hand_l.id, hand_l)
                     .add(
@@ -295,6 +297,7 @@ function M.use_item(source_id, target_id, item_data)
                         }
                     )
                     .on_killed(function (me)
+                        -- skip to animation end values
                         hand_l = util.merge(hand_l, me.steps[1].to)
                     end)
                     .start()
@@ -338,7 +341,7 @@ end
 function M.update(dt)
     local no_enemies_left = true
 
-    for _, e in ipairs(entity.all()) do
+    for _, e in entity.all() do
         e.is_in_combat = e.group and e.health and true
 
         if e.is_in_combat and e.health.current > 0 and e.stats then
@@ -379,6 +382,11 @@ function M.update(dt)
     -- combat is over
     if no_enemies_left and in_combat then
         in_combat = false
+        for _, e in entity.all() do
+            if e.group and e.health then
+                e.is_in_combat = false
+            end
+        end
         M.signals.emit(M.SIGNALS.ended)
     end
 end
