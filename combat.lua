@@ -17,6 +17,7 @@ local const       = require 'const'
 local easing      = require 'lib.easing'
 local zindex      = require 'zindex'
 local util        = require 'lib.util'
+local timer       = require 'lib.timer'
 
 local rad = math.rad
 local deg = math.deg
@@ -91,10 +92,6 @@ function M.enemy.spawn(id, screen_id)
             screen_id=screen_id,
             stats=enemy.stats and lume.clone(enemy.stats) or const.CLASS_STATS,
             character_sprite=enemy.character_sprite,
-        },
-        {
-            frames = {{x=48, y=144, w=16, h=16}},
-            sx = 2, sy = 2,
         }
     )
     for i in ipairs(e.inventory) do
@@ -267,7 +264,10 @@ function M.use_item(source_id, target_id, item_data)
         if swing then
             local angle1 = const.ITEM_SWING.UP_ANGLE
             local angle2 = const.ITEM_SWING.DOWN_ANGLE
-            local attack_landed = false
+
+            timer.after(function ()
+                M.process_attack(data)
+            end, duration / 2)
 
             if hand_l then
                 -- swing arm
@@ -294,12 +294,6 @@ function M.use_item(source_id, target_id, item_data)
                             ease_fn=easing.ease_in_out_quint,
                         }
                     )
-                    .on_step(function (me)
-                        if me.progress > 0.5 and not attack_landed then
-                            attack_landed = true
-                            M.process_attack(data)
-                        end
-                    end)
                     .on_killed(function (me)
                         hand_l = util.merge(hand_l, me.steps[1].to)
                     end)
@@ -307,22 +301,26 @@ function M.use_item(source_id, target_id, item_data)
             end
         end
 
-        if shoot and r_weapon then
+        if shoot then
             -- TODO recoil
-            -- animation
-            --     .create(r.id, r)
-            --     .add()
             
-            if projectile then
+            if r_weapon and projectile then
+                -- shoot projectile
                 local from = {render.transform_point(r_weapon.id, r_weapon.ox, r_weapon.oy)}
                 local target_screen_ox, target_screen_oy = screens.rect(target.screen_id)
 
-                projectiles.create(
+                local p = projectiles.create(
                     {x=from[1], y=from[2]},
                     {x=target.x + target_screen_ox, y=target.y + target_screen_oy},
                     projectile,
                     {data=data, target=target}
                 )
+                timer.after(function ()
+                    M.process_attack(data)
+                end, p.duration)
+            else
+                -- immediate attack
+                M.process_attack(data)
             end
         end
     end

@@ -4,6 +4,7 @@ local lume = require 'ext.lume'
 local log = require 'lib.log'
 local signal = require 'lib.signal'
 local const  = require 'const'
+local sky = require 'lib.sky'
 
 ---@alias DungeonRoomType 'combat'|'shop'|'rest'|'event'|'rift'|'ability'
 
@@ -27,6 +28,7 @@ local const  = require 'const'
 ---@field events string[] list of events that can occur
 ---@field enemies string[] list of enemy ids that can spawn
 ---@field setup_rooms fun(ctx:DungeonSetupRoomsCtx, e:Entity)
+---@field sky? Sky[]
 ---@field default_background_image? Image
 ---@field can_return? boolean can choose to return to same room again
 
@@ -128,25 +130,15 @@ function M.enter_zone(zone_id, player)
     }
     current_zone = zone
 
-    -- TODO scrap this?
-    -- ---@param v table<string, table|string>
-    -- ---@param depth number?
-    -- local add_rooms = function(v, depth)
-    --     depth = (depth or 0) + 1
-    --     for from_room, to_room in pairs(v) do
-    --         if depth == 1 then
-    --             -- spawn room
-    --             ctx.add_room{
-    --                 id = fr
-    --             }
-    --         end
-    --     end
-    -- end
-    -- add_rooms(zone.rooms)
-
     zone.setup_rooms(ctx, player)
     if log.warn_if(#spawn_rooms == 0, "no spawn rooms set, zone:", zone.id) then
         return false
+    end
+
+    -- setup sky
+    if zone.sky then
+        ---@diagnostic disable-next-line: deprecated
+        sky.add(unpack(zone.sky))
     end
 
     M.signals.emit(M.SIGNALS.enter_zone, zone, player)

@@ -422,18 +422,19 @@ function M.draw()
                 love.graphics.rectangle(rect.mode or 'line', 0, 0, max(1, rect.w), max(1, rect.h))
             end
 
-            -- print text
             local text = r.text and tostring(r.text)
             if text then
-                love.graphics.print(text)
                 if r.text_shadow_color then
-                    love.graphics.push()
+                    -- draw text shadow
+                    love.graphics.push('all')
                     color.set(r.text_shadow_color, r.opacity or 1)
                     for i = 1, r.text_shadow_size or 1 do
-                        love.graphics.print(text)
+                        love.graphics.print(text, i, i)
                     end
                     love.graphics.pop()
                 end
+                -- draw text
+                love.graphics.print(text)
             end
             
             local debug = r.debug

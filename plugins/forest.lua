@@ -8,6 +8,7 @@ local char = require 'character'
 local assets = require 'assets.index'
 local theme = require 'theme'
 local lang = require 'lib.i18n'
+local color= require 'lib.color'
 
 local REST_HEAL_AMOuNT = 20
 
@@ -134,6 +135,17 @@ return {
             enemies = {'goblin'},
             events = {'cozy_cabin', 'collect_sticks', 'lost_kid', 'combat_assist'},
             can_return = true,
+            sky = {
+                -- day
+                {
+                    from=color.MUI.LIGHT_BLUE_100,
+                    to=color.MUI.BLUE_600,
+                    main_star={
+                        path = assets.sun,
+                        ox = 16, oy = 16,
+                    }
+                },
+            },
             setup_rooms = function (ctx, e)
                 ctx.add_room{
                     id = 'rm_first_fight',

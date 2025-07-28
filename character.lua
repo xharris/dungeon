@@ -664,11 +664,13 @@ function M.update(dt)
     for _, e in ipairs(entity.all()) do
         local r = M.sprite.renderables(e._id)
 
-        e.floor_y = const.FLOOR.Y - (r.root and r.root.oy or 0)
+        if e.floor_behavior then
+            e.floor_y = const.FLOOR.Y - (r.root and r.root.oy or 0)
+        end
 
         -- character physics
         local floor_y = e.floor_y
-        local on_floor = e.y and e.y >= floor_y
+        local on_floor = e.y and floor_y and e.y >= floor_y
         local should_stand = not e.floor_behavior or e.floor_behavior == 'stand'
         local should_bounce = e.floor_behavior == 'bounce'
         local can_jump = e.jump_velocity and e.jump_velocity ~= 0

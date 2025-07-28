@@ -2,5 +2,5 @@
     "Lua.diagnostics.globals": [
         "lume",
         "love"
-    ]
+    ],
 }

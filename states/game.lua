@@ -27,6 +27,7 @@ local color = require 'lib.color'
 local fonts = require 'lib.fonts'
 local const = require 'const'
 local game  = require 'game'
+local sky = require 'lib.sky'
 
 local max = math.max
 local min = math.min
@@ -120,27 +121,42 @@ function M.on_change_health(entity_id, change)
         font = font,
         text = change,
         text_shadow_color = color.MUI.RED_500,
-        color = color.MUI.BLACK,
+        color = color.MUI.WHITE,
         z = zindex.character_health_changed,
     }
-    entity.add{
+    local duration = 500
+    local e = entity.add{
         tag = 'health-changed-text',
         text = text_render,
         color = color.MUI.RED_500,
         x = x,
         y = y,
-        vx = lume.randomchoice{-30, 30},
-        vy = -250,
-        gravity = 900,
+        -- gravity = 900,
         render_text = r_id,
-        render_text_animation = animation
-            .create(text_render.id, text_render)
-            .add(
-                {to={sx=1, sy=1}, duration=200},
-                {to={opacity=0}, duration=300}
-            )
-            .start()
     }
+    e.vx, e.vy = lume.vector(
+        lume.lerp(math.rad(-90-45), math.rad(-45), math.random()),
+        200
+    )
+    animation
+        .create(text_render.id, text_render)
+        .add(
+            {to={sx=1, sy=1}, duration=duration*0.9},
+            {to={opacity=0}, duration=duration*0.1}
+        )
+        .on_end(function ()
+            render.remove(text_render.id)
+        end)
+        .start()
+    animation
+        .create(e._id, e)
+        .add(
+            {to={vx=0, vy=0}, duration=duration*0.8}
+        )
+        .on_end(function ()
+            entity.remove(e._id)
+        end)
+        .start()
 end
 
 ---@param data CombatUseItemData?
@@ -193,6 +209,8 @@ return {
     enter = function ()
         next_zones = nil
         is_game_over = false
+        
+        sky.add()
 
         for _, e in ipairs(entity.all()) do
             if e.group ~= 'player' then
@@ -287,12 +305,15 @@ return {
     end,
 
     pre_draw = function ()
+        love.graphics.push('all')
+        -- draw sky
+        sky.draw()
+        -- draw floor
         if const.FLOOR.VISIBLE then
-            love.graphics.push('all')
             color.set(color.MUI.BROWN_900)
             love.graphics.rectangle('fill', 0, const.FLOOR.Y, game.width, game.height)
-            love.graphics.pop()
         end
+        love.graphics.pop()
     end
 
 } --[[@as State]]

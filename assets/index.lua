@@ -7,4 +7,5 @@ return {
     volcano = 'assets/volcano.jpg',
     yoster_island = 'assets/yoster-island/yoster.ttf',
     character_template = 'assets/character_template.png',
+    sun = 'assets/sun.png',
 }

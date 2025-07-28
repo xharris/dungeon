@@ -19,6 +19,8 @@ local projectiles = require 'projectiles'
 local game        = require 'game'
 local fonts = require 'lib.fonts'
 local assets= require 'assets.index'
+local sky = require 'lib.sky'
+local timer = require 'lib.timer'
 
 log.LOG_METHODS_LEVEL = const.LOG.METHODS_LEVEL
 log.LOG_CONSOLE_LEVEL = const.LOG.CONSOLE_LEVEL
@@ -31,6 +33,7 @@ projectiles.DEBUG = const.DEBUG_PROJECTILES
 projectiles.DURATION = const.PROJECTILE_DURATION
 fonts.FONT_SIZE = const.FONT_SIZE
 combat.BASE_ATTACK_DURATION = const.COMBAT.BASE_ATTACK_DURATION
+sky.FLOOR_Y = const.FLOOR.Y
 
 function love.load()
     game.load()
@@ -78,6 +81,8 @@ function love.update(dt)
     char.update(dt)
     animation.update(dt)
     projectiles.update(dt)
+    sky.update(dt)
+    timer.update(dt)
 
     -- dialog controls
     if dialog.has_image_choices() then

@@ -45,7 +45,7 @@ local max = math.max
 
 ---@class ItemAttackAnimation
 ---@field swing? {}
----@field shoot? {projectile?:ProjectileAnimation, beam?:ItemBeamAnimation}
+---@field shoot? {projectile?:ProjectileAnimation, beam?:ItemBeamAnimation, recoil?:any} TODO recoil
 ---@field stab? {}
 ---@field custom? fun(source:Entity, target:Entity, duration:number, data:ItemData)
 

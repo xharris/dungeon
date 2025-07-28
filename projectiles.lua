@@ -42,6 +42,7 @@ end
 ---@field from Vector2
 ---@field to Vector2
 ---@field t number
+---@field duration? number
 ---@field _bezier any love.BezierCurve
 
 M.DEBUG = false
@@ -65,6 +66,7 @@ local projectiles = {}
 ---@param to Vector2
 ---@param v ProjectileAnimation
 ---@param extra? {data?:any, target?:Entity}
+---@return Projectile
 function M.create(from, to, v, extra)
     extra = extra or {}
     v.curve_sy = v.curve_sy or 0
@@ -95,7 +97,10 @@ function M.create(from, to, v, extra)
         t = 0,
     }
 
+    p.duration = M.DURATION * M.SPEED[v.speed]
+
     table.insert(projectiles, p)
+    return p
 end
 
 function M.update(dt)
@@ -113,7 +118,7 @@ function M.update(dt)
         local target_y = target.y + target_screen_oy
 
         local dist = distance(r_x, r_y, target_x, target_y)
-        local duration = M.DURATION * M.SPEED[speed]
+        p.duration = M.DURATION * M.SPEED[speed]
 
         if dist <= (animation.target_distance or 10) then
             -- close enough to target
@@ -123,10 +128,10 @@ function M.update(dt)
                 render.remove(p.renderable.id)
                 table.remove(projectiles, i)
             end
-        elseif p.t <= duration then
+        elseif p.t <= p.duration then
             -- move along curve
             p.t = p.t + 1000 * dt
-            local amt = max(0, min(1, animation.ease_fn(p.t / duration)))
+            local amt = max(0, min(1, animation.ease_fn(p.t / p.duration)))
             local x, y = p._bezier:evaluate(amt)
             
             local x_scale = p.to.x - p.from.x
