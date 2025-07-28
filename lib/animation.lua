@@ -60,15 +60,16 @@ function M.update(dt)
             local step = a.steps[a.step]
             if step then
                 local object = step.object or a.object
-                local t = a._t - (step.delay or 0)
                 local ease_fn = step.ease_fn or linear
+
+                local t = a._t - (step.delay or 0)
+                a._t = a._t + (dt * 1000 * a.speed)
 
                 if t > step.duration then
                     -- finish animation step
                     M.next_step(a.id)
                 else
                     -- animate
-                    t = t + (dt * 1000 * a.speed)
                     if t >= 0 and step.to then
                         a.progress = min(1, max(0, ease_fn(t / step.duration)))
                         -- interpolate between 2 values
@@ -83,7 +84,6 @@ function M.update(dt)
                         a.on_step(a)
                     end
                 end
-                a._t = t
             end
         end
     end
@@ -128,7 +128,7 @@ function M.create(id, object)
     end
 
     function N.clear()
-        a.step = 1
+        a.step = 0
         a.steps = {}
         return N
     end
@@ -197,7 +197,7 @@ function M.next_step(id)
 
     step.duration = step.duration or 1000
     step._from = {}
-    
+
     -- get values to interpolate *from*
     for k in pairs(step.to) do
         if a.object[k] == nil then
@@ -215,7 +215,6 @@ end
 function M.kill(id)
     local current = animation_hash[id]
     if not current then return errors.not_found('animation', id) end
-    
     if current.destroy then
         -- already destroyed/killed
         return
