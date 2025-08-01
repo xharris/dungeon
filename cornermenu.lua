@@ -17,7 +17,7 @@ local max = math.max
 
 M.MARGIN = 4
 M.PADDING = 2
-M.SEP = 2
+M.SEP = 0
 ---ms
 M.EASE_DURATION = 200
 M.EASE_FN = easing.ease_in_out_cubic
@@ -96,7 +96,7 @@ function M.set(id, ...)
             item.selected_texts = item.selected_texts or util.deepcopy(item.texts)
             for _, text in ipairs(item.texts) do
                 if not text.color then
-                    text.color = color.alpha(color.MUI.BLACK, 0.8)
+                    text.color = color.alpha(color.MUI.WHITE, 0.6)
                 end
             end
             for _, text in ipairs(item.selected_texts) do
@@ -104,7 +104,7 @@ function M.set(id, ...)
                     text.color = color.alpha(color.MUI.WHITE, 0.8)
                 end
             end
-            item.bg = item.bg or color.TRANSPARENT
+            item.bg = item.bg or color.alpha(color.MUI.BLACK, 0.4)
             item.selected_bg = item.selected_bg or color.alpha(color.MUI.BLACK, 0.6)
 
             local font = item.font or M.DEFAULT_FONT
@@ -198,6 +198,10 @@ function M.draw()
         -- draw all items
         for _, item in ipairs(items) do
             draw_texts(item.texts, item.rect)
+            if item.rect then
+                color.set(item.bg)
+                love.graphics.rectangle("fill", item.rect[1], item.rect[2], item.rect[3], item.rect[4])
+            end
         end
         -- draw highlight rect and masked texts
         if highlight then

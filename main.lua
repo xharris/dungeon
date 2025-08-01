@@ -22,6 +22,7 @@ local assets= require 'assets.index'
 local timer = require 'lib.timer'
 local cornermenu = require 'cornermenu'
 local stage = require 'lib.stage'
+local easing= require 'lib.easing'
 
 ---@diagnostic disable-next-line: deprecated
 table.unpack = unpack
@@ -37,6 +38,9 @@ projectiles.DEBUG = const.DEBUG_PROJECTILES
 projectiles.DURATION = const.PROJECTILE_DURATION
 fonts.FONT_SIZE = const.FONT_SIZE
 combat.BASE_ATTACK_DURATION = const.COMBAT.BASE_ATTACK_DURATION
+
+stage.EASE_DURATION = const.STAGE.EASE_DURATION
+stage.EASE_FN = const.STAGE.EASE_FN
 
 stage.SKY.SEGMENTS = const.SKY.SEGMENTS
 

@@ -1,4 +1,6 @@
 local rad = math.rad
+local easing = require 'lib.easing'
+
 return {
     DEBUG_RENDER = {
         ENABLED = false,
@@ -19,6 +21,10 @@ return {
             warn        = '[WARN]',
             error       = '[ERROR]',
         }
+    },
+    STAGE = {
+        EASE_DURATION = 3000,
+        EASE_FN = easing.ease_in_out_sine
     },
     FLOOR = {
         Y = 300 * (3/5),

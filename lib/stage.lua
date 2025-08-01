@@ -7,6 +7,10 @@ local animation = require 'lib.animation'
 local util      = require 'lib.util'
 local log = require 'lib.log'
 
+local ceil = math.ceil
+local math_floor = math.floor
+local min = math.min
+
 M.EASE_DURATION = 1000
 M.EASE_FN = function (x) return x end
 
@@ -40,6 +44,7 @@ function M.floor.set(t)
             .add{
                 to={y=t.y},
                 duration=t.duration,
+                ease_fn=M.EASE_FN,
             }
             .start()
         animation
@@ -47,6 +52,7 @@ function M.floor.set(t)
             .add{
                 to=t.color,
                 duration=t.duration,
+                ease_fn=M.EASE_FN,
             }
             .start()
     end
@@ -97,7 +103,7 @@ function M.sky.set(t)
             .create('stage.sky.from', sky.from)
             .add{
                 duration=t.duration,
-                ease_fn=M.SKY.EASE_FN,
+                ease_fn=M.EASE_FN,
                 to=t.from,
             }
             .start()
@@ -129,45 +135,50 @@ end
 function M.update(dt)
     -- sky
     if sky then
-        local gw, gh = love.graphics.getDimensions()
-        if M.FLOOR.Y then
-            gh = M.FLOOR.Y
-        end
+        local gw = love.graphics.getWidth()
+        local gh = M.floor.get() and M.floor.get().y or M.FLOOR.Y
+
         local p = 0
         local min_r = 30
+        if sky.main_star then
+            local w = sky.main_star:getWidth()
+            min_r = w + 30
+        end
         local max_r = math.sqrt(gw^2 + gh^2)
-        local h = gh / M.SKY.SEGMENTS
         
         canvas:renderTo(function ()
             love.graphics.push("all")
             love.graphics.clear()
 
-            for i = 0, M.SKY.SEGMENTS-1 do
-                p = i / (M.SKY.SEGMENTS-1)
-                if sky.main_star then
-                    love.graphics.setColor(
-                        lume.lerp(sky.to[1], sky.from[1], p),
-                        lume.lerp(sky.to[2], sky.from[2], p),
-                        lume.lerp(sky.to[3], sky.from[3], p)
-                    )
-                    -- circles
-                    love.graphics.circle('fill', 0, 0, lume.lerp(max_r, min_r, p))
-                    -- star
-                    love.graphics.setColor(1,1,1,1)
-                    love.graphics.draw(
-                        sky.main_star, 
-                        0, 0, 0, 1, 1, 
-                        sky.main_star:getWidth()/2,
-                        sky.main_star:getHeight()/2
-                    )
-                else
-                    love.graphics.setColor(
-                        lume.lerp(sky.from[1], sky.to[1], p),
-                        lume.lerp(sky.from[2], sky.to[2], p),
-                        lume.lerp(sky.from[3], sky.to[3], p)
-                    )
-                    -- horizontal boxes
-                    love.graphics.rectangle('fill', 0, i*h, gw, h)
+            if sky then
+                for i = 0, math_floor(sky.segments) do
+                    p = min((i-1) / (sky.segments), 1)
+                    if sky.main_star then
+                        love.graphics.setColor(
+                            lume.lerp(sky.to[1], sky.from[1], p),
+                            lume.lerp(sky.to[2], sky.from[2], p),
+                            lume.lerp(sky.to[3], sky.from[3], p)
+                        )
+                        -- circles
+                        love.graphics.circle('fill', 0, 0, lume.lerp(max_r, min_r, p))
+                        -- star
+                        love.graphics.setColor(1,1,1,1)
+                        love.graphics.draw(
+                            sky.main_star,
+                            0, 0, 0, 1, 1,
+                            sky.main_star:getWidth()/2,
+                            sky.main_star:getHeight()/2
+                        )
+                    else
+                        local h = gh / ceil(sky.segments)
+                        love.graphics.setColor(
+                            lume.lerp(sky.from[1], sky.to[1], p),
+                            lume.lerp(sky.from[2], sky.to[2], p),
+                            lume.lerp(sky.from[3], sky.to[3], p)
+                        )
+                        -- horizontal boxes
+                        love.graphics.rectangle('fill', 0, i*h, gw, h)
+                    end
                 end
             end
             love.graphics.pop()

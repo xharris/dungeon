@@ -82,14 +82,6 @@ return {
         local next_zones = dungeon.get_next_zones()
         local rand_zone = lume.randomchoice(next_zones)
         dungeon.enter_zone(rand_zone, player)
-
-        stage.sky.set{
-            from=color.MUI.GREEN_500,
-            to=color.MUI.GREY_900,
-        }
-        stage.floor.set{
-            color=color.MUI.GREY_900
-        }
     end,
 
     draw = function ()

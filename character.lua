@@ -687,7 +687,7 @@ function M.update(dt)
         e.floor_y = (e.floor_behavior and floor and floor.y or game.height) - 20
 
         -- character physics
-        local floor_y = e.floor_y
+        local floor_y = 0 -- e.floor_y
         local on_floor = e.y and floor_y and e.y >= floor_y
         local should_stand = not e.floor_behavior or e.floor_behavior == 'stand'
         local should_bounce = e.floor_behavior == 'bounce'
@@ -753,7 +753,7 @@ function M.update(dt)
             end
             -- position
             r.root.x = e.x
-            r.root.y = e.y
+            r.root.y = e.y + e.floor_y
         end
 
         -- held weapons
