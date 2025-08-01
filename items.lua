@@ -67,6 +67,7 @@ M.SIGNALS = {
     -- entity_id
     gain_ability_ready = 'gain_ability_ready'
 }
+M.DEFAULT_WEAPON = 'fist'
 
 ---@type Image
 local DEFAULT_IMAGE = {
@@ -84,6 +85,21 @@ local entity_storage = datastore.create{
 ---@param entity_id string
 function M.storage(entity_id)
     return entity_storage(entity_id)
+end
+
+function M.load()
+    M.add{
+        id = M.DEFAULT_WEAPON,
+        class = 'adventurer',
+        attack_animation = {
+            swing = {}
+        },
+        damage_scaling = {agi=0, int=0, str=0.25},
+        transform_stats = {
+            ['stats.str'] = {operation='add', value=20}
+        },
+        is_starter =  true,
+    }
 end
 
 ---@param id string

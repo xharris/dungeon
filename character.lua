@@ -254,6 +254,14 @@ M.sprite = log.log_methods('character.sprite', M.sprite, {
     exclude = {'renderables'}
 })
 
+---is this entity a character?
+---@param entity_id string
+---@return false
+function M.is(entity_id)
+    local e = entity.get(entity_id)
+    return not e or e.group ~= 'player' or e.group ~= 'enemy' or e.group ~= 'ally'
+end
+
 ---@param e Entity
 ---@param v number can be negative to lose money
 ---@return boolean has_enough_money
@@ -279,15 +287,14 @@ function M.add_health(entity_id, v)
     M.signals.emit(M.SIGNALS.change_health, e._id, v)
 end
 
----@return Entity|false
+---@return Entity?, string? error
 function M.get_player()
     for _, e in entity.filter('group') do
         if e.group == 'player' then
             return e
         end
     end
-    log.error("player not found")
-    return false
+    return nil, errors.not_found('player')
 end
 
 ---@param player_id string
@@ -420,6 +427,9 @@ function M.create(v)
     M.sprite.expression(e._id)
     M.sprite.hands(e._id)
     M.sprite.body(e._id)
+
+    -- add default weapon
+    M.add_item_to_inventory(e._id, {id=items.DEFAULT_WEAPON})
 
     -- add weapon sprite
     for _, data in ipairs(e.inventory) do

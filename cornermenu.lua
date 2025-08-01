@@ -45,10 +45,10 @@ M.SIGNALS = {
 
 ---@type CornerMenuItem[]
 local items = {}
----@type table<any, number>
+---@type table<string, number>
 local selected_idx = {}
 
----@type any?
+---@type string?
 local current_id
 
 ---@type CornerMenuHighlight?
@@ -81,7 +81,7 @@ local function stencil()
     end
 end
 
----@param id? any
+---@param id? string
 ---@param ... CornerMenuItem[]
 function M.set(id, ...)
     current_id = id

@@ -80,5 +80,5 @@ function M.update()
 end
 
 return log.log_methods('entity', M, {
-    include={'add'}
+    exclude={'update', 'all', 'filter', 'get'}
 })

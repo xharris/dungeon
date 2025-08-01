@@ -13,6 +13,8 @@ local character = require 'character'
 local stage = require 'lib.stage'
 local dungeon = require 'dungeon'
 local lume = require 'ext.lume'
+local entity = require 'lib.entity'
+local render = require 'render'
 
 ---@type Font
 local title_font = {
@@ -58,6 +60,10 @@ function M.main_menu()
         {
             id='help',
             texts={{text="Help"}},
+        },
+        {
+            id='quit',
+            texts={{text="Quit"}}
         }
     )
 end
@@ -71,12 +77,27 @@ return {
     end,
 
     enter = function ()
+        render.reset()
+        entity.remove_all()
+
         cornermenu.signals.on(cornermenu.SIGNALS.select_item, M.on_select_item)
 
         M.main_menu()
 
+        -- clear all characters
+        -- for _, e in entity.all() do
+        --     if character.is(e._id) then
+        --         entity.remove(e._id)
+        --     end
+        -- end
+
         -- create player
-        local player = character.create()
+        local player = character.get_player()
+        if player then
+            entity.remove(player._id)
+        else
+            player = character.create()
+        end
 
         -- enter a zone
         local next_zones = dungeon.get_next_zones()

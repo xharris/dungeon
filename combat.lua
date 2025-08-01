@@ -238,10 +238,6 @@ function M.use_item(source_id, target_id, item_data)
         local shoot = item.attack_animation.shoot
         local projectile = shoot and shoot.projectile
         local custom = item.attack_animation.custom
-        
-        if (swing or shoot) and not r_weapon then
-            return errors.missing_field("item_data.renderable", item_data)
-        end
 
         ---@type CombatUseItemData
         local data = {

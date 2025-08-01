@@ -8,7 +8,6 @@ local dialog = require 'dialog'
 local entity = require 'lib.entity'
 local character = require 'character'
 local screens = require 'screens'
-local images = require 'lib.images'
 local render = require 'render'
 local assets = require 'assets.index'
 local state = require 'lib.state'
@@ -19,7 +18,6 @@ local lume = require 'ext.lume'
 local items = require 'items'
 local signal = require 'lib.signal'
 local errors = require 'lib.errors'
-local stats  = require 'stats'
 local projectiles = require 'projectiles'
 local zindex      = require 'zindex'
 local animation = require 'lib.animation'
@@ -27,6 +25,8 @@ local color = require 'lib.color'
 local fonts = require 'lib.fonts'
 local const = require 'const'
 local game  = require 'game'
+
+local floor = math.floor
 
 ---@type string[]?
 local next_zones = nil
@@ -119,7 +119,7 @@ function M.on_change_health(entity_id, change)
         ox = tw / 2, oy = th / 2,
         sx = 0.85, sy = 0.85,
         font = font,
-        text = change,
+        text = floor(change),
         text_shadow_color = color.MUI.RED_500,
         color = color.MUI.WHITE,
         z = zindex.character_health_changed,
@@ -263,8 +263,7 @@ return {
             end
 
             if choice_id == "restart_game" then
-                state.pop()
-                state.push(states.pick_starter_weapon)
+                state.pop().push(states.title)
             end
 
             if choice_id == "quit_game" then
@@ -299,8 +298,7 @@ return {
                 dialog.add{
                     texts={{text="You died"}},
                     choices={
-                        {id="restart_game",texts={{text="restart"}}},
-                        {id="quit_game",texts={{text="quit"}}},
+                        {id="restart_game",texts={{text="okay"}}},
                     }
                 }
             end

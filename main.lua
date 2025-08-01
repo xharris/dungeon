@@ -60,6 +60,7 @@ function love.load()
     plugin.add(require 'plugins.classes')
     plugin.add(require 'plugins.forest')
 
+    items.load()
     shop.load()
     combat.load()
     plugin.load()
