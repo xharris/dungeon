@@ -21,8 +21,11 @@ return {
         }
     },
     FLOOR = {
-        Y = 160,
+        Y = 300 * (3/5),
         VISIBLE = true,
+    },
+    SKY = {
+        SEGMENTS = 10,
     },
     JUMP_VELOCITY = -300,
     MAX_JUMPS = 0,

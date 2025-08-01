@@ -19,8 +19,12 @@ local projectiles = require 'projectiles'
 local game        = require 'game'
 local fonts = require 'lib.fonts'
 local assets= require 'assets.index'
-local sky = require 'lib.sky'
 local timer = require 'lib.timer'
+local cornermenu = require 'cornermenu'
+local stage = require 'lib.stage'
+
+---@diagnostic disable-next-line: deprecated
+table.unpack = unpack
 
 log.LOG_METHODS_LEVEL = const.LOG.METHODS_LEVEL
 log.LOG_CONSOLE_LEVEL = const.LOG.CONSOLE_LEVEL
@@ -33,7 +37,16 @@ projectiles.DEBUG = const.DEBUG_PROJECTILES
 projectiles.DURATION = const.PROJECTILE_DURATION
 fonts.FONT_SIZE = const.FONT_SIZE
 combat.BASE_ATTACK_DURATION = const.COMBAT.BASE_ATTACK_DURATION
-sky.FLOOR_Y = const.FLOOR.Y
+
+stage.SKY.SEGMENTS = const.SKY.SEGMENTS
+
+stage.FLOOR.VISIBLE = const.FLOOR.VISIBLE
+stage.FLOOR.Y = const.FLOOR.Y
+
+cornermenu.DEFAULT_FONT = {
+    path = assets.yoster_island,
+    size = 20,
+}
 
 function love.load()
     game.load()
@@ -67,7 +80,7 @@ function love.load()
         items.abilities.show_ability_gain_screen(entity_id)
     end)
 
-    state.push(states.pick_starter_weapon)
+    state.push(states.title)
 end
 
 function love.update(dt)
@@ -81,8 +94,9 @@ function love.update(dt)
     char.update(dt)
     animation.update(dt)
     projectiles.update(dt)
-    sky.update(dt)
+    stage.update(dt)
     timer.update(dt)
+    cornermenu.update(dt)
 
     -- dialog controls
     if dialog.has_image_choices() then
@@ -109,18 +123,17 @@ function love.update(dt)
 end
 
 function love.draw()
+    -- game
     state.pre_draw()
-    screens.draw(function (_, zone_id)
-        render.set_collection(zone_id)
-        render.draw()
-    end)
-    render.set_collection()
-
+    stage.draw()
     render.draw()
-    dialog.draw()
-    animation.draw()
     state.draw()
+    -- debug
+    animation.draw()
     projectiles.debug_draw()
+    -- ui
+    dialog.draw()
+    cornermenu.draw()
 end
 
 function love.quit()

@@ -35,7 +35,7 @@ local abs = math.abs
 ---@field x? number
 ---@field y? number
 ---@field r? number radians
----@field r2? number radians
+---@field r2? number radians (rotate around r2_radius position)
 ---@field r2_radius? number distance from origin to rotate around
 ---@field sx? number
 ---@field sy? number
@@ -54,6 +54,7 @@ local abs = math.abs
 ---@field rect? {mode?:'line'|'fill', w:number, h:number}
 ---@field disabled? boolean do not render
 ---@field debug? {enabled?:boolean, show_id?:boolean}
+---@field _is_new? boolean wait a frame to allow renderable to be transformed before drawing it
 
 ---@class RenderableFrame
 ---@field x number
@@ -191,6 +192,7 @@ function M.add(t)
     t._last_y = t.y
     t.created_at = os.time()
     t._debug_color = t._debug_color or {math.random(20, 80)/100, 0, 0, 1}
+    t._is_new = true
     z_sort(collection[current_collection])
 
     -- negative offsets
@@ -347,6 +349,7 @@ function M.update(dt)
     for _, c in pairs(collection) do
         local need_z_sort = false
         for i, r in lume.ripairs(c) do
+            r._is_new = false
             ---@cast r Renderable
             if r._remove then
                 renderable_map[r.id] = nil
@@ -390,7 +393,7 @@ function M.draw()
         love.graphics.clear()
     end)
     for _, r in ipairs(collection[current_collection]) do
-        if not r.disabled then
+        if not r.disabled and not r._is_new then
             love.graphics.push('all')
             color.reset()
             local tf = M.get_transform(r.id)

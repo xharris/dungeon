@@ -271,6 +271,7 @@ function M.update(dt)
 end
 
 function M.draw()
+    love.graphics.push('all')
     local first = instances[1]
     if first then
         local x = MARGIN
@@ -314,6 +315,7 @@ function M.draw()
             end
         end
     end
+    love.graphics.pop()
 end
 
 return M

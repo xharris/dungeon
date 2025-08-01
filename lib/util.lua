@@ -1,5 +1,9 @@
 local M = {}
 
+local lume = require 'ext.lume'
+
+local lerp = lume.lerp
+
 ---@alias Iterator<V> fun(start?: integer):integer, V
 
 ---create an iterator from given tables
@@ -92,6 +96,59 @@ function M.gradient(direction, ...)
     result = love.graphics.newImage(result)
     result:setFilter('linear', 'linear')
     return result
+end
+
+---@generic T
+---@param orig T
+---@param copies? table<T, T>
+---@return T
+local function deepcopy(orig, copies)
+    copies = copies or {}
+    local orig_type = type(orig)
+    local copy
+    if orig_type == 'table' then
+        if copies[orig] then
+            copy = copies[orig]
+        else
+            copy = {}
+            copies[orig] = copy
+            for orig_key, orig_value in next, orig, nil do
+                copy[deepcopy(orig_key, copies)] = deepcopy(orig_value, copies)
+            end
+            setmetatable(copy, deepcopy(getmetatable(orig), copies))
+        end
+    else -- number, string, boolean, etc
+        copy = orig
+    end
+    return copy
+end
+
+---@generic T : table
+---@param t T
+---@return T
+function M.deepcopy(t)
+    return deepcopy(t)
+end
+
+local lerpt_cache = {}
+
+---@generic T : table
+---@param from T
+---@param to T
+---@param p number
+---@return T
+function M.lerpt(from, to, p)
+    local out = lerpt_cache[from]
+    if not out then
+        out = {}
+        lerpt_cache[from] = out
+    end
+    for k, v in pairs(from) do
+        if to[k] ~= nil then
+            out[k] = lerp(v, to[k], p)
+        end
+    end
+    return out
 end
 
 return M

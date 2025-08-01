@@ -4,7 +4,7 @@ local lume = require 'ext.lume'
 local log = require 'lib.log'
 
 ---@class State
----@field enter? fun(...:any)
+---@field enter? fun(...:any):string?
 ---@field update? fun(dt:number)
 ---@field pre_draw? fun()
 ---@field draw? fun()
@@ -42,7 +42,6 @@ function M.push(require_path, ...)
     end
 end
 
----@return boolean ok
 function M.pop()
     if #stack > 0 then
         local removed = table.remove(stack, #stack)
@@ -50,9 +49,8 @@ function M.pop()
         if state.leave then
             state.leave()
         end
-        return true
     end
-    return false
+    return M
 end
 
 ---@return boolean

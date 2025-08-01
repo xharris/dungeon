@@ -18,9 +18,21 @@ function M.off(...)
     end
 end
 
+---@param t table
+function M.offt(t)
+    local fns = {}
+    for _, v in pairs(t) do
+        if type(v) == 'function' then
+            table.insert(fns, v)
+        end
+    end
+    M.off(table.unpack(fns))
+end
+
 ---@param prefix string
 function M.create(prefix)
-    return log.log_methods('signal.'..tostring(prefix), {
+    local N
+    N = {
         ---@param name string
         ---@param fn function
         on = function(name, fn)
@@ -60,7 +72,8 @@ function M.create(prefix)
             end
             signals[key] = keep_fns
         end,
-    }, {
+    }
+    return log.log_methods('signal.'..tostring(prefix), N, {
         exclude={'on'}
     })
 end

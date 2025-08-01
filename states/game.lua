@@ -218,8 +218,13 @@ return {
     enter = function ()
         next_zones = nil
         is_game_over = false
-        
-        sky.add()
+
+        -- create player
+        local player = character.get_player()
+        if not player then
+
+            return errors.not_found('player')
+        end
 
         for _, e in entity.all() do
             if e.group ~= 'player' then
@@ -232,25 +237,13 @@ return {
         dungeon.signals.on(dungeon.SIGNALS.enter_zone, show_room_choices)
         character.signals.on(character.SIGNALS.change_health, M.on_change_health)
         projectiles.signals.on(projectiles.SIGNALS.reached_target, on_projectile_reached_target)
-
-        -- start game
-        local player = character.get_player()
-        if not player then
-            log.error("player entity not created")
-            state.pop()
-            state.push(states.pick_starter_weapon)
-            return
-        end
-
-        -- enter a zone
-        next_zones = dungeon.get_next_zones()
-        local rand_zone = lume.randomchoice(next_zones)
-        dungeon.enter_zone(rand_zone, player)
-        screens.set{{id=player.screen_id, image=dungeon.get_background_image()}}
     end,
 
     leave = function ()
-        signal.off(show_room_choices, M.on_change_health, on_projectile_reached_target)
+        signal.off(
+            show_room_choices, M.on_change_health, on_projectile_reached_target,
+            on_combat_end
+        )
     end,
     
     update = function (dt)
@@ -315,12 +308,10 @@ return {
 
     pre_draw = function ()
         love.graphics.push('all')
-        -- draw sky
-        sky.draw()
         -- draw floor
         if const.FLOOR.VISIBLE then
             color.set(color.MUI.BROWN_900)
-            love.graphics.rectangle('fill', 0, const.FLOOR.Y, game.width, game.height)
+            love.graphics.rectangle('fill', 0, const.FLOOR.Y, game.width, game.height - const.FLOOR.Y)
         end
         love.graphics.pop()
     end

@@ -17,11 +17,11 @@ local stats = require 'stats'
 local util  = require 'lib.util'
 local game  = require 'game'
 local animation = require 'lib.animation'
+local stage = require 'lib.stage'
 
 local abs = math.abs
 local min = math.min
 local max = math.max
-local floor = math.floor
 local rad = math.rad
 
 ---@class CharacterEscortClient
@@ -117,6 +117,7 @@ function M.sprite.expression(entity_id, v)
     r.z = zindex.character_eyes
 end
 
+---HANDS!!! 👨‍🍳
 ---@param entity_id string
 ---@return string? error
 function M.sprite.hands(entity_id)
@@ -278,7 +279,7 @@ end
 
 ---@param player_id string
 function M.get_screen_id(player_id)
-    return 'entity-'..tostring(player_id)
+    return nil -- 'entity-'..tostring(player_id)
 end
 
 ---@param escort_id string id of player (Entity) that will escort the client
@@ -367,8 +368,8 @@ function M.create(v)
             },
             money = 0,
             x = 0,
-            y = const.FLOOR.Y,
-            floor_y = const.FLOOR.Y - 16,
+            y = game.height - 20,
+            floor_behavior = 'stand',
             gravity = 700,
             vy = 0,
             jump_velocity = const.JUMP_VELOCITY,
@@ -682,9 +683,8 @@ function M.update(dt)
     for _, e in entity.all() do
         local r = M.sprite.renderables(e._id)
 
-        if e.floor_behavior then
-            e.floor_y = const.FLOOR.Y - (r.root and r.root.oy or 0)
-        end
+        local floor = stage.floor.get()
+        e.floor_y = (e.floor_behavior and floor and floor.y or game.height) - 20
 
         -- character physics
         local floor_y = e.floor_y
@@ -708,7 +708,7 @@ function M.update(dt)
             e.vy = (e.vy or 0) + e.gravity * dt
         end
 
-        if on_floor and should_stand and is_falling then
+        if on_floor and should_stand and floor_y then
             -- stand on floor
             e.vy = 0
             e.y = floor_y
@@ -718,7 +718,7 @@ function M.update(dt)
             end
         end
 
-        if on_floor and should_bounce and is_falling then
+        if on_floor and should_bounce and is_falling and floor_y then
             -- bounce off floor
             e.vy = -e.vy * 0.6
             e.y = floor_y
@@ -732,7 +732,7 @@ function M.update(dt)
             end
         end
 
-        if on_floor and not is_falling then
+        if on_floor and not is_falling and floor_y then
             e.y = floor_y
         end
         

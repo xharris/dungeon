@@ -9,6 +9,7 @@ M.FONT_SIZE = 12
 ---@field size? number
 ---@field filter? {min:'linear'|'nearest', max:'linear'|'nearest'}
 
+
 ---@type AssetLoader<Font>
 M.get = assets.create{
     default = {
@@ -64,7 +65,7 @@ function M.dimensions(text, t)
     else
         font = M.get(t)
     end
-    return font:getWidth(text), font:getHeight()
+    return font:getWidth(text), (select(2, string.gsub(text, "\n", "")) + 1) * font:getHeight()
 end
 
 return M

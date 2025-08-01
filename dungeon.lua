@@ -4,7 +4,7 @@ local lume = require 'ext.lume'
 local log = require 'lib.log'
 local signal = require 'lib.signal'
 local const  = require 'const'
-local sky = require 'lib.sky'
+local stage = require 'lib.stage'
 
 ---@alias DungeonRoomType 'combat'|'shop'|'rest'|'event'|'rift'|'ability'
 
@@ -19,6 +19,8 @@ local sky = require 'lib.sky'
 ---@field rift_room? boolean allow player to riftwalk in this room
 ---@field background_image? Image
 ---@field only_events? string[]
+---@field sky? Sky
+---@field floor? Floor
 
 ---@class DungeonSetupRoomsCtx
 ---@field add_room fun(room:DungeonRoom)
@@ -28,9 +30,10 @@ local sky = require 'lib.sky'
 ---@field events string[] list of events that can occur
 ---@field enemies string[] list of enemy ids that can spawn
 ---@field setup_rooms fun(ctx:DungeonSetupRoomsCtx, e:Entity)
----@field sky? Sky[]
 ---@field default_background_image? Image
 ---@field can_return? boolean can choose to return to same room again
+---@field sky? Sky
+---@field floor? Floor
 
 ---@type table<string, DungeonRoom>
 local zone_rooms = {}
@@ -135,11 +138,9 @@ function M.enter_zone(zone_id, player)
         return false
     end
 
-    -- setup sky
-    if zone.sky then
-        ---@diagnostic disable-next-line: deprecated
-        sky.add(unpack(zone.sky))
-    end
+    -- setup sky and floor
+    stage.floor.set(zone.floor or {})
+    stage.sky.set(zone.sky or {})
 
     M.signals.emit(M.SIGNALS.enter_zone, zone, player)
 
