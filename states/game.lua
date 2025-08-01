@@ -27,10 +27,6 @@ local color = require 'lib.color'
 local fonts = require 'lib.fonts'
 local const = require 'const'
 local game  = require 'game'
-local sky = require 'lib.sky'
-
-local max = math.max
-local min = math.min
 
 ---@type string[]?
 local next_zones = nil
@@ -108,6 +104,10 @@ function M.on_change_health(entity_id, change)
         return errors.not_found('entity', entity_id)
     end
     local x, y = e.x, e.y
+    local spr = character.sprite.renderables(entity_id).root
+    if spr then
+        x, y = render.transform_point(spr.id, spr.ox, spr.oy)
+    end
 
     -- show text animation
     ---@type Font
@@ -125,7 +125,7 @@ function M.on_change_health(entity_id, change)
         z = zindex.character_health_changed,
     }
     local duration = 500
-    local e = entity.add{
+    local e_text = entity.add{
         tag = 'health-changed-text',
         text = text_render,
         color = color.MUI.RED_500,
@@ -134,7 +134,7 @@ function M.on_change_health(entity_id, change)
         -- gravity = 900,
         render_text = r_id,
     }
-    e.vx, e.vy = lume.vector(
+    e_text.vx, e_text.vy = lume.vector(
         lume.lerp(math.rad(-90-45), math.rad(-45), math.random()),
         200
     )
@@ -149,12 +149,12 @@ function M.on_change_health(entity_id, change)
         end)
         .start()
     animation
-        .create(e._id, e)
+        .create(e_text._id, e_text)
         .add(
             {to={vx=0, vy=0}, duration=duration*0.8}
         )
         .on_end(function ()
-            entity.remove(e._id)
+            entity.remove(e_text._id)
         end)
         .start()
 end
@@ -222,7 +222,6 @@ return {
         -- create player
         local player = character.get_player()
         if not player then
-
             return errors.not_found('player')
         end
 
@@ -231,6 +230,8 @@ return {
                 entity.remove(e._id)
             end
         end
+
+        show_room_choices()
 
         events.signals.on(events.SIGNALS.on_end, show_room_choices)
         combat.signals.on(combat.SIGNALS.ended, on_combat_end)

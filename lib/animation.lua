@@ -178,7 +178,7 @@ function M.next_step(id)
         if step.on_end then
             step.on_end()
         end
-        M.signals.emit(M.SIGNALS.animation_step_end, step.data)
+        M.signals.emit(M.SIGNALS.animation_step_end, a.id, step.data)
     end
 
     -- move to next step
@@ -229,5 +229,5 @@ end
 function M.draw() end
 
 return log.log_methods('animation', M, {
-    exclude={'update', 'draw'}
+    exclude={'update', 'draw', 'next_step'}
 })

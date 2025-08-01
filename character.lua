@@ -226,6 +226,19 @@ function M.sprite.renderables(entity_id)
     }
 end
 
+---@param entity_id string
+---@param part 'root'|'body'|'eyes'|'hand_l'|'hand_r'
+---@return string? id, string? error
+function M.sprite.id(entity_id, part)
+    local e = entity.get(entity_id)
+    local spr = e and e.character_sprite
+    local ids = e and spr and spr.renderables
+    if not e then return nil, errors.not_found('entity', entity_id) end
+    if not ids then return nil, errors.missing_field('entity.character_sprite.renderables', e) end
+
+    return ids[part]
+end
+
 ---set direction character is facing
 ---@param entity_id any
 ---@param direction CharacterFacing
@@ -687,7 +700,7 @@ function M.update(dt)
         e.floor_y = (e.floor_behavior and floor and floor.y or game.height) - 20
 
         -- character physics
-        local floor_y = 0 -- e.floor_y
+        local floor_y = e.character_sprite and 0 or nil -- e.floor_y
         local on_floor = e.y and floor_y and e.y >= floor_y
         local should_stand = not e.floor_behavior or e.floor_behavior == 'stand'
         local should_bounce = e.floor_behavior == 'bounce'
