@@ -44,6 +44,9 @@ function M.on_select_item(id)
             }
         )
     end
+    if id == "quit_game" then
+        love.event.quit()
+    end
 end
 
 function M.main_menu()
@@ -62,7 +65,7 @@ function M.main_menu()
             texts={{text="Help"}},
         },
         {
-            id='quit',
+            id='quit_game',
             texts={{text="Quit"}}
         }
     )

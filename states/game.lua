@@ -266,10 +266,6 @@ return {
                 state.pop().push(states.title)
             end
 
-            if choice_id == "quit_game" then
-                love.quit()
-            end
-
             -- buy an item and leave the shop
             if player and choice_id and shop.buy_item(player, choice_id) then
                 shop.leave()

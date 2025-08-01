@@ -158,3 +158,10 @@ function love.errorhandler(msg)
     if err then print('could not write logs:', err) end
     return old_errorhandler(msg)
 end
+
+love = log.log_methods('love', love, {
+    include={'load', 'quit'}
+})
+love.event = log.log_methods('love.event', love.event, {
+    include={'quit'}
+})
