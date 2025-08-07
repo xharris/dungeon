@@ -1,0 +1,106 @@
+[gd_scene load_steps=11 format=3 uid="uid://dcfgo1ktqljvl"]
+
+[ext_resource type="Script" uid="uid://de8rli5juvd1i" path="res://main.gd" id="1_7jktm"]
+[ext_resource type="Script" uid="uid://ci3duvo8atgnv" path="res://environment.gd" id="2_7jktm"]
+[ext_resource type="PackedScene" uid="uid://bvvb08ueug3f5" path="res://character/character.tscn" id="2_fc0e3"]
+[ext_resource type="FontFile" uid="uid://kgxmw38vk86v" path="res://assets/yoster-island/yoster.ttf" id="4_fc0e3"]
+
+[sub_resource type="Gradient" id="Gradient_80nbo"]
+offsets = PackedFloat32Array(0, 0.907407)
+colors = PackedColorArray(0.24, 0.24, 0.24, 1, 0.47, 0.47, 0.47, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_e2o6t"]
+gradient = SubResource("Gradient_80nbo")
+fill_from = Vector2(1, 1)
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_fc0e3"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_fc0e3"]
+size = Vector2(768, 20)
+
+[sub_resource type="Theme" id="Theme_7jktm"]
+default_font = ExtResource("4_fc0e3")
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7jktm"]
+content_margin_left = 6.0
+content_margin_top = 6.0
+content_margin_right = 6.0
+content_margin_bottom = 6.0
+
+[node name="Main" type="Node2D"]
+script = ExtResource("1_7jktm")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+anchor_mode = 0
+
+[node name="Environment" type="Node2D" parent="."]
+script = ExtResource("2_7jktm")
+
+[node name="Floor" type="Polygon2D" parent="Environment"]
+position = Vector2(0, 360)
+scale = Vector2(2, 1.021)
+color = Color(0.631373, 0.533333, 0.498039, 1)
+texture = SubResource("GradientTexture2D_e2o6t")
+polygon = PackedVector2Array(4.29153e-06, -96, 320, -96, 320, 2.38419e-06, 0, 3.33786e-06)
+uv = PackedVector2Array(1.63, 0.619999, 63.13, 0.619999, 66.13, 63.12, 3.13, 61.62)
+
+[node name="StaticBody2D" type="StaticBody2D" parent="Environment/Floor"]
+position = Vector2(0, -352.595)
+scale = Vector2(0.5, 0.979432)
+collision_mask = 2
+physics_material_override = SubResource("PhysicsMaterial_fc0e3")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/Floor/StaticBody2D"]
+position = Vector2(320, 272)
+shape = SubResource("RectangleShape2D_fc0e3")
+
+[node name="Characters" type="Node2D" parent="."]
+
+[node name="Character" parent="Characters" groups=["player"] instance=ExtResource("2_fc0e3")]
+position = Vector2(-40, 240)
+
+[node name="Title" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 640.0
+offset_bottom = 264.0
+
+[node name="RichTextLabel" type="RichTextLabel" parent="Title"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = SubResource("Theme_7jktm")
+theme_override_font_sizes/normal_font_size = 72
+text = "GAME TITLE"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Menu" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Menu"]
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 6.6
+anchor_bottom = 9.0
+offset_right = 640.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 0
+size_flags_vertical = 8
+
+[node name="Button" type="Button" parent="Menu/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 0
+theme_override_fonts/font = ExtResource("4_fc0e3")
+theme_override_styles/normal = SubResource("StyleBoxFlat_7jktm")
+text = "PLAY"
+flat = true
+
+[connection signal="pressed" from="Menu/VBoxContainer/Button" to="." method="_on_button_pressed"]
