@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="Item" load_steps=3 format=3 uid="uid://b1deofgdqomju"]
 
-[ext_resource type="PackedScene" uid="uid://dwivmcifukgo6" path="res://items/sword.tscn" id="1_bikib"]
+[ext_resource type="PackedScene" uid="uid://dwivmcifukgo6" path="res://items/sword/sword.tscn" id="1_bikib"]
 [ext_resource type="Script" uid="uid://oedsddb184wt" path="res://item.gd" id="1_es5ut"]
 
 [resource]

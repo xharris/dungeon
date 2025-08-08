@@ -24,6 +24,7 @@ config/icon="res://icon.svg"
 
 Logs="*res://logs.gd"
 Game="*res://game.gd"
+Rooms="*res://rooms.gd"
 
 [display]
 

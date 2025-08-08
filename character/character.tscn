@@ -330,3 +330,10 @@ speed_scale = 4.0
 position = Vector2(0, 16)
 rotation = 1.57079
 shape = SubResource("CapsuleShape2D_1l1n4")
+
+[node name="AttackStart" type="Timer" parent="."]
+
+[node name="AttackLanded" type="Timer" parent="."]
+
+[connection signal="timeout" from="AttackStart" to="." method="_on_attack_start_timeout"]
+[connection signal="timeout" from="AttackLanded" to="." method="_on_attack_landed_timeout"]

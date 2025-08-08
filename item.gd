@@ -17,6 +17,9 @@ signal item_activated(item: Item)
 ## max stack size in inventory[br]
 ## [code]0[/code] infinite
 @export var max_stack: int = 1
+## hide this item from the inventory
+@export var hide: bool = false
+@export var disable_unequip: bool = false
 
 # visual
 
@@ -31,6 +34,7 @@ signal item_activated(item: Item)
 @export var attack_animation: AttackAnimation
 ## charges required to activate this item
 @export var max_charge: int = 0
+@export var base_damage: int = 4
 
 var charges: int = 0
 
@@ -47,5 +51,6 @@ func get_possible_targets() -> Array[String]:
 func on_attack_landed():
     add_charge()
 
+## negative value heals
 func apply_damage(_data: Data) -> int:
     return 0
