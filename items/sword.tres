@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="Item" load_steps=3 format=3 uid="uid://b1deofgdqomju"]
+
+[ext_resource type="PackedScene" uid="uid://dwivmcifukgo6" path="res://items/sword.tscn" id="1_bikib"]
+[ext_resource type="Script" uid="uid://oedsddb184wt" path="res://item.gd" id="1_es5ut"]
+
+[resource]
+script = ExtResource("1_es5ut")
+item_id = "sword"
+max_stack = 1
+scene = ExtResource("1_bikib")
+hold = 1
+attack_animation = 1
+max_charge = 0
+metadata/_custom_type_script = "uid://oedsddb184wt"

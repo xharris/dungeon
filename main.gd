@@ -6,6 +6,10 @@ extends Node2D
 
 const scn_character = preload("res://character/character.tscn")
 
+const items = {
+	"sword": preload("res://items/sword.tscn")
+}
+
 func _ready() -> void:
 	var player = Game.get_player()
 	if player:
@@ -14,7 +18,7 @@ func _ready() -> void:
 		Logs.warn("player not found")
 
 func _process(delta: float) -> void:
-	camera.position.x = lerp(camera.position.x, Room.position.x, delta)
+	camera.position.x = lerp(camera.position.x, Room.position.x, Easings.Quad.InOut(delta))
 
 enum GroupSide {Left, Right}
 
@@ -42,12 +46,10 @@ func arrange_characters():
 				character.move_to_x(x)
 				x += group_sep[group]
 
-## play
+## play game
 func _on_button_pressed() -> void:
 	Logs.info("pressed play")
 	Room.next_room()
-	
-	# expand floor
 	environment.expand()
 	
 	# spawn enemies
