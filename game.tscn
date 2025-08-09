@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3 uid="uid://dcfgo1ktqljvl"]
+[gd_scene load_steps=17 format=3 uid="uid://dcfgo1ktqljvl"]
 
 [ext_resource type="Script" uid="uid://de8rli5juvd1i" path="res://main.gd" id="1_7jktm"]
 [ext_resource type="Script" uid="uid://ci3duvo8atgnv" path="res://environment.gd" id="2_7jktm"]
@@ -6,6 +6,8 @@
 [ext_resource type="Script" uid="uid://c5btjrp1b4a53" path="res://game_camera.gd" id="2_ryrav"]
 [ext_resource type="Script" uid="uid://brhyw2hs6qpeh" path="res://stats.gd" id="4_7jktm"]
 [ext_resource type="FontFile" uid="uid://kgxmw38vk86v" path="res://assets/yoster-island/yoster.ttf" id="4_fc0e3"]
+[ext_resource type="Script" uid="uid://oedsddb184wt" path="res://item.gd" id="6_j5wjh"]
+[ext_resource type="Script" uid="uid://bergs16kyq55l" path="res://inventory.gd" id="7_vef74"]
 
 [sub_resource type="Gradient" id="Gradient_80nbo"]
 offsets = PackedFloat32Array(0, 0.907407)
@@ -23,11 +25,18 @@ size = Vector2(768, 20)
 [sub_resource type="Resource" id="Resource_ryrav"]
 resource_local_to_scene = true
 script = ExtResource("4_7jktm")
-name = "unknown"
+id = ""
 max_hp = 20
 hp = 20
 max_velocity = Vector2(100, 200)
 metadata/_custom_type_script = "uid://brhyw2hs6qpeh"
+
+[sub_resource type="Resource" id="Resource_hve3p"]
+script = ExtResource("7_vef74")
+id = ""
+capacity = 2
+default_items = Array[ExtResource("6_j5wjh")]([])
+metadata/_custom_type_script = "uid://bergs16kyq55l"
 
 [sub_resource type="Theme" id="Theme_7jktm"]
 default_font = ExtResource("4_fc0e3")
@@ -71,7 +80,8 @@ shape = SubResource("RectangleShape2D_fc0e3")
 [node name="Player" parent="Characters" groups=["player"] instance=ExtResource("2_fc0e3")]
 position = Vector2(-40, 240)
 stats = SubResource("Resource_ryrav")
-character_name = "player"
+id = "player"
+inventory = SubResource("Resource_hve3p")
 
 [node name="Title" type="Control" parent="."]
 layout_mode = 3

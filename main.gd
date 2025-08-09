@@ -62,9 +62,9 @@ func _on_create_next_room():
         character.state.combat = false
     environment.expand()
     
-    # spawn enemies
+    # spawn test enemy
     var enemy = scn_character.instantiate()
-    enemy.character_name = "enemy"
+    enemy.id = "enemy"
     enemy.add_to_group("enemy")
     enemy.global_position.x = Rooms.position.x + (Game.size.x * 3/5)
     enemy.global_position.y = Game.size.y / 2
@@ -74,7 +74,7 @@ func _on_create_next_room():
     
     # enable combat
     for character in get_tree().get_nodes_in_group("character") as Array[Character]:
-        character.state.combat = true
+        character.enable_combat()
     
 ## play game
 func _on_button_pressed() -> void:

@@ -1,7 +1,7 @@
 class_name Character
 extends CharacterBody2D
 
-var logs = Logger.new("character")
+var logs = Logger.new()
 
 class Group:
     static var Ally = "ally"
@@ -23,14 +23,15 @@ signal move_to_finished
 @onready var attack_landed_timer: Timer = $AttackLanded
 
 @export var stats:Stats
-@export var character_name = "unknown":
+@export var id = "unknown":
     set(v):
-        character_name = v
-        stats.name = v
-        logs.set_prefix(v)
+        id = v
+        stats.id = id
+        inventory.id = id
+        logs.set_prefix(id)
+@export var inventory:Inventory = Inventory.new()
 
 var state = State.new()
-var inventory:Inventory = Inventory.new()
 var target_position: Vector2
 var target_distance: Vector2 = Vector2(20, 20)
 
@@ -42,6 +43,13 @@ func _enter_tree() -> void:
     logs.info("spawned at %.2v" % global_position)
 
 func _on_item_added(item: Item):
+    # trigger item visitors
+    for i in inventory.items:
+        for v in i.visitors:
+            v.ctx = ItemVisitor.Context.new()
+            v.ctx.source = self
+            v.ctx.item = i
+            v.on_equip()
     var item_node = item.scene.instantiate() if item.scene else null
     # hold in hand?
     var held_item_node = \
@@ -71,12 +79,13 @@ func _on_attack_start_timeout() -> void:
         
         if item.attack_animation == Item.AttackAnimation.Swing:
             logs.info("swing %s" % item.item_id)
-            ctx.attack_item = item
+            ctx.trigger_item = item
             # actual attack landing timer
             var attack_landed_timer = Timer.new()
             attack_landed_timer.one_shot = true
             attack_landed_timer.wait_time = attack_start_timer.wait_time / 2
             attack_landed_timer.timeout.connect(_on_attack_landed_timeout.bind(ctx))
+            add_child(attack_landed_timer)
             attack_landed_timer.start()
             # start animation
             sprite.swing()
@@ -100,6 +109,10 @@ func move_to_x(x: int):
     logs.debug("move to x=%d" % x)
     target_position.x = x
     state.move_to_target = true
+
+func enable_combat():
+    await sprite.swing_up()
+    state.combat = true
 
 func _physics_process(delta: float) -> void:
     # gravity

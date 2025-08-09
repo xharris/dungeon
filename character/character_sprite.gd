@@ -20,6 +20,11 @@ func walk():
 func swing():
     animation_player.play("swing_up" if _swing_up else "swing_down")
     _swing_up = !_swing_up
+    await animation_player.animation_finished
+
+func swing_up():
+    animation_player.play("swing_up")
+    _swing_up = false
 
 func reset_speed_scale():
     speed_scale = 1.0

@@ -2,4 +2,5 @@ extends ItemVisitor
 class_name TwoChargeAttack
 
 func on_attack_landed():
-    ctx.item.add_charge(2) # extra charge
+    if ctx.source:
+        add_charge_all(ctx.source.inventory.items, 2) # extra charge

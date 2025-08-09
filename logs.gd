@@ -3,23 +3,46 @@ class_name Logger
 
 static var max_prefix_length = 0
 
-@export var _prefix:String = ""
+@export var _prefix:String = "":
+    set(v):
+        v = v if v != null else ""
+        _prefix = v.strip_edges()
+        _update_full_prefix()
+@export var _id:String = "":
+    set(v):
+        v = v if v != null else ""
+        _id = v.strip_edges()
+        _update_full_prefix()
+
+var _full_prefix:String = ""
 var _prev_msg:String
 
-func _init(prefix:String) -> void:
-    set_prefix(prefix)
+func _init(id:String = "") -> void:
+    _id = id
+
+func _update_full_prefix():
+    var parts:Array[String] = []
+    if _prefix.length() > 0:
+        parts.append(_prefix)
+    if _id.length() > 0:
+        parts.append(_id)
+    _full_prefix = ".".join(parts)
+    if _full_prefix.length() > max_prefix_length:
+        max_prefix_length = _full_prefix.length()
 
 func set_prefix(prefix:String) -> Logger:
     _prefix = prefix
-    if _prefix.length() > max_prefix_length:
-        max_prefix_length = _prefix.length()
+    return self
+
+func set_id(id:String) -> Logger:
+    _id = id
     return self
 
 func _print(color:Color, level:String, msg:String) -> bool:
     var pad = max(0, max_prefix_length - _prefix.length())
     var formatted = "[color=%s][b]%s[/b][/color] \t%s %s %s" % [
         color.to_html(), level, 
-        _prefix, " ".repeat(pad),
+        _full_prefix, " ".repeat(pad),
         msg
     ]
     if formatted == _prev_msg:

@@ -3,10 +3,10 @@ class_name Stats
 
 var logs = Logger.new("stats")
 
-@export var name:String = "unknown":
+@export var id:String = "":
     set(v):
-        logs._prefix = name
-        name = v
+        id = v
+        logs.set_prefix(id)
 @export var max_hp:int = 10:
     set(x):
         # scale up current hp

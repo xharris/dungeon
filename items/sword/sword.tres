@@ -20,5 +20,5 @@ scene = ExtResource("1_bikib")
 hold = 1
 attack_animation = 1
 max_charge = 0
-base_damage = 4
+base_damage = 8
 metadata/_custom_type_script = "uid://oedsddb184wt"
