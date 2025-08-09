@@ -8,16 +8,16 @@ extends Node2D
 var _speed_scale = 1.0
 
 func stand():
-	await animation_player.animation_finished
-	animation_player.play("stand")
-	_speed_scale = 1.0
+    #await animation_player.animation_finished
+    animation_player.play("stand")
+    _speed_scale = 1.0
 
 func walk():
-	animation_player.play("walk")
-	_speed_scale = 6.0
+    animation_player.play("walk")
+    _speed_scale = 6.0
 
 func reset_speed_scale():
-	speed_scale = 1.0
+    speed_scale = 1.0
 
 func _process(_delta: float) -> void:
-	animation_player.speed_scale = _speed_scale * speed_scale
+    animation_player.speed_scale = _speed_scale * speed_scale

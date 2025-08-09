@@ -23,6 +23,7 @@ class State:
 var state = State.new()
 var inventory:Inventory = Inventory.new()
 var target_position: Vector2
+var target_distance: Vector2 = Vector2(20, 20)
 
 func _ready() -> void:
     inventory.item_added.connect(_on_item_added)
@@ -83,18 +84,21 @@ func _physics_process(delta: float) -> void:
 
     var norm_move_to_target = (target_position - global_position).normalized()
 
-    if state.move_to_target and not state.fall:
-        global_position.x = lerp(global_position.x, target_position.x, delta)
-        # face left/right
-        sprite.scale.x = (-1 if norm_move_to_target.x < 0 else 1) * abs(sprite.scale.x)
+    var arrived = abs(norm_move_to_target.x) < 0.1
 
     # walking animation
     if state.move_to_target:
-        if norm_move_to_target.x > 0.3:
-            sprite.walk()
-            sprite.speed_scale = lerpf(0.2, 2, norm_move_to_target.x)
-        else:
+        if arrived:
+            Logs.debug("stop moving")
+            state.move_to_target = false
+            velocity.x = 0
             sprite.stand()
+        else:
+            velocity.x += delta * stats.max_velocity.x
+            sprite.walk()
+            sprite.speed_scale = lerpf(1, 1.75, norm_move_to_target.x)
+        # face left/right
+        sprite.scale.x = (-1 if norm_move_to_target.x < 0 else 1) * abs(sprite.scale.x)
 
     if state.idle:
         sprite.stand()
@@ -107,9 +111,8 @@ func _physics_process(delta: float) -> void:
         Logs.debug("start combat")
         attack_start_timer.start()
 
+    velocity = velocity.clamp(-stats.max_velocity, stats.max_velocity)
+
     # update state
     state.fall = not is_on_floor()
-    state.move_to_target = \
-        is_on_floor() and \
-        abs(target_position.x - global_position.x) >= 10
     state.idle = is_on_floor() and norm_move_to_target.length() == 0

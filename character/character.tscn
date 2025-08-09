@@ -10,6 +10,7 @@ resource_local_to_scene = true
 script = ExtResource("2_hx151")
 max_hp = 10
 hp = 10
+max_velocity = Vector2(100, 200)
 metadata/_custom_type_script = "uid://brhyw2hs6qpeh"
 
 [sub_resource type="Animation" id="Animation_vdpqx"]
