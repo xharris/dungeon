@@ -4,15 +4,11 @@ extends Resource
 enum AttackAnimation {None, Swing}
 enum Hold {None, Primary, Secondary}
 
-class Data:
-    var source: Character
-    var target: Character
-    var item: Item
-
 signal item_activated(item: Item)
 
 # config
 
+@export var visitors:Array[ItemVisitor]
 @export var item_id: String = "unknown"
 ## max stack size in inventory[br]
 ## [code]0[/code] infinite
@@ -44,13 +40,3 @@ func add_charge(x: int = 1):
         charges = 0
     else:
         charges += x
-
-func get_possible_targets() -> Array[String]:
-    return []
-
-func on_attack_landed():
-    add_charge()
-
-## negative value heals
-func apply_damage(_data: Data) -> int:
-    return 0

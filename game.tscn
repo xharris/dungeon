@@ -1,8 +1,9 @@
-[gd_scene load_steps=13 format=3 uid="uid://dcfgo1ktqljvl"]
+[gd_scene load_steps=14 format=3 uid="uid://dcfgo1ktqljvl"]
 
 [ext_resource type="Script" uid="uid://de8rli5juvd1i" path="res://main.gd" id="1_7jktm"]
 [ext_resource type="Script" uid="uid://ci3duvo8atgnv" path="res://environment.gd" id="2_7jktm"]
 [ext_resource type="PackedScene" uid="uid://bvvb08ueug3f5" path="res://character/character.tscn" id="2_fc0e3"]
+[ext_resource type="Script" uid="uid://c5btjrp1b4a53" path="res://game_camera.gd" id="2_ryrav"]
 [ext_resource type="Script" uid="uid://brhyw2hs6qpeh" path="res://stats.gd" id="4_7jktm"]
 [ext_resource type="FontFile" uid="uid://kgxmw38vk86v" path="res://assets/yoster-island/yoster.ttf" id="4_fc0e3"]
 
@@ -22,6 +23,7 @@ size = Vector2(768, 20)
 [sub_resource type="Resource" id="Resource_ryrav"]
 resource_local_to_scene = true
 script = ExtResource("4_7jktm")
+name = "unknown"
 max_hp = 20
 hp = 20
 max_velocity = Vector2(100, 200)
@@ -39,8 +41,9 @@ content_margin_bottom = 6.0
 [node name="Main" type="Node2D"]
 script = ExtResource("1_7jktm")
 
-[node name="Camera2D" type="Camera2D" parent="."]
+[node name="GameCamera" type="Camera2D" parent="."]
 anchor_mode = 0
+script = ExtResource("2_ryrav")
 
 [node name="Environment" type="Node2D" parent="."]
 script = ExtResource("2_7jktm")
@@ -68,6 +71,7 @@ shape = SubResource("RectangleShape2D_fc0e3")
 [node name="Player" parent="Characters" groups=["player"] instance=ExtResource("2_fc0e3")]
 position = Vector2(-40, 240)
 stats = SubResource("Resource_ryrav")
+character_name = "player"
 
 [node name="Title" type="Control" parent="."]
 layout_mode = 3
@@ -113,4 +117,5 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_7jktm")
 text = "PLAY"
 flat = true
 
+[connection signal="tween_finished" from="GameCamera" to="." method="_on_game_camera_tween_finished"]
 [connection signal="pressed" from="Menu/VBoxContainer/Button" to="." method="_on_button_pressed"]

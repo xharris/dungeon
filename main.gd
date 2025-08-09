@@ -1,6 +1,8 @@
 extends Node2D
 
-@onready var camera = $Camera2D
+var logs = Logger.new("main")
+
+@onready var camera = $GameCamera as GameCamera
 @onready var environment = $Environment
 @onready var characters = $Characters
 
@@ -16,14 +18,14 @@ func _ready() -> void:
         player.inventory.add_item(items[0])
         player.move_to_x(200)
     else:
-        Logs.warn("player not found")
+        logs.warn("player not found")
     Rooms.create_next_room.connect(_on_create_next_room)
 
 enum GroupSide {Left, Right}
 
 # arrange all characters to their designated side of the screen
 func arrange_characters():
-    var side_size = Game.size.x / 2
+    var side_size = Game.size.x / 3
     var group_side = {
         "player": GroupSide.Left,
         "ally": GroupSide.Left,
@@ -36,28 +38,24 @@ func arrange_characters():
     for group in group_count:
         var count = max(1, group_count[group])
         group_sep[group] = side_size / count
+        
+    var move_signals:Array[Signal] = []
     for group in group_sep:
         var side:GroupSide = group_side[group]
-        var x = 0.0 if side == GroupSide.Left else Game.size.x / 2
+        var x = (0.0 if side == GroupSide.Left else side_size)
+        x += (side_size / 2)
         x += Rooms.position.x
         for character in get_tree().get_nodes_in_group(group):
             if character is Character:
+                move_signals.append(character.move_to_finished)
                 character.move_to_x(x)
                 x += group_sep[group]
-
-func _on_camera_tween_finished():
-    # enable combat
-    for character in get_tree().get_nodes_in_group("character") as Array[Character]:
-        character.state.combat = true
+    
+    await Async.all(move_signals)
 
 func _on_create_next_room():
     # move camera to current Rooms
-    var tween = camera.create_tween()
-    var prop = tween.tween_property(camera, "position", Rooms.position, 3)
-    prop.set_trans(Tween.TransitionType.TRANS_QUAD)
-    prop.set_ease(Tween.EaseType.EASE_IN_OUT)
-    tween.finished.connect(_on_camera_tween_finished)
-    tween.play()
+    camera.move_to(Rooms.position)
     
     # disable combat
     for character in get_tree().get_nodes_in_group("character") as Array[Character]:
@@ -66,15 +64,19 @@ func _on_create_next_room():
     
     # spawn enemies
     var enemy = scn_character.instantiate()
+    enemy.character_name = "enemy"
     enemy.add_to_group("enemy")
-    enemy.global_position.x = Rooms.position.x + Game.size.x
+    enemy.global_position.x = Rooms.position.x + (Game.size.x * 3/5)
     enemy.global_position.y = Game.size.y / 2
     characters.add_child(enemy)
-    Logs.info("enemy spawned at %s" % enemy.global_position)
     
-    arrange_characters()
+    await arrange_characters()
+    
+    # enable combat
+    for character in get_tree().get_nodes_in_group("character") as Array[Character]:
+        character.state.combat = true
     
 ## play game
 func _on_button_pressed() -> void:
-    Logs.info("pressed play")
+    logs.info("pressed play")
     Rooms.next_room()

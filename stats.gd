@@ -1,6 +1,12 @@
 extends Resource
 class_name Stats
 
+var logs = Logger.new("stats")
+
+@export var name:String = "unknown":
+    set(v):
+        logs._prefix = name
+        name = v
 @export var max_hp:int = 10:
     set(x):
         # scale up current hp
@@ -11,3 +17,13 @@ class_name Stats
 
 func _init() -> void:
     resource_local_to_scene = true
+
+func take_damage(v:int) -> Stats:
+    logs.debug("take damage: %d" % v)
+    hp -= v
+    return self
+    
+func heal(v:int) -> Stats:
+    logs.debug("heal: %d" % v)
+    hp += v
+    return self

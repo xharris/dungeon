@@ -6,6 +6,7 @@ extends Node2D
 @export var speed_scale = 1.0
 
 var _speed_scale = 1.0
+var _swing_up = false
 
 func stand():
     #await animation_player.animation_finished
@@ -15,6 +16,10 @@ func stand():
 func walk():
     animation_player.play("walk")
     _speed_scale = 6.0
+
+func swing():
+    animation_player.play("swing_up" if _swing_up else "swing_down")
+    _swing_up = !_swing_up
 
 func reset_speed_scale():
     speed_scale = 1.0
