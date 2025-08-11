@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="CharacterConfig" load_steps=8 format=3 uid="uid://fgagrkai80mk"]
+
+[ext_resource type="Script" uid="uid://bedyejdsvyux6" path="res://character_config.gd" id="1_p7d42"]
+[ext_resource type="Script" uid="uid://oedsddb184wt" path="res://item.gd" id="1_wcrb0"]
+[ext_resource type="Resource" uid="uid://bgjej82kxtic3" path="res://items/fist.tres" id="2_s8m00"]
+[ext_resource type="Script" uid="uid://bergs16kyq55l" path="res://inventory.gd" id="3_tscml"]
+[ext_resource type="Script" uid="uid://brhyw2hs6qpeh" path="res://stats.gd" id="5_ymyix"]
+
+[sub_resource type="Resource" id="Resource_6fhkq"]
+script = ExtResource("3_tscml")
+capacity = 2
+items = Array[ExtResource("1_wcrb0")]([ExtResource("2_s8m00")])
+metadata/_custom_type_script = "uid://bergs16kyq55l"
+
+[sub_resource type="Resource" id="Resource_gafta"]
+script = ExtResource("5_ymyix")
+max_hp = 20
+hp = 20
+max_velocity = Vector2(100, 200)
+metadata/_custom_type_script = "uid://brhyw2hs6qpeh"
+
+[resource]
+script = ExtResource("1_p7d42")
+id = "player"
+group = 0
+stats = SubResource("Resource_gafta")
+inventory = SubResource("Resource_6fhkq")
+metadata/_custom_type_script = "uid://bedyejdsvyux6"

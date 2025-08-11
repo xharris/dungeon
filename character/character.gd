@@ -1,12 +1,18 @@
 class_name Character
 extends CharacterBody2D
 
-var logs = Logger.new()
+static var scene = preload("res://character/character.tscn")
 
-class Group:
-    static var Ally = "ally"
-    static var Enemy = "enemy"
-    static var Player = "player"
+static func create(config:CharacterConfig) -> Character:
+    var me = scene.instantiate()
+    me.id = config.id
+    # configure
+    me.stats = config.stats.duplicate()
+    me.inventory = config.inventory.duplicate()
+    me.stats.id = me.id
+    me.inventory.id = me.id
+    me.add_to_group(config.group_name())
+    return me
 
 class State:
     var idle = false
@@ -20,27 +26,27 @@ signal move_to_finished
 @onready var held_item_l: Node2D = %HeldItemL
 @onready var held_item_r: Node2D = %HeldItemR
 @onready var attack_start_timer: Timer = $AttackStart
-@onready var attack_landed_timer: Timer = $AttackLanded
 
-@export var stats:Stats
-@export var id = "unknown":
-    set(v):
-        id = v
-        stats.id = id
-        inventory.id = id
-        logs.set_prefix(id)
-@export var inventory:Inventory = Inventory.new()
+var logs = Logger.new("character")# , Logger.Level.DEBUG)
+var stats:Stats
+var inventory:Inventory
 
+var id = "unknown"
 var state = State.new()
 var target_position: Vector2
 var target_distance: Vector2 = Vector2(20, 20)
 
 func _ready() -> void:
+    name = "char-%s-%d" % [id, get_instance_id()]
+    logs.set_id(id)
+    logs.info("create %s at %.2v" % [id, global_position])
     inventory.item_added.connect(_on_item_added)
     inventory.item_removed.connect(_on_item_removed)
-
-func _enter_tree() -> void:
-    logs.info("spawned at %.2v" % global_position)
+    
+    # trigger signal for default items
+    for item in inventory.items:
+        logs.debug("add default item: %s" % item.id)
+        _on_item_added(item)
 
 func _on_item_added(item: Item):
     # trigger item visitors
@@ -63,56 +69,94 @@ func _on_item_added(item: Item):
         held_item_node.add_child(item_node)
 
 func _on_item_removed(item: Item, left: int):
-    if inventory.count(item.item_id) == 0:
+    if inventory.count(item.id) == 0:
         # dont show held in hand anymore
         for held_item in held_item_l.get_children() as Array[Item]:
-            if held_item.item_id == item.item_id:
+            if held_item.id == item.id:
                 pass
 
 func _on_attack_start_timeout() -> void:
     # iter items
-    for item in inventory.items:
+    for item in inventory.items:        
         var ctx = ItemVisitor.Context.new()
         ctx.item = item
         ctx.source = self
-        ctx.target = self
         
         if item.attack_animation == Item.AttackAnimation.Swing:
-            logs.info("swing %s" % item.item_id)
+            logs.debug("swing %s" % item.id)
             ctx.trigger_item = item
             # actual attack landing timer
             var attack_landed_timer = Timer.new()
             attack_landed_timer.one_shot = true
             attack_landed_timer.wait_time = attack_start_timer.wait_time / 2
-            attack_landed_timer.timeout.connect(_on_attack_landed_timeout.bind(ctx))
+            attack_landed_timer.timeout.connect(_on_attack_landed_timeout.bind(ctx), CONNECT_ONE_SHOT)
+            attack_landed_timer.autostart = true
             add_child(attack_landed_timer)
-            attack_landed_timer.start()
             # start animation
             sprite.swing()
 
 func _on_attack_landed_timeout(ctx: ItemVisitor.Context) -> void:
     # calculate damage
     var damage = 0
-    for item in inventory.items:
+    for item in inventory.items:        
         for v in item.visitors: 
+            # get possible targets
+            var possible_targets = v.on_get_possible_targets()
+            var targets = []
+            for t in possible_targets:
+                var groups:Array[String]
+                
+                if t is int:
+                    var instance = instance_from_id(t)
+                    if instance is Character:
+                        targets.append(instance)
+                elif t == ItemVisitor.TARGET.SELF:
+                    targets.append(self)
+                elif t == ItemVisitor.TARGET.ALLY:
+                    if is_in_group(ItemVisitor.TARGET.ENEMY):
+                        groups.append("enemy")
+                    elif is_in_group("player"):
+                        groups.append("ally")
+                    elif is_in_group(ItemVisitor.TARGET.ALLY):
+                        groups.append("player")
+                elif t == ItemVisitor.TARGET.ENEMY:
+                    if is_in_group(ItemVisitor.TARGET.ENEMY):
+                        groups.append("ally")
+                        groups.append("player")
+                    elif is_in_group("player") or is_in_group(ItemVisitor.TARGET.ALLY):
+                        groups.append("enemy")
+                
+                for group in groups:
+                    targets.append_array(get_tree().get_nodes_in_group(group))
+                
             v.ctx = ctx
             v.ctx.item = item
-            damage += v.on_apply_damage()
-    # apply damage
-    if ctx.target:
-        ctx.target.stats.take_damage(damage)
+            v.ctx.target = targets.pick_random()
+            if v.ctx.target:
+                damage += v.on_apply_damage()
+                
+            # apply damage
+            if ctx.target:
+                ctx.target.stats.take_damage(damage)
+            else:
+                logs.warn("no targets found: %s" % ctx.stringify())
         
 func held_items() -> Array[Item]:
     return []
     
 func move_to_x(x: int):
-    logs.debug("move to x=%d" % x)
+    logs.info("move to x=%d" % x)
     target_position.x = x
     state.move_to_target = true
 
 func enable_combat():
+    if state.combat:
+        return
+    logs.info("enable combat")
+    sprite.stand()
     await sprite.swing_up()
     state.combat = true
+    attack_start_timer.start()
 
 func _physics_process(delta: float) -> void:
     # gravity
@@ -144,9 +188,6 @@ func _physics_process(delta: float) -> void:
     if not state.combat and not attack_start_timer.is_stopped():
         logs.debug("stop combat")
         attack_start_timer.stop()
-    if state.combat and attack_start_timer.is_stopped():
-        logs.debug("start combat")
-        attack_start_timer.start()
 
     velocity = velocity.clamp(-stats.max_velocity, stats.max_velocity)
 

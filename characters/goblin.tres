@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="CharacterConfig" load_steps=8 format=3 uid="uid://ctlbypk5vki7g"]
+
+[ext_resource type="Script" uid="uid://oedsddb184wt" path="res://item.gd" id="1_45aqr"]
+[ext_resource type="Script" uid="uid://bedyejdsvyux6" path="res://character_config.gd" id="1_ryqsm"]
+[ext_resource type="Script" uid="uid://brhyw2hs6qpeh" path="res://stats.gd" id="2_a2yxw"]
+[ext_resource type="Resource" uid="uid://bgjej82kxtic3" path="res://items/fist.tres" id="2_gemn3"]
+[ext_resource type="Script" uid="uid://bergs16kyq55l" path="res://inventory.gd" id="3_a2g3e"]
+
+[sub_resource type="Resource" id="Resource_r4smr"]
+script = ExtResource("3_a2g3e")
+capacity = 2
+items = Array[ExtResource("1_45aqr")]([ExtResource("2_gemn3")])
+metadata/_custom_type_script = "uid://bergs16kyq55l"
+
+[sub_resource type="Resource" id="Resource_rgy2e"]
+script = ExtResource("2_a2yxw")
+max_hp = 10
+hp = 10
+max_velocity = Vector2(100, 200)
+metadata/_custom_type_script = "uid://brhyw2hs6qpeh"
+
+[resource]
+script = ExtResource("1_ryqsm")
+id = "goblin"
+group = 2
+stats = SubResource("Resource_rgy2e")
+inventory = SubResource("Resource_r4smr")
+metadata/_custom_type_script = "uid://bedyejdsvyux6"

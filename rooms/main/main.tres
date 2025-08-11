@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="RoomConfig" load_steps=5 format=3 uid="uid://bs5nyqrnrwjm7"]
+
+[ext_resource type="Script" uid="uid://bedyejdsvyux6" path="res://character_config.gd" id="1_xufuo"]
+[ext_resource type="Resource" uid="uid://fgagrkai80mk" path="res://characters/player.tres" id="2_o04ol"]
+[ext_resource type="Script" uid="uid://df011ese0wh1b" path="res://room_config.gd" id="2_qbqab"]
+[ext_resource type="PackedScene" uid="uid://csd34w7fjq0wn" path="res://rooms/main/main.tscn" id="2_t0qx7"]
+
+[resource]
+script = ExtResource("2_qbqab")
+id = "main"
+characters = Array[ExtResource("1_xufuo")]([ExtResource("2_o04ol")])
+scene = ExtResource("2_t0qx7")
+metadata/_custom_type_script = "uid://df011ese0wh1b"

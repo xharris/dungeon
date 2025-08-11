@@ -1,12 +1,17 @@
-[gd_resource type="Resource" script_class="Item" load_steps=3 format=3 uid="uid://bgjej82kxtic3"]
+[gd_resource type="Resource" script_class="Item" load_steps=5 format=3 uid="uid://bgjej82kxtic3"]
 
 [ext_resource type="Script" uid="uid://oedsddb184wt" path="res://item.gd" id="1_i1pd1"]
 [ext_resource type="Script" uid="uid://kph2nlb6g2pw" path="res://item_visitor.gd" id="2_iwhng"]
+[ext_resource type="Script" uid="uid://4k6i60hx4dfu" path="res://items/_visitors/basic_weapon.gd" id="3_iwhng"]
+
+[sub_resource type="Resource" id="Resource_qqiy1"]
+script = ExtResource("3_iwhng")
+metadata/_custom_type_script = "uid://4k6i60hx4dfu"
 
 [resource]
 script = ExtResource("1_i1pd1")
-visitors = Array[ExtResource("2_iwhng")]([])
-item_id = "fist"
+visitors = Array[ExtResource("2_iwhng")]([SubResource("Resource_qqiy1")])
+id = "fist"
 max_stack = 1
 hide = true
 disable_unequip = true

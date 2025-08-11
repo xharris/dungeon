@@ -1,8 +1,10 @@
 extends Resource
 class_name Logger
 
+enum Level {NONE, ERROR, WARN, INFO, DEBUG}
 static var max_prefix_length = 0
 
+@export var _level:Level = Level.INFO
 @export var _prefix:String = "":
     set(v):
         v = v if v != null else ""
@@ -13,12 +15,14 @@ static var max_prefix_length = 0
         v = v if v != null else ""
         _id = v.strip_edges()
         _update_full_prefix()
+@export var ignore_repeats = false
 
 var _full_prefix:String = ""
 var _prev_msg:String
 
-func _init(id:String = "") -> void:
+func _init(id:String = "", level:Level = Level.INFO) -> void:
     _id = id
+    _level = level
 
 func _update_full_prefix():
     var parts:Array[String] = []
@@ -29,6 +33,10 @@ func _update_full_prefix():
     _full_prefix = ".".join(parts)
     if _full_prefix.length() > max_prefix_length:
         max_prefix_length = _full_prefix.length()
+
+func set_level(level:Level) -> Logger:
+    _level = level
+    return self
 
 func set_prefix(prefix:String) -> Logger:
     _prefix = prefix
@@ -45,18 +53,21 @@ func _print(color:Color, level:String, msg:String) -> bool:
         _full_prefix, " ".repeat(pad),
         msg
     ]
-    if formatted == _prev_msg:
+    if formatted == _prev_msg and ignore_repeats:
         return false # avoid printing same message twice
     _prev_msg = formatted
     print_rich(formatted)
     return true
 
 func info(msg:String):
+    if _level < Level.INFO: return
     _print(Color.SKY_BLUE, "INFO", msg)
     
 func warn(msg:String):
+    if _level < Level.WARN: return
     if _print(Color.YELLOW, "WARN", msg):
         push_warning(msg)	
 
 func debug(msg:String):
+    if _level < Level.DEBUG: return
     _print(Color.GREEN_YELLOW, "DEBUG", msg)

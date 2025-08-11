@@ -12,7 +12,7 @@ metadata/_custom_type_script = "uid://ktlp4l8q8xtg"
 [resource]
 script = ExtResource("1_es5ut")
 visitors = Array[ExtResource("3_mb3iu")]([SubResource("Resource_5k0ea")])
-item_id = "sword"
+id = "sword"
 max_stack = 1
 hide = false
 disable_unequip = false

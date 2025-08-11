@@ -9,7 +9,7 @@ signal item_activated(item: Item)
 # config
 
 @export var visitors:Array[ItemVisitor]
-@export var item_id: String = "unknown"
+@export var id: String = "unknown"
 ## max stack size in inventory[br]
 ## [code]0[/code] infinite
 @export var max_stack: int = 1
@@ -30,7 +30,7 @@ signal item_activated(item: Item)
 @export var attack_animation: AttackAnimation
 ## charges required to activate this item
 @export var max_charge: int = 0
-@export var base_damage: int = 4
+@export var base_damage: int = 0
 
 var charges: int = 0
 

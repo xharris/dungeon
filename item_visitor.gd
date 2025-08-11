@@ -1,11 +1,26 @@
 extends Resource
 class_name ItemVisitor
 
+static var logs = Logger.new("item_visitor")
+
+class TARGET:
+    static var SELF = "self"
+    static var ALLY = "ally"
+    static var ENEMY = "enemy"
+
 class Context:
     var source: Character
     var target: Character
     var item: Item
     var trigger_item: Item
+    
+    func stringify() -> String:
+        return JSON.stringify({
+            "source": source.id if source else null,
+            "target": target.id if target else null,
+            "item": item.id if item else null,
+            "trigger_item": item.id if item else null,
+        })
     
 var ctx:Context
 
@@ -21,7 +36,8 @@ func add_charge_all(items:Array[Item], amount:int = 1):
 func on_equip():
     pass
 
-func on_get_possible_targets() -> Array[String]:
+## Return Array["self"|"ally"|"enemy"|instance_id]
+func on_get_possible_targets() -> Array:
     return []
 
 func on_use() -> void:
