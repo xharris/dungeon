@@ -1,6 +1,6 @@
 [gd_scene load_steps=5 format=3 uid="uid://csd34w7fjq0wn"]
 
-[ext_resource type="Script" uid="uid://dvcwml0htnsdr" path="res://rooms/main/main.gd" id="1_qgb08"]
+[ext_resource type="Script" uid="uid://dvcwml0htnsdr" path="res://rooms/title/title.gd" id="1_qgb08"]
 [ext_resource type="FontFile" uid="uid://kgxmw38vk86v" path="res://assets/yoster-island/yoster.ttf" id="2_ax8aj"]
 
 [sub_resource type="Theme" id="Theme_58kfo"]

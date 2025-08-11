@@ -5,7 +5,8 @@ class Room:
     var node:Node2D
     var config:RoomConfig
 
-signal create_next_room(room:Room)
+signal room_created(room:Room)
+signal room_finished(room:Room)
 
 var logs = Logger.new("rooms")
 ## index of current room
@@ -72,4 +73,9 @@ func next_room(config:RoomConfig):
         room.characters.append(char)
     
     rooms.append(room)
-    create_next_room.emit(room)
+    room_created.emit(room)
+
+func finish_room():
+    var current = current_room()
+    if current:
+        room_finished.emit(current)
