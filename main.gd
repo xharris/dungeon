@@ -5,6 +5,7 @@ var logs = Logger.new("main")
 @onready var camera:GameCamera = $GameCamera
 @onready var environment = $Environment
 @onready var characters = $Characters
+@onready var rooms = $Rooms
 
 const main_config:RoomConfig = preload("res://rooms/title/title.tres")
 
@@ -27,7 +28,7 @@ func _on_create_next_room(room:Rooms.Room):
         characters.add_child(c)  
 
     # add room to tree
-    add_child(room.node)
+    rooms.add_child(room.node)
     
     # move camera to current Rooms
     camera.move_to(room.node.position + (Game.size / 2))

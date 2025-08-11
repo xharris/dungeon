@@ -48,4 +48,6 @@ shape = SubResource("RectangleShape2D_fc0e3")
 
 [node name="Characters" type="Node2D" parent="."]
 
+[node name="Rooms" type="Node2D" parent="."]
+
 [connection signal="tween_finished" from="GameCamera" to="." method="_on_game_camera_tween_finished"]

@@ -47,7 +47,7 @@ func set_id(id:String) -> Logger:
     return self
 
 func _print(color:Color, level:String, msg:String) -> bool:
-    var pad = max(0, max_prefix_length - _prefix.length())
+    var pad = max(0, max_prefix_length - _full_prefix.length())
     var formatted = "[color=%s][b]%s[/b][/color] \t%s %s %s" % [
         color.to_html(), level, 
         _full_prefix, " ".repeat(pad),

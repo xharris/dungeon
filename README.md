@@ -1,5 +1,11 @@
 # Dungeon
 
+## TODO
+
+- [ ] player health bar
+- [ ] damage text
+- [ ] player inventory
+
 ## Glossary
 
 - **attack** deal damage, `+1 charge` to all items
