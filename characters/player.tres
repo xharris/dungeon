@@ -22,7 +22,7 @@ metadata/_custom_type_script = "uid://brhyw2hs6qpeh"
 [resource]
 script = ExtResource("1_p7d42")
 id = "player"
-group = 0
+group = "player"
 stats = SubResource("Resource_gafta")
 inventory = SubResource("Resource_6fhkq")
 metadata/_custom_type_script = "uid://bedyejdsvyux6"

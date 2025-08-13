@@ -13,3 +13,5 @@ var logs = Logger.new("room")
 @export var scene:PackedScene
 ## Start combat as soon as all characters are arranged
 @export var enable_combat = false
+## Show a 'continue' button when: combat is over
+@export var enable_continue = true

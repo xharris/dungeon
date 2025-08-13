@@ -11,4 +11,5 @@ id = "title"
 characters = Array[ExtResource("1_pe4vu")]([ExtResource("2_5sqdj")])
 scene = ExtResource("3_l5x2m")
 enable_combat = false
+enable_continue = true
 metadata/_custom_type_script = "uid://df011ese0wh1b"

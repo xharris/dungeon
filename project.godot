@@ -25,6 +25,9 @@ config/icon="res://icon.svg"
 Game="*res://game.gd"
 Rooms="*res://rooms.gd"
 Characters="*res://characters.gd"
+MUI="*res://mui.gd"
+Groups="*res://groups.gd"
+Scenes="*res://scenes.gd"
 
 [display]
 

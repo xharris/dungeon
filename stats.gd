@@ -4,6 +4,7 @@ class_name Stats
 var logs = Logger.new("stats")
 
 signal death
+signal damage_taken(amount:int)
 
 var id:String = "":
     set(v):
@@ -20,9 +21,16 @@ var id:String = "":
 func take_damage(v:int) -> Stats:
     logs.debug("take damage: %d" % v)
     hp -= v
+    damage_taken.emit(v)
+    if not is_alive():
+        logs.info("died")
+        death.emit()
     return self
     
 func heal(v:int) -> Stats:
     logs.debug("heal: %d" % v)
     hp += v
     return self
+
+func is_alive() -> bool:
+    return hp > 0

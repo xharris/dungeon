@@ -2,17 +2,28 @@ extends Node
 
 enum GroupSide {Left, Right}
 
+signal character_created(c:Character)
 signal arrange_finished
 
 var logs = Logger.new("characters")
+
+func get_all() -> Array[Character]:
+    return get_tree().get_nodes_in_group(Groups.CHARACTER_ANY) as Array[Character]
+
+func destroy_all():
+    for c in get_tree().get_nodes_in_group(Groups.CHARACTER_ANY) as Array[Character]:
+        c.destroy()
+
+func get_player() -> Character:
+    return get_tree().get_first_node_in_group(Groups.CHARACTER_PLAYER)
 
 # arrange all characters to their designated side of the screen
 func arrange_characters(room:Rooms.Room):
     var side_size = Game.size.x / 3
     var group_side = {
-        "player": GroupSide.Left,
-        "ally": GroupSide.Left,
-        "enemy": GroupSide.Right,
+        Groups.CHARACTER_PLAYER: GroupSide.Left,
+        Groups.CHARACTER_ALLY: GroupSide.Left,
+        Groups.CHARACTER_ENEMY: GroupSide.Right,
     }
     var group_count = {}
     var group_sep = {}
@@ -29,9 +40,9 @@ func arrange_characters(room:Rooms.Room):
         x += (side_size / 2)
         x += room.node.global_position.x
         for character in get_tree().get_nodes_in_group(group):
-            if character is Character:
+            # move character to idle position in room
+            if character is Character and character.move_to_x(x):
                 move_signals.append(character.move_to_finished)
-                character.move_to_x(x)
                 x += group_sep[group]
     
     await Async.all(move_signals)

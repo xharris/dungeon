@@ -1,0 +1,22 @@
+[gd_resource type="Theme" load_steps=3 format=3 uid="uid://dag7ei43suxu7"]
+
+[ext_resource type="FontFile" uid="uid://bcvo74258fl6b" path="res://assets/galiver-sans/GALSB.ttf" id="1_k1tnp"]
+
+[sub_resource type="FontVariation" id="FontVariation_fbruw"]
+base_font = ExtResource("1_k1tnp")
+
+[resource]
+default_font = SubResource("FontVariation_fbruw")
+default_font_size = 18
+/colors/font_outline_color = Color(0, 0, 0, 1)
+/colors/font_shadow_color = Color(0, 0, 0, 1)
+/constants/outline_size = 5
+/constants/shadow_offset_x = 3
+/constants/shadow_offset_y = 3
+/constants/shadow_outline_size = 5
+RichTextLabel/colors/font_outline_color = Color(0, 0, 0, 1)
+RichTextLabel/colors/font_shadow_color = Color(0, 0, 0, 1)
+RichTextLabel/constants/outline_size = 7
+RichTextLabel/constants/shadow_offset_x = 2
+RichTextLabel/constants/shadow_offset_y = 2
+RichTextLabel/constants/shadow_outline_size = 5

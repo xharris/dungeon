@@ -7,18 +7,21 @@ var logs = Logger.new("main")
 @onready var characters = $Characters
 @onready var rooms = $Rooms
 
-const main_config:RoomConfig = preload("res://rooms/title/title.tres")
-
 func _ready() -> void:
     Rooms.room_created.connect(_on_create_next_room)
     Rooms.room_finished.connect(_on_room_finished)
+    Game.over.connect(_on_game_over)
 
-    Rooms.next_room(main_config)
+    Game.start()
+
+func _on_game_over():
+    Game.reset()
+    Game.start()
 
 func _on_room_finished(room:Rooms.Room):
     # disable combat
-    for character in get_tree().get_nodes_in_group("character") as Array[Character]:
-        character.state.combat = false
+    for c in Characters.get_all():
+        c.disable_combat()
 
 func _on_create_next_room(room:Rooms.Room):
     environment.expand()

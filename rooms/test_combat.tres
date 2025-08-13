@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="RoomConfig" load_steps=4 format=3 uid="uid://os2ng15tmsvo"]
+[gd_resource type="Resource" script_class="RoomConfig" load_steps=4 format=3 uid="uid://bqieqo887m8kg"]
 
 [ext_resource type="Script" uid="uid://bedyejdsvyux6" path="res://character_config.gd" id="1_cuge4"]
 [ext_resource type="Resource" uid="uid://ctlbypk5vki7g" path="res://characters/goblin.tres" id="2_0u5l5"]
@@ -9,4 +9,5 @@ script = ExtResource("2_77lim")
 id = "test_combat"
 characters = Array[ExtResource("1_cuge4")]([ExtResource("2_0u5l5")])
 enable_combat = true
+enable_continue = true
 metadata/_custom_type_script = "uid://df011ese0wh1b"

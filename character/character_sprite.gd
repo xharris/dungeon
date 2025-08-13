@@ -9,7 +9,8 @@ var _speed_scale = 1.0
 var _swing_up = false
 
 func stand():
-    #await animation_player.animation_finished
+    animation_player.play("RESET")
+    animation_player.advance(0)
     animation_player.play("stand")
     _speed_scale = 1.0
 

@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=3 uid="uid://dsq24q8bbxyk3"]
+
+[ext_resource type="Texture2D" uid="uid://c0ktu3xoip7kb" path="res://assets/( D&K ) Items V.2.png" id="1_4egpw"]
+
+[node name="Stick" type="Node2D"]
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(0, -13)
+texture = ExtResource("1_4egpw")
+region_enabled = true
+region_rect = Rect2(69, 64, 7, 32)

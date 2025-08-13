@@ -17,7 +17,8 @@
 
 Each zone has a unique mini game theme.
 
-- **Forest** ?
+- **Forest** tutorial
+- **Town** lots of quests
 - **Medieval Times** quick time events
 
 ## Items (name `charges` effect)
