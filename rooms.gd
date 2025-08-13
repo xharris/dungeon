@@ -40,7 +40,7 @@ func _on_death(character:Character, room:Room):
         for c in current_characters():
             c.disable_combat()
             
-        Rooms.next_room(Scenes.ROOM_TEST_COMBAT)    
+        finish_room() # TODO remove
         
         for e in enemies:
             # TODO add looting UI to each `e.inventory`
@@ -97,7 +97,7 @@ func next_room(config:RoomConfig) -> Room:
     
     # add characters
     for c in config.characters:
-        var char = Character.create(c)
+        var char = Characters.create(c)
         # position depending on group
         match c.group:
             Groups.CHARACTER_PLAYER, Groups.CHARACTER_ALLY:

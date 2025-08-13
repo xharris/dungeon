@@ -1,17 +1,6 @@
 class_name Character
 extends CharacterBody2D
 
-static func create(config:CharacterConfig) -> Character:
-    var me = Scenes.CHARACTER.instantiate()
-    me.id = config.id
-    # configure
-    me.stats = config.stats.duplicate()
-    me.inventory = config.inventory.duplicate()
-    me.stats.id = me.id
-    me.inventory.id = me.id
-    me.add_to_group(config.group)
-    return me
-
 class State:
     var idle = false
     var move_to_target = false

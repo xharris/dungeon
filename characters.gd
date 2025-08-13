@@ -7,15 +7,29 @@ signal arrange_finished
 
 var logs = Logger.new("characters")
 
+func create(config:CharacterConfig) -> Character:
+    var me = Scenes.CHARACTER.instantiate()
+    me.id = config.id
+    # configure
+    me.stats = config.stats.duplicate()
+    me.inventory = config.inventory.duplicate()
+    me.stats.id = me.id
+    me.inventory.id = me.id
+    me.add_to_group(config.group)
+    character_created.emit(me)
+    return me
+    
 func get_all() -> Array[Character]:
-    return get_tree().get_nodes_in_group(Groups.CHARACTER_ANY) as Array[Character]
+    var out:Array[Character]
+    out.append_array(get_tree().get_nodes_in_group(Groups.CHARACTER_ANY))
+    return out
 
 func destroy_all():
     for c in get_tree().get_nodes_in_group(Groups.CHARACTER_ANY) as Array[Character]:
         c.destroy()
 
 func get_player() -> Character:
-    return get_tree().get_first_node_in_group(Groups.CHARACTER_PLAYER)
+    return get_tree().get_first_node_in_group(Groups.CHARACTER_PLAYER) as Character
 
 # arrange all characters to their designated side of the screen
 func arrange_characters(room:Rooms.Room):

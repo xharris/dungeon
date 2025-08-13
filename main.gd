@@ -7,6 +7,8 @@ var logs = Logger.new("main")
 @onready var characters = $Characters
 @onready var rooms = $Rooms
 
+var ROOM_TEST_COMBAT:RoomConfig = preload("res://rooms/test_combat.tres")
+
 func _ready() -> void:
     Rooms.room_created.connect(_on_create_next_room)
     Rooms.room_finished.connect(_on_room_finished)
@@ -14,7 +16,7 @@ func _ready() -> void:
 
     Game.start()
 
-func _on_game_over():
+func _on_game_over(_type:Game.GameOverType):
     Game.reset()
     Game.start()
 
@@ -22,6 +24,7 @@ func _on_room_finished(room:Rooms.Room):
     # disable combat
     for c in Characters.get_all():
         c.disable_combat()
+    Rooms.next_room(ROOM_TEST_COMBAT)
 
 func _on_create_next_room(room:Rooms.Room):
     environment.expand()
