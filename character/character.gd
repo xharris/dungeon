@@ -196,8 +196,8 @@ func disable_combat():
     attack_start_timer.stop()
 
 func destroy():
-    logs.info("destroyed")
-    get_parent().remove_child(self)
+    if Util.destroy(self):
+        logs.info("destroyed")
 
 func _physics_process(delta: float) -> void:
     # gravity

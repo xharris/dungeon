@@ -13,3 +13,6 @@ func move_to(v:Vector2):
     prop.set_ease(Tween.EaseType.EASE_IN_OUT)
     tween.finished.connect(tween_finished.emit)
     tween.play()
+
+func reset():
+    position = Game.size / 2

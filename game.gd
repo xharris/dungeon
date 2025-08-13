@@ -13,10 +13,9 @@ var size:Vector2:
 func _ready() -> void:
     Characters.character_created.connect(_on_character_created)
 
-# BUG not being called
 func _on_character_created(c:Character):
-    c.stats.death.connect(_on_character_death, CONNECT_ONE_SHOT)
-    
+    c.stats.death.connect(_on_character_death.bind(c), CONNECT_ONE_SHOT)
+
 func _on_character_death(c:Character):
     if c.is_in_group(Groups.CHARACTER_PLAYER):
         logs.info("game over: player death")

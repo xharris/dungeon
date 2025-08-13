@@ -18,7 +18,9 @@ func _ready() -> void:
 
 func _on_game_over(_type:Game.GameOverType):
     Game.reset()
+    camera.reset()
     Game.start()
+    environment.reset()
 
 func _on_room_finished(room:Rooms.Room):
     # disable combat

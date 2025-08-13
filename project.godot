@@ -28,6 +28,7 @@ Characters="*res://characters.gd"
 MUI="*res://mui.gd"
 Groups="*res://groups.gd"
 Scenes="*res://scenes.gd"
+Util="*res://util.gd"
 
 [display]
 

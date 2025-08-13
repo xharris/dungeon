@@ -15,12 +15,12 @@ class Context:
     var trigger_item: Item
     
     func stringify() -> String:
-        return JSON.stringify({
-            "source": source.id if source else null,
-            "target": target.id if target else null,
-            "item": item.id if item else null,
-            "trigger_item": item.id if item else null,
-        })
+        var data:Dictionary
+        if source: data.set("source", source.id)
+        if target: data.set("target", target.id)
+        if item: data.set("item", item.id)
+        if trigger_item: data.set("trigger_item", trigger_item.id)
+        return JSON.stringify(data)
     
 var ctx:Context
 

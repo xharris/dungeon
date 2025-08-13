@@ -16,7 +16,6 @@ func create(config:CharacterConfig) -> Character:
     me.stats.id = me.id
     me.inventory.id = me.id
     me.add_to_group(config.group)
-    character_created.emit(me)
     return me
     
 func get_all() -> Array[Character]:

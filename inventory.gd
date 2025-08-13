@@ -27,11 +27,12 @@ func count(item_id:String = "") -> int:
         return items.size()
     return items.filter(func(item:Item): return item.id == item_id).size()
 
-func remove_item(item_id:String, count:int = 1):
+## Remove [code]n[/code] instances of item [code]item_id[/code]
+func remove_item(item_id:String, n:int = 1):
     for i in items.size():
         if items[i].id == item_id:
             items.remove_at(i)
-            count -= 1
+            n -= 1
             item_removed.emit(items[i])
-        if count <= 0:
+        if n <= 0:
             return

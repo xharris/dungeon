@@ -51,12 +51,14 @@ func _on_death(character:Character, room:Room):
             pass
 
 func destroy_all():
+    logs.info("destroy all")
     for r in rooms:
         # remove node
-        r.node.get_parent().remove_child(r.node)
+        Util.destroy(r.node)
         # remove characters
         for c in r.characters:
             c.destroy()
+    rooms.clear()
     
 func current_room() -> Room:
     if rooms.size() > 0:

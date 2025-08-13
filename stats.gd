@@ -13,7 +13,7 @@ var id:String = "":
 @export var max_hp:int = 10:
     set(x):
         # scale up current hp
-        hp = (hp / max_hp) * x
+        hp = (1.0 * hp / max_hp) * x
         max_hp = x
 @export var hp: int = 10
 @export var max_velocity: Vector2 = Vector2(100, 200)

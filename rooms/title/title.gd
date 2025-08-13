@@ -7,10 +7,8 @@ var ROOM_TEST_COMBAT:RoomConfig = preload("res://rooms/test_combat.tres")
 func _ready() -> void:
     # move player onto screen
     var player = Characters.get_player()
-    if player:
-        player.move_to_x(200)
-    else:
-        logs.warn("player not found")
+    assert(player, "player not found")
+    player.move_to_x(200)
 
 ## play game
 func _on_button_pressed() -> void:
