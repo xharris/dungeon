@@ -3,7 +3,6 @@
 ## TODO
 
 - [ ] player health bar
-- [ ] damage text
 - [ ] player inventory
 
 ## Glossary
@@ -17,7 +16,7 @@
 
 Each zone has a unique mini game theme.
 
-- **Forest** tutorial
+- **Forest** get basic weapons, basic items, basic quests
 - **Town** lots of quests
 - **Medieval Times** quick time events
 

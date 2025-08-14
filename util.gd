@@ -2,6 +2,8 @@ extends Node
 
 ## Returns [code]false[/code] if object is already being destroyed
 func destroy(node:Node) -> bool:
+    if node == null:
+        return true
     var parent = node.get_parent()
     if not parent and node.is_queued_for_deletion():
         return false

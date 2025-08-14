@@ -1,4 +1,5 @@
 extends Node2D
+class_name GameEnvironment
 
 @onready var floor:Polygon2D = $Floor
 #var floors:Array[Polygon2D]

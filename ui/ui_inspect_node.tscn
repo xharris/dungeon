@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://dwtj0afn88aat"]
+
+[ext_resource type="Script" uid="uid://bo5owqrk3njvg" path="res://ui/ui_inspect_node.gd" id="1_l56yj"]
+
+[node name="UIInspectNode" type="Button" groups=["ui_inspect_node"]]
+visible = false
+script = ExtResource("1_l56yj")

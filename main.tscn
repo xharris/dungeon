@@ -1,8 +1,9 @@
-[gd_scene load_steps=8 format=3 uid="uid://dcfgo1ktqljvl"]
+[gd_scene load_steps=9 format=3 uid="uid://dcfgo1ktqljvl"]
 
-[ext_resource type="Script" uid="uid://de8rli5juvd1i" path="res://main.gd" id="1_7jktm"]
-[ext_resource type="Script" uid="uid://ci3duvo8atgnv" path="res://environment.gd" id="2_7jktm"]
-[ext_resource type="Script" uid="uid://c5btjrp1b4a53" path="res://game_camera.gd" id="2_ryrav"]
+[ext_resource type="Script" uid="uid://de8rli5juvd1i" path="res://main.gd" id="1_1bvp3"]
+[ext_resource type="Script" uid="uid://c5btjrp1b4a53" path="res://game_camera.gd" id="2_lquwl"]
+[ext_resource type="Script" uid="uid://ci3duvo8atgnv" path="res://game_environment.gd" id="3_7mycd"]
+[ext_resource type="PackedScene" uid="uid://1nnar7r34ufs" path="res://ui/game_ui.tscn" id="4_272bh"]
 
 [sub_resource type="Gradient" id="Gradient_80nbo"]
 offsets = PackedFloat32Array(0, 0.907407)
@@ -18,15 +19,15 @@ fill_from = Vector2(1, 1)
 size = Vector2(768, 20)
 
 [node name="Main" type="Node2D"]
-script = ExtResource("1_7jktm")
+script = ExtResource("1_1bvp3")
 
 [node name="GameCamera" type="Camera2D" parent="."]
 position = Vector2(240, 136)
 ignore_rotation = false
-script = ExtResource("2_ryrav")
+script = ExtResource("2_lquwl")
 
 [node name="Environment" type="Node2D" parent="."]
-script = ExtResource("2_7jktm")
+script = ExtResource("3_7mycd")
 
 [node name="Floor" type="Polygon2D" parent="Environment"]
 position = Vector2(0, 272)
@@ -49,5 +50,8 @@ shape = SubResource("RectangleShape2D_fc0e3")
 [node name="Characters" type="Node2D" parent="."]
 
 [node name="Rooms" type="Node2D" parent="."]
+
+[node name="GameUI" parent="." instance=ExtResource("4_272bh")]
+process_mode = 3
 
 [connection signal="tween_finished" from="GameCamera" to="." method="_on_game_camera_tween_finished"]

@@ -1,8 +1,9 @@
-[gd_scene load_steps=12 format=3 uid="uid://bvvb08ueug3f5"]
+[gd_scene load_steps=13 format=3 uid="uid://bvvb08ueug3f5"]
 
 [ext_resource type="Script" uid="uid://orgeq2888yy8" path="res://character/character.gd" id="1_adhfm"]
 [ext_resource type="Script" uid="uid://cx02tvmol43rj" path="res://character/character_sprite.gd" id="2_ugqs2"]
 [ext_resource type="Texture2D" uid="uid://x6yxorfmb7pj" path="res://assets/character_template.png" id="3_hx151"]
+[ext_resource type="PackedScene" uid="uid://dwtj0afn88aat" path="res://ui/ui_inspect_node.tscn" id="4_hx151"]
 
 [sub_resource type="Animation" id="Animation_vdpqx"]
 length = 0.001
@@ -415,5 +416,8 @@ rotation = 1.57079
 shape = SubResource("CapsuleShape2D_1l1n4")
 
 [node name="AttackStart" type="Timer" parent="."]
+
+[node name="UIInspectNode" parent="." node_paths=PackedStringArray("anchor_node") instance=ExtResource("4_hx151")]
+anchor_node = NodePath("../CharacterSprite")
 
 [connection signal="timeout" from="AttackStart" to="." method="_on_attack_start_timeout"]

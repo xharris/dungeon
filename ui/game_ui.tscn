@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://1nnar7r34ufs"]
+
+[ext_resource type="Script" uid="uid://cyt3i2nfrwgwc" path="res://ui/game_ui.gd" id="1_dcmab"]
+
+[node name="GameUI" type="Node2D"]
+script = ExtResource("1_dcmab")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
