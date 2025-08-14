@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://c5wy74vv08jdo"]
 
 [ext_resource type="Script" uid="uid://dr3iqt3eajhhi" path="res://action_text.gd" id="1_fbruw"]
-[ext_resource type="Theme" uid="uid://dag7ei43suxu7" path="res://themes/action_text.tres" id="2_fbruw"]
+[ext_resource type="Theme" uid="uid://dag7ei43suxu7" path="res://themes/base.tres" id="2_fbruw"]
 
 [node name="ActionText" type="Node2D"]
 scale = Vector2(1, 0.75)
