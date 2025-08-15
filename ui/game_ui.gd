@@ -9,11 +9,13 @@ enum State {
     PLAY,
     ## inspect characters
     PAUSE,
+    ## TODO LOOTING
 }
 
 signal state_popped(state:State)
 
 @onready var canvas_layer:CanvasLayer = $CanvasLayer
+#@onready var container:Container = $CanvasLayer/Container
 
 var initial_state:State
 var allowed_next_state = {
@@ -28,6 +30,8 @@ var _state:Array[State]
 var _layer:Array[UILayer]
 ## {UI.State: Node2D}
 var _state_node:Dictionary
+var _inspect_nodes:Array[UIInspectNode]
+var _inspect_index:int
 
 func _ready() -> void:
     logs.info("ready")
@@ -80,3 +84,49 @@ func pop_state() -> bool:
         logs.info("pop '%s'" % State.find_key(state))
         return true
     return false
+
+func enable_inspect() -> bool:
+    logs.info("enable inspect")
+    var layer = current_layer()
+    if not layer:
+        logs.warn("no current ui layer")
+        return false
+    layer.set_background_color(Color.BLACK) 
+    _inspect_index = -1
+    move_inspect_right()
+    return true
+
+func move_inspect(amount:int):
+    logs.info("move inspect: %d"%amount)
+    var layer = current_layer()
+    if not layer:
+        logs.warn("no current layer")
+        return
+    # get inspect nodes
+    _inspect_nodes.assign(get_tree().get_nodes_in_group(Groups.UI_INSPECT_NODE))
+    _inspect_nodes = _inspect_nodes.filter(func(n:UIInspectNode):
+        return n.is_visible_on_screen()    
+    )
+    if _inspect_nodes.size() == 0:
+        logs.warn("no inspect nodes found")
+        return
+    _inspect_nodes.sort_custom(func(a:UIInspectNode, b:UIInspectNode):
+        return a.global_position.x < b.global_position.x
+    )
+    logs.info("inspect nodes: %s" % [_inspect_nodes.map(func(n:UIInspectNode): 
+        return n.get_parent().name if n.get_parent() else n.name
+    )])
+    # change index
+    _inspect_index = wrapi(_inspect_index + amount, 0, _inspect_nodes.size())
+    var node = _inspect_nodes[_inspect_index]
+    if logs.error(node != null, "inspect node %d is somehow null" % _inspect_index):
+        return
+    layer.clear_top_row()
+    layer.clear_bottom_row()
+    node.select(layer)
+
+func move_inspect_right():
+    return move_inspect(1)
+    
+func move_inspect_left():
+    return move_inspect(-1)

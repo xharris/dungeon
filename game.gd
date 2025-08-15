@@ -54,6 +54,8 @@ func toggle_pause():
         pause()
 
 func pause() -> bool:
+    if _paused:
+        return true
     var ui_layer = _game_ui.push_state(GameUI.State.PAUSE)
     if not ui_layer:
         logs.warn("could not push pause state to game ui")
@@ -66,9 +68,12 @@ func pause() -> bool:
     get_tree().paused = true
     _paused = true
     logs.info("pause")
+    _game_ui.enable_inspect()
     return true
 
 func resume():
+    if not _paused:
+        return
     # pop ui state if still on pause screen
     var current = _game_ui.current_state()
     if current == GameUI.State.PAUSE:

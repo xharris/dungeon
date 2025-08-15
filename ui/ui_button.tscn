@@ -4,15 +4,16 @@
 [ext_resource type="Theme" uid="uid://dag7ei43suxu7" path="res://themes/base.tres" id="1_iqfff"]
 
 [node name="UIButton" type="Button"]
+offset_right = 56.0
+offset_bottom = 33.0
+mouse_filter = 2
 theme = ExtResource("1_iqfff")
-theme_override_colors/font_hover_color = Color(0, 0, 0, 1)
-theme_override_colors/font_color = Color(1, 1, 1, 1)
 text = "TEXT"
 flat = true
 icon_alignment = 1
 script = ExtResource("1_3tkkc")
 
-[node name="Shadow" type="ColorRect" parent="."]
+[node name="BGShadow" type="ColorRect" parent="."]
 z_index = -1
 layout_mode = 1
 anchors_preset = 15
@@ -21,6 +22,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 1
+color = Color(0, 0, 0, 0.431373)
 
 [node name="BG" type="ColorRect" parent="."]
 z_index = -1

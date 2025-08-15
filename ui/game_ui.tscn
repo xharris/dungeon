@@ -6,3 +6,4 @@
 script = ExtResource("1_dcmab")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
+layer = 2

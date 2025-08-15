@@ -71,3 +71,9 @@ func warn(msg:String):
 func debug(msg:String):
     if _level < Level.DEBUG: return
     _print(Color.GREEN_YELLOW, "DEBUG", msg)
+
+func error(cond:bool, msg:String) -> bool:
+    if _level < Level.ERROR and not cond:
+        _print(Color.RED, "ERROR", msg)
+    assert(cond, msg)
+    return not cond

@@ -1,9 +1,10 @@
-[gd_scene load_steps=13 format=3 uid="uid://bvvb08ueug3f5"]
+[gd_scene load_steps=14 format=3 uid="uid://bvvb08ueug3f5"]
 
 [ext_resource type="Script" uid="uid://orgeq2888yy8" path="res://character/character.gd" id="1_adhfm"]
 [ext_resource type="Script" uid="uid://cx02tvmol43rj" path="res://character/character_sprite.gd" id="2_ugqs2"]
 [ext_resource type="Texture2D" uid="uid://x6yxorfmb7pj" path="res://assets/character_template.png" id="3_hx151"]
 [ext_resource type="PackedScene" uid="uid://dwtj0afn88aat" path="res://ui/ui_inspect_node.tscn" id="4_hx151"]
+[ext_resource type="Script" uid="uid://xkofkxdheath" path="res://ui/ui_character_inspect.gd" id="5_0rvpn"]
 
 [sub_resource type="Animation" id="Animation_vdpqx"]
 length = 0.001
@@ -392,17 +393,19 @@ frame = 17
 [node name="ArmR" type="Node2D" parent="CharacterSprite"]
 rotation = 0.785398
 
-[node name="HandR" type="Sprite2D" parent="CharacterSprite/ArmR"]
+[node name="HandR" type="Node2D" parent="CharacterSprite/ArmR"]
+
+[node name="HeldItemR" type="Node2D" parent="CharacterSprite/ArmR/HandR"]
+unique_name_in_owner = true
+position = Vector2(0.2, 6.035)
+
+[node name="HandSprite" type="Sprite2D" parent="CharacterSprite/ArmR/HandR"]
 position = Vector2(0, -2)
 texture = ExtResource("3_hx151")
 offset = Vector2(0, 8)
 hframes = 6
 vframes = 4
 frame = 2
-
-[node name="HeldItemR" type="Node2D" parent="CharacterSprite/ArmR/HandR"]
-unique_name_in_owner = true
-position = Vector2(0.2, 8.035)
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="CharacterSprite"]
 deterministic = true
@@ -417,7 +420,9 @@ shape = SubResource("CapsuleShape2D_1l1n4")
 
 [node name="AttackStart" type="Timer" parent="."]
 
-[node name="UIInspectNode" parent="." node_paths=PackedStringArray("anchor_node") instance=ExtResource("4_hx151")]
+[node name="UIInspectNode" parent="." node_paths=PackedStringArray("character", "anchor_node") instance=ExtResource("4_hx151")]
+script = ExtResource("5_0rvpn")
+character = NodePath("..")
 anchor_node = NodePath("../CharacterSprite")
 
 [connection signal="timeout" from="AttackStart" to="." method="_on_attack_start_timeout"]

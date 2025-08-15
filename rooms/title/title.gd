@@ -14,10 +14,17 @@ func _ready() -> void:
     var ui_layer = game_ui.push_state(GameUI.State.TITLE)
     if ui_layer:
         ui_layer.set_background_color()
+        # play
         var play_button = Scenes.UI_BUTTON.instantiate() as UIButton
         play_button.text = "PLAY"
         play_button.pressed.connect(_on_play_button_pressed)
+        play_button.auto_focus = true
         ui_layer.add_to_bottom_row(play_button)
+        # settings
+        var settings_button = Scenes.UI_BUTTON.instantiate() as UIButton
+        settings_button.text = "SETTINGS"
+        #settings_button.pressed.connect(_)
+        ui_layer.add_to_bottom_row(settings_button)
 
 ## play game
 func _on_play_button_pressed() -> void:

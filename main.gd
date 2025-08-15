@@ -1,4 +1,5 @@
 extends Node2D
+class_name Main
 
 var logs = Logger.new("main")
 
@@ -10,6 +11,9 @@ var logs = Logger.new("main")
 
 var ROOM_TEST_COMBAT:RoomConfig = preload("res://rooms/test_combat.tres")
 var ZONE_FOREST:ZoneConfig = preload("res://zones/forest/forest.tres")
+
+func _init() -> void:
+    Util.main_node = self
 
 func _ready() -> void:    
     Rooms.room_created.connect(_on_create_next_room)
