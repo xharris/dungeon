@@ -11,6 +11,12 @@ func _ready() -> void:
     selected.connect(_on_selected)
 
 func _on_selected(layer:UILayer) -> bool:
+    # add hp
+    var hp_button = Scenes.UI_BUTTON.instantiate() as UIButton
+    hp_button.text = "HP: %d/%d" % [character.stats.hp, character.stats.max_hp]
+    hp_button.disabled = true
+    layer.add_to_bottom_row(hp_button)
+    # add items
     var items = character.inventory.items
     for item in items:
         var button = Scenes.UI_BUTTON.instantiate() as UIButton

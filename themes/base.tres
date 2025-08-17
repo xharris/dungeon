@@ -1,8 +1,7 @@
 [gd_resource type="Theme" load_steps=4 format=3 uid="uid://dag7ei43suxu7"]
 
+[ext_resource type="StyleBox" uid="uid://b3nq8vx0v1ai4" path="res://ui/ui_button_stylebox.tres" id="1_e5m4k"]
 [ext_resource type="FontFile" uid="uid://bcvo74258fl6b" path="res://assets/galiver-sans/GALSB.ttf" id="1_rkdcq"]
-
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_rkdcq"]
 
 [sub_resource type="FontVariation" id="FontVariation_fbruw"]
 base_font = ExtResource("1_rkdcq")
@@ -18,7 +17,8 @@ default_font_size = 18
 /constants/shadow_outline_size = 5
 BoxContainer/constants/separation = 6
 Button/colors/font_pressed_color = Color(0, 0, 0, 1)
-Button/styles/focus = SubResource("StyleBoxEmpty_rkdcq")
+Button/styles/disabled = ExtResource("1_e5m4k")
+Button/styles/focus = ExtResource("1_e5m4k")
 HBoxContainer/constants/separation = 6
 MarginContainer/constants/margin_bottom = 6
 MarginContainer/constants/margin_left = 6

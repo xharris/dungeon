@@ -18,7 +18,6 @@ func set_state(state:State, immediate = false):
         _tween.stop()
     _tween = create_tween()
     
-    print('state change', State.find_key(state))
     match state:
         State.VISIBLE:
             _tween.tween_property(self, "modulate", Color(1, 1, 1, 0.25), 0.2)

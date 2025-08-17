@@ -47,6 +47,13 @@ func chain_call(funcs:Array):
 class UI:
     static var logs = Logger.new("util.ui")#, Logger.Level.DEBUG)
     
+    static func is_valid_neighbor(c:Node) -> bool:
+        if c is Control and (c as Control).focus_mode == Control.FocusMode.FOCUS_NONE:
+            return false
+        if c is Button and (c as Button).disabled:
+            return false
+        return true
+    
     static func set_neighbor_horiz(left:Control, right:Control):
         if left == right:
             return

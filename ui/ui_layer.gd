@@ -68,6 +68,7 @@ func _update_focus():
     var inspect_controls = inspect_nodes.map(func(n:UIInspectNode):
         return n.control    
     ) as Array[Control]
+    inspect_controls = inspect_controls.filter(func(n): return Util.UI.is_valid_neighbor(n))
     all_ctrls.append_array(inspect_controls)
     var selected_inspect_node = _get_selected_inspect_node()
     
@@ -90,9 +91,7 @@ func _update_focus():
     # filter out non-controls, non-focusable
     for r in ctrl_rows.size():
         var row = ctrl_rows[r] as Array
-        row = row.filter(func(c):
-            return c is Control and (c as Control).focus_mode != FocusMode.FOCUS_NONE
-        )
+        #row = row.filter(func(c): Util.UI.is_valid_neighbor(c))
         ctrl_rows[r] = row
     var max_row_size = ctrl_rows.map(func(children:Array): return children.size()).max()
 

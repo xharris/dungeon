@@ -37,6 +37,7 @@ func _process(delta: float) -> void:
     begin_bulk_theme_override()
     add_theme_color_override("font_color", _theme_color.get("font_color"))
     add_theme_color_override("font_focus_color", _theme_color.get("font_color"))
+    add_theme_color_override("font_disabled_color", _theme_color.get("font_color"))
     end_bulk_theme_override()
 
 func set_state(state:State):

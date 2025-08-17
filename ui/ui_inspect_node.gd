@@ -55,7 +55,6 @@ func select() -> bool:
     if not anchor_node:
         logs.warn("no anchor node for %s" % get_path())
         return false
-    print("state changed??")
     # add title
     _layer.set_title(_title)
     _selected = true
