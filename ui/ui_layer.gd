@@ -37,9 +37,8 @@ func clear() -> UILayer:
     return self
 
 func set_title(text:String) -> Label:
-    var label = Label.new()
-    label.text = text
-    label.focus_mode = Control.FOCUS_NONE
+    logs.info("set title: %s" % text)
+    var label = UIElements.label(text)
     add_to_top_row(label)
     return label
 

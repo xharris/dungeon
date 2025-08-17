@@ -6,17 +6,6 @@ signal character_created(c:Character)
 signal arrange_finished
 
 var logs = Logger.new("characters")
-
-func create(config:CharacterConfig) -> Character:
-    var me = Scenes.CHARACTER.instantiate()
-    me.id = config.id
-    # configure
-    me.stats = config.stats.duplicate()
-    me.inventory = config.inventory.duplicate()
-    me.stats.id = me.id
-    me.inventory.id = me.id
-    me.add_to_group(config.group)
-    return me
     
 func get_all() -> Array[Character]:
     var out:Array[Character]

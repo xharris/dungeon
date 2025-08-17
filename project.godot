@@ -29,6 +29,7 @@ MUI="*res://mui.gd"
 Groups="*res://groups.gd"
 Scenes="*res://scenes.gd"
 Util="*res://util.gd"
+UIElements="*res://ui/ui_elements.gd"
 
 [display]
 

@@ -18,10 +18,25 @@ var logs = Logger.new("character")#, Logger.Level.DEBUG)
 var stats:Stats
 var inventory:Inventory
 
-var id = "unknown"
+var id:String = "unknown"
 var state = State.new()
 var target_position: Vector2
 var target_distance: Vector2 = Vector2(20, 20)
+
+func use_config(config:CharacterConfig):
+    id = config.id
+    # configure
+    stats = config.stats.duplicate()
+    inventory = config.inventory.duplicate()
+    stats.id = id
+    inventory.id = id
+    # position depending on group
+    match config.group:
+        Groups.CHARACTER_PLAYER, Groups.CHARACTER_ALLY:
+            global_position.x = 0
+        Groups.CHARACTER_ENEMY:
+            global_position.x = Game.size.x - 30
+    add_to_group(config.group)
 
 func _ready() -> void:
     name = "char-%s-%d" % [id, get_instance_id()]

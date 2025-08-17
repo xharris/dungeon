@@ -16,7 +16,7 @@ func _init() -> void:
     Util.main_node = self
 
 func _ready() -> void:    
-    Rooms.room_created.connect(_on_create_next_room)
+    Rooms.room_created.connect(_on_room_created)
     Rooms.room_finished.connect(_on_room_finished)
     Game.over.connect(_on_game_over)
     Game.start(game_ui)
@@ -33,8 +33,17 @@ func _on_room_finished(room:Rooms.Room):
         c.disable_combat()
     Rooms.next_room(ZONE_FOREST.rooms.pick_random())
 
-func _on_create_next_room(room:Rooms.Room):
+func _on_room_created(room:Rooms.Room):
     environment.expand()
+    
+    # add characters
+    for c in room.config.characters:
+        var char = Scenes.CHARACTER.instantiate() as Character
+        char.use_config(c)
+        char.global_position += room.node.global_position
+        char.position.y = Game.size.y / 2
+        char.stats.death.connect(_on_character_death.bind(char, room))
+        room.characters.append(char)
     # add characters to tree
     for c in room.characters:
         characters.add_child(c)  
@@ -44,3 +53,29 @@ func _on_create_next_room(room:Rooms.Room):
     camera.move_to(room.node.position + (Game.size / 2))
     
     await Characters.arrange_characters(room)
+
+func _on_character_death(character:Character, room:Rooms.Room):
+    var enemies = room.characters.filter(func(c:Character): 
+        return c.is_in_group(Groups.CHARACTER_ENEMY)
+    )
+    var enemies_alive = enemies.reduce(func(prev:int, curr:Character): 
+        return prev + (1 if curr.stats.is_alive() else 0)
+    , 0)
+    
+    if Game.is_over():
+        room.finish_room()
+    
+    elif enemies_alive == 0:
+        # combat is over
+        for c in room.current_characters():
+            c.disable_combat()
+            
+        room.finish_room() # TODO remove
+        
+        for e in enemies:
+            # TODO add looting UI to each `e.inventory`
+            pass
+        
+        if room.config.enable_continue:
+            # TODO show 'continue' button
+            pass

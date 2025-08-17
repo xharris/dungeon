@@ -163,7 +163,12 @@ func move_inspect(amount:int):
     layer.clear_top_row()
     layer.clear_bottom_row()
     node.select()
+    node.tree_exited.connect(_on_uiinspectnode_tree_exited)
     layer._update_focus()
+
+func _on_uiinspectnode_tree_exited():
+    if get_tree():
+        disable_inspect()
 
 func move_inspect_right():
     return move_inspect(1)

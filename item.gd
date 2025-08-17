@@ -40,3 +40,14 @@ func add_charge(x: int = 1):
         charges = 0
     else:
         charges += x
+
+func get_description() -> String:
+    var texts:Array[String] = [id]  
+    
+    var descriptions = visitors\
+        .map(func(v:ItemVisitor): return v.get_description())\
+        .filter(func(v:String): return v.length() > 0)\
+        .map(func(v:String): return "- %s" % v)
+    texts.append_array(descriptions)
+    
+    return "\n".join(texts)

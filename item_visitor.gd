@@ -33,6 +33,9 @@ func add_charge_all(items:Array[Item], amount:int = 1):
 
 # visitor callbacks
 
+func get_description() -> String:
+    return ""
+
 func on_equip():
     pass
 

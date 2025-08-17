@@ -43,18 +43,20 @@ func select() -> bool:
     logs.info("selected")
     outline.set_state(UIInspectOutline.State.SELECTED)
     if _selected:
+        _layer.clear_top_row()
+        _layer.set_title(_title)
         return true
     if not _layer:
         logs.warn("no layer set for %s" % get_path())
         return false
-    # deselect other inspect nodes
-    _layer.clear()
-    for node in get_tree().get_nodes_in_group(Groups.UI_INSPECT_NODE) as Array[UIInspectNode]:
-        if node != self:
-            node._deselect()
     if not anchor_node:
         logs.warn("no anchor node for %s" % get_path())
         return false
+    _layer.clear()
+    # deselect other inspect nodes
+    for node in get_tree().get_nodes_in_group(Groups.UI_INSPECT_NODE) as Array[UIInspectNode]:
+        if node != self:
+            node._deselect()
     # add title
     _layer.set_title(_title)
     _selected = true

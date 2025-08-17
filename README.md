@@ -2,8 +2,8 @@
 
 ## TODO
 
-- [ ] player health bar
-- [ ] player inventory
+- [ ] feat: loot after combat
+- [ ] clean: decouple stuff
 
 ## Glossary
 
@@ -25,5 +25,5 @@ Each zone has a unique mini game theme.
 - **Hand (default)** `0` (no effect)
 - **Sword** `0` `+2 charge`
 - **Spear** `3` attack twice
-- **Shuriken** `5` quick_attack `x++` times
 - **Wand**
+- **Dagger** `5` quick_attack `x++` times

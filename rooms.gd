@@ -7,7 +7,6 @@ class Room:
 
 signal room_created(room:Room)
 signal room_finished(room:Room)
-signal combat_finished(room:Room)
 
 var logs = Logger.new("rooms")
 ## index of current room
@@ -22,33 +21,6 @@ func _on_arrange_finished():
         # enable combat
         for c in current_characters():
             c.enable_combat()
-
-func _on_death(character:Character, room:Room):
-    var enemies = room.characters.filter(func(c:Character): 
-        return c.is_in_group(Groups.CHARACTER_ENEMY)
-    )
-    var enemies_alive = enemies.reduce(func(prev:int, curr:Character): 
-        return prev + (1 if curr.stats.is_alive() else 0)
-    , 0)
-    
-    if Game.is_over():
-        finish_room()
-    
-    elif enemies_alive == 0:
-        # combat is over
-        combat_finished.emit(self)
-        for c in current_characters():
-            c.disable_combat()
-            
-        finish_room() # TODO remove
-        
-        for e in enemies:
-            # TODO add looting UI to each `e.inventory`
-            pass
-        
-        if room.config.enable_continue:
-            # TODO show 'continue' button
-            pass
 
 func destroy_all():
     logs.info("destroy all")
@@ -97,22 +69,8 @@ func next_room(config:RoomConfig) -> Room:
         var scene = config.scene.instantiate()
         room.node.add_child(scene)
     
-    # add characters
-    for c in config.characters:
-        var char = Characters.create(c)
-        # position depending on group
-        match c.group:
-            Groups.CHARACTER_PLAYER, Groups.CHARACTER_ALLY:
-                char.global_position.x = 0
-            Groups.CHARACTER_ENEMY:
-                char.global_position.x = Game.size.x - 30
-        char.global_position += room.node.global_position
-        char.position.y = Game.size.y / 2
-        char.stats.death.connect(_on_death.bind(char, room))
-        room.characters.append(char)
-    
-    rooms.append(room)
     room_created.emit(room)
+    rooms.append(room)
     return room
 
 func finish_room():
