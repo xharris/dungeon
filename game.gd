@@ -61,9 +61,9 @@ func pause() -> bool:
         logs.warn("could not push pause state to game ui")
         return false
     # set up pause ui
-    var label = Label.new()
-    label.text = "PAUSED"
-    ui_layer.add_to_top_row(label)
+    var layer = _game_ui.current_layer()
+    if layer:
+        layer.set_title("PAUSED")
     # pause
     get_tree().paused = true
     _paused = true

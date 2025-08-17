@@ -32,6 +32,7 @@ var _layer:Array[UILayer]
 var _state_node:Dictionary
 var _inspect_nodes:Array[UIInspectNode]
 var _inspect_index:int
+var _inspect_enabled:bool = false
 
 func _ready() -> void:
     logs.info("ready")
@@ -88,33 +89,46 @@ func pop_state() -> bool:
 
 func enable_inspect() -> bool:
     logs.info("enable inspect")
+    if _inspect_enabled:
+        return true
     var layer = current_layer()
     if not layer:
         logs.warn("no current ui layer")
         return false
+    # enable
+    _inspect_enabled = true
     layer.set_background_color(Color.BLACK)
     _inspect_index = -1
     _get_inspect_nodes()
     for n in _inspect_nodes:
-        n.enable()
+        n.enable(layer)
+    layer._update_focus()
     move_inspect_right()
     return true
 
 func disable_inspect() -> bool:
     logs.info("disable inspect")
+    if not _inspect_enabled:
+        return true
     var layer = current_layer()
     if not layer:
         logs.warn("no current ui layer")
         return false
+    # disable
     layer.set_background_color(Color.BLACK)
     _inspect_index = -1
     # reset all inspect nodes
     _get_inspect_nodes()
     for n in _inspect_nodes:
         n.disable()
+    _inspect_enabled = false
     return true
 
 func _get_inspect_nodes():
+    if not _inspect_enabled:
+        _inspect_nodes = []
+        _inspect_index = -1
+        return
     _inspect_nodes.assign(get_tree().get_nodes_in_group(Groups.UI_INSPECT_NODE))
     _inspect_nodes = _inspect_nodes.filter(func(n:UIInspectNode):
         return n.is_visible_on_screen()    
@@ -131,12 +145,16 @@ func _get_inspect_nodes():
 
 func move_inspect(amount:int):
     logs.info("move inspect: %d"%amount)
+    if not _inspect_enabled:
+        return
     var layer = current_layer()
     if not layer:
         logs.warn("no current layer")
         return
     # get inspect nodes
     _get_inspect_nodes()
+    if _inspect_nodes.size() == 0:
+        return
     # change index
     _inspect_index = wrapi(_inspect_index + amount, 0, _inspect_nodes.size())
     var node = _inspect_nodes[_inspect_index]
@@ -144,7 +162,8 @@ func move_inspect(amount:int):
         return
     layer.clear_top_row()
     layer.clear_bottom_row()
-    node.select(layer)
+    node.select()
+    layer._update_focus()
 
 func move_inspect_right():
     return move_inspect(1)

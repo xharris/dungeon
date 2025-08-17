@@ -5,7 +5,7 @@ class_name UILayer
 @onready var bottom_row:HBoxContainer = %BottomRow
 @onready var background:Panel = %Background
 
-var logs = Logger.new("ui_layer")
+var logs = Logger.new("ui_layer") #, Logger.Level.DEBUG)
 
 ## normal visible background color is [code]Color.WHITE[/code]
 func set_background_color(color:Color = Color.TRANSPARENT):
@@ -30,18 +30,53 @@ func clear_top_row() -> UILayer:
 func clear_bottom_row() -> UILayer:
     Util.clear_children(bottom_row)
     return self
-    
-## Update focus relationships for all controls
-func _update_focus():
+
+func clear() -> UILayer:
+    clear_top_row()
+    clear_bottom_row()
+    return self
+
+func set_title(text:String) -> Label:
+    var label = Label.new()
+    label.text = text
+    label.focus_mode = Control.FOCUS_NONE
+    add_to_top_row(label)
+    return label
+
+func _get_inspect_nodes() -> Array[UIInspectNode]:
     var inspect_nodes:Array[UIInspectNode]
     inspect_nodes.assign(get_tree().get_nodes_in_group(Groups.UI_INSPECT_NODE))
     inspect_nodes = inspect_nodes.filter(func(n:UIInspectNode):
         return n.is_visible_on_screen()    
     )
+    return inspect_nodes
+
+func _get_selected_inspect_node() -> UIInspectNode:
+    var inspect_nodes = _get_inspect_nodes()
+    var idx = inspect_nodes.find_custom(func(n:UIInspectNode):
+        return n.is_selected()    
+    )
+    if idx >= 0:
+        return inspect_nodes[idx]
+    return null
+
+## Update focus relationships for all controls
+func _update_focus():
+    logs.info("update focus")
+    var inspect_nodes = _get_inspect_nodes()
     var inspect_controls = inspect_nodes.map(func(n:UIInspectNode):
         return n.control    
     ) as Array[Control]
-    var ctrl_rows:Array = [top_row, inspect_controls, bottom_row].map(func(r):
+    var selected_inspect_node = _get_selected_inspect_node()
+    
+    var rows = []
+    if selected_inspect_node != null:
+        # top and bottom should be connected to the selected inspect node
+        rows = [top_row, [selected_inspect_node.control], bottom_row]
+    else:
+        rows = [top_row, bottom_row]
+    
+    var ctrl_rows:Array = rows.map(func(r):
         match typeof(r):
             TYPE_OBJECT:
                 if r is Control:
@@ -50,36 +85,54 @@ func _update_focus():
                 return r
         return r
     )
+    # filter out non-controls, non-focusable
+    for r in ctrl_rows.size():
+        var row = ctrl_rows[r] as Array
+        row = row.filter(func(c):
+            return c is Control and (c as Control).focus_mode != FocusMode.FOCUS_NONE
+        )
+        ctrl_rows[r] = row
     var max_row_size = ctrl_rows.map(func(children:Array): return children.size()).max()
-    
-    var no_auto_focus = true
-    var first_ctrl:Control
+
+    var all_ctrls:Array[Control]
     for c in max_row_size:
-        var i = 0
         for r in ctrl_rows.size():
             var row = ctrl_rows[r] as Array[Control]
-            if c < row.size() - 1:
+            logs.debug("row %d %s" % [r, row])
+            if c < row.size():
                 var ctrl:Control = row[c]
-                if not first_ctrl and ctrl.focus_mode != FocusMode.FOCUS_NONE:
-                    first_ctrl = ctrl          
                 # neighbor left/right
-                ctrl.focus_neighbor_left = row[wrapi(c - 1, 0, row.size())].get_path()
-                ctrl.focus_neighbor_right = row[wrapi(c + 1, 0, row.size())].get_path()
+                Util.UI.set_neighbor_horiz(ctrl, row[wrapi(c - 1, 0, row.size())])
+                Util.UI.set_neighbor_horiz(ctrl, row[wrapi(c + 1, 0, row.size())])
                 # neighbor top
-                var row_up = ctrl_rows[wrapi(r - 1, 0, ctrl_rows.size())] as Array[Control]
-                if row_up.size():
-                    var ctrl_up = row_up[wrapi(c, 0, row_up.size())].get_path()
-                    logs.debug("connect up %s to %s" % [ctrl, ctrl_up])
-                    ctrl.focus_neighbor_top = ctrl_up
+                var row_up = ctrl_rows[clampi(r - 1, 0, ctrl_rows.size()-1)] as Array[Control]
+                if row_up.size() > 0:
+                    var ctrl_up = row_up[wrapi(c, 0, row_up.size())]
+                    Util.UI.set_neighbor_vert(ctrl_up, ctrl)
                 # neighbor bottom
-                var row_down = ctrl_rows[wrapi(r + 1, 0, ctrl_rows.size())] as Array[Control]
-                if row_down.size():
-                    var ctrl_down = row_down[wrapi(c, 0, row_down.size())].get_path()
-                    logs.debug("connect down %s to %s" % [ctrl, ctrl_down])
-                    ctrl.focus_neighbor_bottom = ctrl_down
-                if ctrl.has_focus():
-                    no_auto_focus = false
-        if no_auto_focus and first_ctrl:
-            logs.debug("auto focus %s" % first_ctrl)
-            first_ctrl.grab_focus()
+                var row_down = ctrl_rows[clampi(r + 1, 0, ctrl_rows.size()-1)] as Array[Control]
+                if row_down.size() > 0:
+                    var ctrl_down = row_down[wrapi(c, 0, row_down.size())]
+                    Util.UI.set_neighbor_vert(ctrl, ctrl_down)
+                all_ctrls.append(ctrl)
+    
+    # focus first control found
+    var auto_focus = true
+    var first_ctrl:Control
+    for ctrl in all_ctrls:
+        if not first_ctrl:
+            first_ctrl = ctrl
+        if ctrl.has_focus():
+            auto_focus = false
+    
+    # connect inspect nodes horizontally
+    for n in inspect_controls.size():
+        Util.UI.set_neighbor_horiz(
+            inspect_controls[n],
+            inspect_controls[wrapi(n + 1, 0, inspect_controls.size())]
+        )    
+                
+    if auto_focus and first_ctrl:
+        logs.debug("auto focus %s" % first_ctrl)
+        first_ctrl.grab_focus()
     

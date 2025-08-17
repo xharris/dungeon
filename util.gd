@@ -1,5 +1,6 @@
 extends Node
 
+var logs = Logger.new("util")
 var main_node:Node2D
 
 ## Returns [code]false[/code] if object is already being destroyed
@@ -42,3 +43,20 @@ func chain_call(funcs:Array):
     for f in funcs:
         if f is Callable:
             await f.call()
+
+class UI:
+    static var logs = Logger.new("util.ui")#, Logger.Level.DEBUG)
+    
+    static func set_neighbor_horiz(left:Control, right:Control):
+        var right_path = right.get_path()
+        var left_path = left.get_path()
+        UI.logs.debug("connect %s" % {"left":left_path, "right":right_path})
+        left.focus_neighbor_right = right_path
+        right.focus_neighbor_left = left_path
+
+    static func set_neighbor_vert(top:Control, bottom:Control):
+        var top_path = top.get_path()
+        var bottom_path = bottom.get_path()
+        UI.logs.debug("connect %s" % {"top":top_path, "bottom":bottom_path})
+        top.focus_neighbor_bottom = bottom_path
+        bottom.focus_neighbor_top = top_path
