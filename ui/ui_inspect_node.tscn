@@ -1,17 +1,29 @@
-[gd_scene load_steps=2 format=3 uid="uid://dwtj0afn88aat"]
+[gd_scene load_steps=3 format=3 uid="uid://dwtj0afn88aat"]
 
 [ext_resource type="Script" uid="uid://bo5owqrk3njvg" path="res://ui/ui_inspect_node.gd" id="1_l56yj"]
+[ext_resource type="Script" uid="uid://b8eya62rdf0e5" path="res://ui/ui_inspect_outline.gd" id="2_xuxwk"]
 
 [node name="UIInspectNode" type="Node2D" groups=["ui_inspect_node"]]
-visible = false
 script = ExtResource("1_l56yj")
 
-[node name="AnchorNodeHolder" type="Node2D" parent="."]
-unique_name_in_owner = true
-z_index = 10
-z_as_relative = false
-
-[node name="CanvasLayer" type="CanvasLayer" parent="AnchorNodeHolder"]
+[node name="VisibleOnScreenNotifier2D" type="VisibleOnScreenNotifier2D" parent="."]
 unique_name_in_owner = true
 
-[node name="VisibleOnScreenNotifier2D" type="VisibleOnScreenNotifier2D" parent="AnchorNodeHolder"]
+[node name="UIInspectNodeControl" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+follow_viewport_enabled = true
+
+[node name="Outline" type="Node2D" parent="CanvasLayer"]
+unique_name_in_owner = true
+process_mode = 3
+script = ExtResource("2_xuxwk")
+
+[node name="RemoteTransform2D" type="RemoteTransform2D" parent="."]
+unique_name_in_owner = true
+update_rotation = false
+update_scale = false

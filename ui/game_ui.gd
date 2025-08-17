@@ -77,6 +77,7 @@ func push_state(state:State) -> UILayer:
 
 func pop_state() -> bool:
     if _state.size() > 0:
+        disable_inspect()
         var state = _state.pop_back() as State
         var ui_layer = _layer.pop_back() as UILayer
         Util.destroy(ui_layer)
@@ -91,18 +92,29 @@ func enable_inspect() -> bool:
     if not layer:
         logs.warn("no current ui layer")
         return false
-    layer.set_background_color(Color.BLACK) 
+    layer.set_background_color(Color.BLACK)
     _inspect_index = -1
+    _get_inspect_nodes()
+    for n in _inspect_nodes:
+        n.enable()
     move_inspect_right()
     return true
 
-func move_inspect(amount:int):
-    logs.info("move inspect: %d"%amount)
+func disable_inspect() -> bool:
+    logs.info("disable inspect")
     var layer = current_layer()
     if not layer:
-        logs.warn("no current layer")
-        return
-    # get inspect nodes
+        logs.warn("no current ui layer")
+        return false
+    layer.set_background_color(Color.BLACK)
+    _inspect_index = -1
+    # reset all inspect nodes
+    _get_inspect_nodes()
+    for n in _inspect_nodes:
+        n.disable()
+    return true
+
+func _get_inspect_nodes():
     _inspect_nodes.assign(get_tree().get_nodes_in_group(Groups.UI_INSPECT_NODE))
     _inspect_nodes = _inspect_nodes.filter(func(n:UIInspectNode):
         return n.is_visible_on_screen()    
@@ -116,6 +128,15 @@ func move_inspect(amount:int):
     logs.info("inspect nodes: %s" % [_inspect_nodes.map(func(n:UIInspectNode): 
         return n.get_parent().name if n.get_parent() else n.name
     )])
+
+func move_inspect(amount:int):
+    logs.info("move inspect: %d"%amount)
+    var layer = current_layer()
+    if not layer:
+        logs.warn("no current layer")
+        return
+    # get inspect nodes
+    _get_inspect_nodes()
     # change index
     _inspect_index = wrapi(_inspect_index + amount, 0, _inspect_nodes.size())
     var node = _inspect_nodes[_inspect_index]
