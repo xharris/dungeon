@@ -27,7 +27,10 @@ func _ready() -> void:
     remote_tansform.remote_path = remote_tansform.get_path_to(outline)
     
     control.focus_entered.connect(select)
-    control.focus_exited.connect(outline.set_state.bind(UIInspectOutline.State.VISIBLE))
+    control.focus_exited.connect(_on_focus_exited)
+
+func _on_focus_exited():
+    outline.set_state(UIInspectOutline.State.VISIBLE)
 
 func is_selected() -> bool:
     return _selected
@@ -38,9 +41,11 @@ func set_title(title:String):
 ## node is selected
 func select() -> bool:
     logs.info("selected")
+    outline.set_state(UIInspectOutline.State.SELECTED)
     if _selected:
         return true
     if not _layer:
+        logs.warn("no layer set for %s" % get_path())
         return false
     # deselect other inspect nodes
     _layer.clear()
@@ -50,7 +55,7 @@ func select() -> bool:
     if not anchor_node:
         logs.warn("no anchor node for %s" % get_path())
         return false
-    outline.set_state(UIInspectOutline.State.SELECTED)
+    print("state changed??")
     # add title
     _layer.set_title(_title)
     _selected = true

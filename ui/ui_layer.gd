@@ -63,10 +63,12 @@ func _get_selected_inspect_node() -> UIInspectNode:
 ## Update focus relationships for all controls
 func _update_focus():
     logs.info("update focus")
+    var all_ctrls:Array[Control]
     var inspect_nodes = _get_inspect_nodes()
     var inspect_controls = inspect_nodes.map(func(n:UIInspectNode):
         return n.control    
     ) as Array[Control]
+    all_ctrls.append_array(inspect_controls)
     var selected_inspect_node = _get_selected_inspect_node()
     
     var rows = []
@@ -94,7 +96,6 @@ func _update_focus():
         ctrl_rows[r] = row
     var max_row_size = ctrl_rows.map(func(children:Array): return children.size()).max()
 
-    var all_ctrls:Array[Control]
     for c in max_row_size:
         for r in ctrl_rows.size():
             var row = ctrl_rows[r] as Array[Control]
@@ -102,7 +103,7 @@ func _update_focus():
             if c < row.size():
                 var ctrl:Control = row[c]
                 # neighbor left/right
-                Util.UI.set_neighbor_horiz(ctrl, row[wrapi(c - 1, 0, row.size())])
+                Util.UI.set_neighbor_horiz(row[wrapi(c - 1, 0, row.size())], ctrl)
                 Util.UI.set_neighbor_horiz(ctrl, row[wrapi(c + 1, 0, row.size())])
                 # neighbor top
                 var row_up = ctrl_rows[clampi(r - 1, 0, ctrl_rows.size()-1)] as Array[Control]
@@ -114,7 +115,8 @@ func _update_focus():
                 if row_down.size() > 0:
                     var ctrl_down = row_down[wrapi(c, 0, row_down.size())]
                     Util.UI.set_neighbor_vert(ctrl, ctrl_down)
-                all_ctrls.append(ctrl)
+                if not ctrl in all_ctrls:
+                    all_ctrls.append(ctrl)
     
     # focus first control found
     var auto_focus = true

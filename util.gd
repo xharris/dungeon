@@ -48,6 +48,8 @@ class UI:
     static var logs = Logger.new("util.ui")#, Logger.Level.DEBUG)
     
     static func set_neighbor_horiz(left:Control, right:Control):
+        if left == right:
+            return
         var right_path = right.get_path()
         var left_path = left.get_path()
         UI.logs.debug("connect %s" % {"left":left_path, "right":right_path})
@@ -55,6 +57,8 @@ class UI:
         right.focus_neighbor_left = left_path
 
     static func set_neighbor_vert(top:Control, bottom:Control):
+        if top == bottom:
+            return
         var top_path = top.get_path()
         var bottom_path = bottom.get_path()
         UI.logs.debug("connect %s" % {"top":top_path, "bottom":bottom_path})
