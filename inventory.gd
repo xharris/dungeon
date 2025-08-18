@@ -12,6 +12,7 @@ var id:String = "":
         logs.set_prefix(id)
 @export var capacity:int = 2
 @export var items:Array[Item]
+@export var lootable:bool = false
 
 func can_add_item(item:Item):
     return count(item.id) < item.max_stack

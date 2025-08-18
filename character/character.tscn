@@ -345,15 +345,15 @@ _data = {
 }
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_1l1n4"]
-radius = 4.0
-height = 16.0
+radius = 8.0
+height = 64.0
 
 [node name="Character" type="CharacterBody2D" groups=["character"]]
 collision_layer = 2
 script = ExtResource("1_adhfm")
 
 [node name="CharacterSprite" type="Node2D" parent="."]
-scale = Vector2(2, 2)
+scale = Vector2(8, 8)
 script = ExtResource("2_ugqs2")
 
 [node name="ArmL" type="Node2D" parent="CharacterSprite"]
@@ -414,7 +414,7 @@ libraries = {
 }
 
 [node name="FeetHitbox" type="CollisionShape2D" parent="."]
-position = Vector2(0, 16)
+position = Vector2(0, 72)
 rotation = 1.57079
 shape = SubResource("CapsuleShape2D_1l1n4")
 

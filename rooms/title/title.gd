@@ -8,7 +8,7 @@ func _ready() -> void:
     # move player onto screen
     var player = Characters.get_player()
     assert(player, "player not found")
-    player.move_to_x(200)
+    player.move(Vector2(Game.size.x / 3, 0))
     
     var game_ui = Game.get_ui()
     var ui_layer = game_ui.push_state(GameUI.State.TITLE)

@@ -10,6 +10,7 @@
 script = ExtResource("3_tscml")
 capacity = 2
 items = Array[ExtResource("1_wcrb0")]([ExtResource("2_s8m00")])
+lootable = false
 metadata/_custom_type_script = "uid://bergs16kyq55l"
 
 [sub_resource type="Resource" id="Resource_gafta"]

@@ -4,8 +4,8 @@
 [ext_resource type="Theme" uid="uid://dag7ei43suxu7" path="res://themes/base.tres" id="1_iqfff"]
 
 [node name="UIButton" type="Button"]
-offset_right = 56.0
-offset_bottom = 33.0
+offset_right = 154.0
+offset_bottom = 45.0
 mouse_filter = 2
 theme = ExtResource("1_iqfff")
 text = "TEXT"

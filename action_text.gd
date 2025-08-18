@@ -1,9 +1,6 @@
 extends Node2D
 class_name ActionText
 
-static func create() -> ActionText:
-    return Scenes.ACTION_TEXT.instantiate() as ActionText
-
 @onready var _label = $CenterContainer/RichTextLabel
 
 @export var text:String = "":

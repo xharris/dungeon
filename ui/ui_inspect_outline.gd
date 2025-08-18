@@ -31,6 +31,6 @@ func set_state(state:State, immediate = false):
 func _process(delta: float) -> void:
     if _tween and _tween.is_running():
         queue_redraw()
-
+    
 func _draw():
     draw_circle(Vector2.ZERO, _rect.size.length(), Color.WHITE)

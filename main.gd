@@ -41,7 +41,12 @@ func _on_room_created(room:Rooms.Room):
         var char = Scenes.CHARACTER.instantiate() as Character
         char.use_config(c)
         char.global_position += room.node.global_position
-        char.position.y = Game.size.y / 2
+        match c.group:
+            Groups.CHARACTER_PLAYER:
+                char.global_position.x -= (Game.size.x / 2) + (Util.get_rect(char).size.x * 2)
+            Groups.CHARACTER_ENEMY:
+                char.global_position.x += (Game.size.x / 2) + (Util.get_rect(char).size.x * 2)
+        char.position.y = 0
         char.stats.death.connect(_on_character_death.bind(char, room))
         room.characters.append(char)
     # add characters to tree
@@ -50,12 +55,12 @@ func _on_room_created(room:Rooms.Room):
     # add room to tree
     rooms.add_child(room.node)
     # move camera to current room
-    camera.move_to(room.node.position + (Game.size / 2))
+    camera.move_to(room.node.position)
     
     await Characters.arrange_characters(room)
 
 func _on_character_death(character:Character, room:Rooms.Room):
-    var enemies = room.characters.filter(func(c:Character): 
+    var enemies:Array[Character] = room.characters.filter(func(c:Character): 
         return c.is_in_group(Groups.CHARACTER_ENEMY)
     )
     var enemies_alive = enemies.reduce(func(prev:int, curr:Character): 
@@ -67,12 +72,13 @@ func _on_character_death(character:Character, room:Rooms.Room):
     
     elif enemies_alive == 0:
         # combat is over
-        for c in room.current_characters():
+        for c in Characters.get_all():
             c.disable_combat()
             
-        room.finish_room() # TODO remove
+        # room.finish_room() # TODO remove
         
         for e in enemies:
+            
             # TODO add looting UI to each `e.inventory`
             pass
         

@@ -40,7 +40,7 @@ func arrange_characters(room:Rooms.Room):
         var side:GroupSide = group_side[group]
         var x = (0.0 if side == GroupSide.Left else side_size)
         x += (side_size / 2)
-        x += room.node.global_position.x
+        x += room.node.global_position.x - (Game.size.x / 2)
         for character in get_tree().get_nodes_in_group(group):
             # move character to idle position in room
             if character is Character and character.move_to_x(x):

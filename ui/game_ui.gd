@@ -10,6 +10,7 @@ enum State {
     ## inspect characters
     PAUSE,
     ## TODO LOOTING
+    LOOTING
 }
 
 signal state_popped(state:State)
@@ -22,6 +23,7 @@ var allowed_next_state = {
     State.TITLE: [State.PLAY],
     State.PLAY: [State.PAUSE],
     State.PAUSE: [],
+    State.LOOTING: [],
 }
 var cannot_exit:Array[State] = [State.TITLE, State.PLAY]
 

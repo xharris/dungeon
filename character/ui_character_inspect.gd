@@ -12,7 +12,7 @@ func _ready() -> void:
 
 func _on_selected(layer:UILayer) -> bool:
     # add hp
-    var hp_button = Scenes.UI_BUTTON.instantiate() as UIButton
+    var hp_button = UIElements.button()
     hp_button.text = "HP: %d/%d" % [character.stats.hp, character.stats.max_hp]
     hp_button.disabled = true
     layer.add_to_bottom_row(hp_button)

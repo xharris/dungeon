@@ -22,6 +22,7 @@ var id:String = "unknown"
 var state = State.new()
 var target_position: Vector2
 var target_distance: Vector2 = Vector2(20, 20)
+var _max_velocity: Vector2 = Vector2(400, 500)
 
 func use_config(config:CharacterConfig):
     id = config.id
@@ -31,11 +32,11 @@ func use_config(config:CharacterConfig):
     stats.id = id
     inventory.id = id
     # position depending on group
-    match config.group:
-        Groups.CHARACTER_PLAYER, Groups.CHARACTER_ALLY:
-            global_position.x = 0
-        Groups.CHARACTER_ENEMY:
-            global_position.x = Game.size.x - 30
+    #match config.group:
+        #Groups.CHARACTER_PLAYER, Groups.CHARACTER_ALLY:
+            #global_position.x = 0
+        #Groups.CHARACTER_ENEMY:
+            #global_position.x = Game.size.x - 30
     add_to_group(config.group)
 
 func _ready() -> void:
@@ -61,11 +62,11 @@ func _on_death():
     stop_moving()
 
 func _on_damage_taken(amount: int):
-    var text = ActionText.create()
+    var text = Scenes.ACTION_TEXT.instantiate()
     get_tree().root.add_child(text)
     text.global_position = global_position
     text.text = str(-amount)
-    text.velocity.y = -200
+    text.velocity.y = -700
     var tween = text.create_tween()
     # rise up, get red
     tween.parallel().tween_property(text, "velocity", Vector2.ZERO, 0.5)
@@ -186,6 +187,14 @@ func move_to_x(x: int) -> bool:
         return true
     return false
 
+func move(relative_pos: Vector2) -> bool:
+    if stats.is_alive():
+        logs.info("move %.0v + %.0v" % [global_position, relative_pos])
+        target_position = global_position + relative_pos
+        state.move_to_target = true
+        return true
+    return false
+    
 func stop_moving():
     if state.move_to_target:
         logs.debug("stop moving")
@@ -221,13 +230,14 @@ func _physics_process(delta: float) -> void:
 
     var norm_move_to_target = (target_position - global_position).normalized()
     var arrived = abs(norm_move_to_target.x) < 0.1
+    var max_velocity = stats.movespeed * _max_velocity
 
     # walking animation
     if state.move_to_target:
         if arrived:
             stop_moving()
         else:
-            velocity.x += delta * stats.max_velocity.x * sign(norm_move_to_target.x)
+            velocity.x += delta * max_velocity.x * sign(norm_move_to_target.x)
             sprite.walk()
             sprite.speed_scale = lerpf(1, 1.75, norm_move_to_target.x)
         # face left/right
@@ -241,7 +251,7 @@ func _physics_process(delta: float) -> void:
         logs.debug("stop combat")
         attack_start_timer.stop()
 
-    velocity = velocity.clamp(-stats.max_velocity, stats.max_velocity)
+    velocity = velocity.clamp(-max_velocity, max_velocity)
 
     # update state
     state.fall = not is_on_floor()

@@ -9,6 +9,7 @@ signal deselected
 @onready var canvas_layer:CanvasLayer = $CanvasLayer
 @onready var remote_tansform:RemoteTransform2D = %RemoteTransform2D
 @onready var outline:UIInspectOutline = %Outline
+@onready var ui_title:RichTextLabel = %UIInspectTitle
 
 @export var anchor_node:Node2D
 
@@ -24,19 +25,37 @@ var _layer:UILayer
 
 func _ready() -> void:
     add_to_group(Groups.UI_INSPECT_NODE)
-    remote_tansform.remote_path = remote_tansform.get_path_to(outline)
     
     control.focus_entered.connect(select)
     control.focus_exited.connect(_on_focus_exited)
+    visible_on_screen_notifier.screen_entered.connect(_on_screen_entered)
+    visible_on_screen_notifier.screen_exited.connect(_on_screen_exited)
+    
+    remote_tansform.remote_path = remote_tansform.get_path_to(outline)
+    
+    visible_on_screen_notifier.rect = get_rect()
+
+func _on_screen_entered():
+    _is_visible = true
+    
+func _on_screen_exited():
+    disable()
+    _is_visible = false
 
 func _on_focus_exited():
     outline.set_state(UIInspectOutline.State.VISIBLE)
+
+func _process(delta: float) -> void:
+    var rect = get_rect()
+    #ui_title.position.x = rect.size.x
+    ui_title.position.y = -rect.size.length()
 
 func is_selected() -> bool:
     return _selected
 
 func set_title(title:String):
     _title = title
+    ui_title.text = title
 
 ## node is selected
 func select() -> bool:
@@ -44,7 +63,6 @@ func select() -> bool:
     outline.set_state(UIInspectOutline.State.SELECTED)
     if _selected:
         _layer.clear_top_row()
-        _layer.set_title(_title)
         return true
     if not _layer:
         logs.warn("no layer set for %s" % get_path())
@@ -57,8 +75,6 @@ func select() -> bool:
     for node in get_tree().get_nodes_in_group(Groups.UI_INSPECT_NODE) as Array[UIInspectNode]:
         if node != self:
             node._deselect()
-    # add title
-    _layer.set_title(_title)
     _selected = true
     selected.emit(_layer)
     return true
@@ -87,10 +103,13 @@ func enable(layer:UILayer):
         # configure anchor node copy
         _anchor_node_copy = anchor_node.duplicate() as Node2D
         _anchor_node_copy.global_position = anchor_node.global_position
+        _anchor_node_copy.scale = anchor_node.scale
         _anchor_node_copy.visible = true
         _anchor_node_copy.z_as_relative = true
         _anchor_node_copy.z_index = 10
         canvas_layer.add_child(_anchor_node_copy)
+        
+        visible_on_screen_notifier.rect = get_rect()
     else:
         logs.warn("no anchor node set (%s)" % get_path())
 
@@ -110,11 +129,5 @@ func get_rect() -> Rect2:
     return Rect2(Vector2.ZERO, Vector2.ONE)
 
 func is_visible_on_screen() -> bool:
-    var rect = get_rect()
-    
-    # viewport coordinates
-    var screen_rect = rect
-    screen_rect.position = get_global_transform_with_canvas().get_origin()
-    
-    visible_on_screen_notifier.rect = rect
-    return get_viewport().get_visible_rect().intersects(screen_rect)
+    visible_on_screen_notifier.rect = get_rect()
+    return _is_visible

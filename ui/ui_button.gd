@@ -7,6 +7,7 @@ enum State {NONE, NORMAL, ELEVATED, PRESSED}
 @onready var shadow = $BGShadow
 
 @export var auto_focus = false
+@export var shadow_size = 10
 
 var logs = Logger.new("ui_button")
 var _state:State
@@ -62,7 +63,7 @@ func set_state(state:State):
             bg_color = Color.WHITE
             shadow_color = Color.BLACK
             shadow_color.a = 0.75
-            shadow_position = Vector2.ONE * 4
+            shadow_position = Vector2.ONE * shadow_size
             match state:
                 State.PRESSED:
                     var off = 0.2

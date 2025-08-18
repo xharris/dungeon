@@ -20,10 +20,10 @@ func clear_children(node:Node):
         node.remove_child(c)
 
 func get_rect(node:Node2D) -> Rect2:
-    var top_left:Vector2 = node.global_position
+    var top_left:Vector2 = Vector2.ZERO
     var size:Vector2 = Vector2.ZERO
     for n in node.find_children("*"):
-        var n_top_left = top_left
+        var n_top_left = Vector2.ZERO
         var n_size = Vector2.ZERO
         
         if n is Sprite2D:
@@ -31,12 +31,13 @@ func get_rect(node:Node2D) -> Rect2:
             n_top_left = rect.position
             n_size = rect.size
         
-        # TODO check math/logic
-        if n_size.x + n_top_left.x > size.x + top_left.x:
-            size.x = n_size.x
-        if n_size.y + n_top_left.y > size.y + top_left.y:
-            size.y = n_size.y
+        if n is Node2D:
+            n_top_left *= n.global_scale
+            n_size *= n.global_scale
+            
         top_left = top_left.min(n_top_left)
+        size = size.max(n_top_left + n_size)
+    
     return Rect2(top_left, size)
 
 func chain_call(funcs:Array):
