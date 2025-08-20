@@ -1,8 +1,13 @@
 # Dungeon
 
+## TIPS
+
+- Resource _init args must have a default value or it will cause silent error
+
 ## TODO
 
-- [ ] feat: loot after combat
+- [ ] refactor: make ui_layer a node
+- [ ] feat: looting after combat
 - [ ] clean: decouple stuff
 
 ## Glossary

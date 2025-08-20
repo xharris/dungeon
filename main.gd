@@ -7,31 +7,34 @@ var logs = Logger.new("main")
 @onready var environment:GameEnvironment = $Environment
 @onready var characters = $Characters
 @onready var rooms = $Rooms
-@onready var game_ui:GameUI = $GameUI
+@onready var pause_ui:UILayer = $PauseUI
+@onready var looting_ui = $LootingUI
 
 var ROOM_TEST_COMBAT:RoomConfig = preload("res://rooms/test_combat.tres")
-var ZONE_FOREST:ZoneConfig = preload("res://zones/forest/forest.tres")
+var STARTING_ZONE:ZoneConfig = preload("res://zones/forest/forest.tres")
 
 func _init() -> void:
+    #Logger.set_global_level(Logger.Level.DEBUG)
     Util.main_node = self
 
 func _ready() -> void:    
     Rooms.room_created.connect(_on_room_created)
     Rooms.room_finished.connect(_on_room_finished)
     Game.over.connect(_on_game_over)
-    Game.start(game_ui)
-
+    
+    Game.start()
+    
 func _on_game_over(_type:Game.GameOverType):
     Game.reset()
     camera.reset()
     environment.reset()
-    Game.start(game_ui)
+    Game.start()
 
 func _on_room_finished(room:Rooms.Room):
     # disable combat
     for c in Characters.get_all():
         c.disable_combat()
-    Rooms.next_room(ZONE_FOREST.rooms.pick_random())
+    Rooms.next_room(STARTING_ZONE.rooms.pick_random())
 
 func _on_room_created(room:Rooms.Room):
     environment.expand()
@@ -77,10 +80,20 @@ func _on_character_death(character:Character, room:Rooms.Room):
             
         # room.finish_room() # TODO remove
         
-        for e in enemies:
+        # show create looting ui
+        if logs.warn_if(looting_ui.set_state(UILayer.State.VISIBLE), "could not create looting ui"):
+            return
             
-            # TODO add looting UI to each `e.inventory`
-            pass
+        var first = false
+        for c in Characters.get_all():
+            if c.is_in_group(Groups.CHARACTER_PLAYER) or c.is_in_character_group(Groups.CHARACTER_ALLY):
+                c.inspect_node.set_state(UIInspectNode.State.HIDDEN)
+                continue
+            c.inspect_node.set_state(UIInspectNode.State.VISIBLE)
+            c.inventory.lootable = true
+            if not first:
+                first = true
+                c.inspect_node.control.grab_focus()
         
         if room.config.enable_continue:
             # TODO show 'continue' button

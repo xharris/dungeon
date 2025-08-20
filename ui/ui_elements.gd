@@ -14,5 +14,8 @@ func label(text:String = "") -> Label:
     e.focus_mode = Control.FOCUS_NONE
     return e
 
-func button() -> UIButton:
-    return Scenes.UI_BUTTON.instantiate() as UIButton
+func button(config:UIButtonConfig = null) -> UIButton:
+    var e = Scenes.UI_BUTTON.instantiate() as UIButton
+    if config:
+        e.config = config
+    return e

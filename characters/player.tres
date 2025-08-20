@@ -17,7 +17,7 @@ metadata/_custom_type_script = "uid://bergs16kyq55l"
 script = ExtResource("5_ymyix")
 max_hp = 20
 hp = 20
-max_velocity = Vector2(100, 200)
+movespeed = Vector2(1, 1)
 metadata/_custom_type_script = "uid://brhyw2hs6qpeh"
 
 [resource]

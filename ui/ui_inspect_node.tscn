@@ -10,22 +10,26 @@ script = ExtResource("1_l56yj")
 [node name="VisibleOnScreenNotifier2D" type="VisibleOnScreenNotifier2D" parent="."]
 unique_name_in_owner = true
 
-[node name="UIInspectNodeControl" type="Control" parent="."]
+[node name="Graphics" type="Node2D" parent="."]
+unique_name_in_owner = true
+
+[node name="UIInspectNodeControl" type="Control" parent="Graphics"]
 layout_mode = 3
 anchors_preset = 0
 offset_right = 40.0
 offset_bottom = 40.0
 focus_mode = 2
 
-[node name="CanvasLayer" type="CanvasLayer" parent="."]
+[node name="CanvasLayer" type="CanvasLayer" parent="Graphics"]
+unique_name_in_owner = true
 follow_viewport_enabled = true
 
-[node name="Outline" type="Node2D" parent="CanvasLayer"]
+[node name="Outline" type="Node2D" parent="Graphics/CanvasLayer"]
 unique_name_in_owner = true
 process_mode = 3
 script = ExtResource("2_xuxwk")
 
-[node name="Control" type="Control" parent="CanvasLayer/Outline"]
+[node name="Control" type="Control" parent="Graphics/CanvasLayer/Outline"]
 layout_mode = 3
 anchors_preset = 7
 anchor_left = 0.5
@@ -38,7 +42,7 @@ offset_right = 20.0
 grow_horizontal = 2
 grow_vertical = 0
 
-[node name="UIInspectTitle" type="RichTextLabel" parent="CanvasLayer/Outline/Control"]
+[node name="UIInspectTitle" type="RichTextLabel" parent="Graphics/CanvasLayer/Outline/Control"]
 unique_name_in_owner = true
 clip_contents = false
 layout_mode = 1
@@ -60,7 +64,7 @@ autowrap_mode = 0
 horizontal_alignment = 1
 vertical_alignment = 2
 
-[node name="RemoteTransform2D" type="RemoteTransform2D" parent="."]
+[node name="RemoteTransform2D" type="RemoteTransform2D" parent="Graphics"]
 unique_name_in_owner = true
 update_rotation = false
 update_scale = false

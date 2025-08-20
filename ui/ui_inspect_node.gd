@@ -1,27 +1,29 @@
 extends Node2D
 class_name UIInspectNode
 
+enum State {HIDDEN, VISIBLE, SELECTED}
+static var _last_selected_node:UIInspectNode
+
 signal selected(layer:UILayer)
 signal deselected
 
 @onready var visible_on_screen_notifier:VisibleOnScreenNotifier2D = %VisibleOnScreenNotifier2D
-@onready var control:Control = $UIInspectNodeControl
-@onready var canvas_layer:CanvasLayer = $CanvasLayer
+@onready var control:Control = $Graphics/UIInspectNodeControl
+@onready var canvas_layer:CanvasLayer = %CanvasLayer
 @onready var remote_tansform:RemoteTransform2D = %RemoteTransform2D
 @onready var outline:UIInspectOutline = %Outline
 @onready var ui_title:RichTextLabel = %UIInspectTitle
+@onready var graphics:Node2D = %Graphics
 
 @export var anchor_node:Node2D
 
-var logs = Logger.new("ui_inspect_node")
+var logs = Logger.new("ui_inspect_node")#, Logger.Level.DEBUG)
 var _title:String = "???"
-var _selected:bool
 var _is_visible:bool
-var _prev_parent:Node2D
-var _prev_visible:bool
+var _prev_visible:bool ## preserves anchor nodes visibility
 var _anchor_node_copy:Node2D
-var _enabled:bool = false
 var _layer:UILayer
+var _state:State
 
 func _ready() -> void:
     add_to_group(Groups.UI_INSPECT_NODE)
@@ -30,104 +32,135 @@ func _ready() -> void:
     control.focus_exited.connect(_on_focus_exited)
     visible_on_screen_notifier.screen_entered.connect(_on_screen_entered)
     visible_on_screen_notifier.screen_exited.connect(_on_screen_exited)
+    visibility_changed.connect(_on_visibility_changed)
     
     remote_tansform.remote_path = remote_tansform.get_path_to(outline)
-    
-    visible_on_screen_notifier.rect = get_rect()
+    set_state(State.HIDDEN)
+
+func _on_visibility_changed():
+    if visible:
+        set_state(State.HIDDEN)
 
 func _on_screen_entered():
     _is_visible = true
     
 func _on_screen_exited():
-    disable()
     _is_visible = false
 
 func _on_focus_exited():
     outline.set_state(UIInspectOutline.State.VISIBLE)
 
-func _process(delta: float) -> void:
-    var rect = get_rect()
-    #ui_title.position.x = rect.size.x
-    ui_title.position.y = -rect.size.length()
+func _clean_ui_layer() -> bool:
+    if not _layer:
+        logs.warn("no layer set for %s" % get_path())
+        return false
+    _layer.clear()
+    return true
+
+func set_state(state:State) -> bool:
+    logs.info("set state %s" % State.find_key(state))
+    
+    match state:
+        State.HIDDEN:
+            graphics.modulate = Color.TRANSPARENT
+            outline.set_state(UIInspectOutline.State.HIDDEN)
+            
+        State.VISIBLE:
+            graphics.modulate = Color.WHITE
+            outline.set_state(UIInspectOutline.State.VISIBLE)
+            match _state:
+                State.SELECTED:
+                    _clean_ui_layer()
+                    deselected.emit()
+                    
+        State.SELECTED:
+            if not _layer:
+                return false
+            # deselect other inspect nodes
+            for n in get_tree().get_nodes_in_group(Groups.UI_INSPECT_NODE):
+                if not n.deselect():
+                    return false
+            # enable visuals
+            graphics.modulate = Color.WHITE
+            outline.set_state(UIInspectOutline.State.SELECTED)
+            
+            selected.emit(_layer)
+            _last_selected_node = self
+                  
+    _state = state 
+    get_rect() 
+    _anchor_node_updated()
+    return true
 
 func is_selected() -> bool:
-    return _selected
+    return _state == State.SELECTED
 
 func set_title(title:String):
     _title = title
     ui_title.text = title
 
+func set_layer(layer:UILayer = null):
+    _layer = layer
+
 ## node is selected
 func select() -> bool:
-    logs.info("selected")
-    outline.set_state(UIInspectOutline.State.SELECTED)
-    if _selected:
-        _layer.clear_top_row()
-        return true
-    if not _layer:
-        logs.warn("no layer set for %s" % get_path())
-        return false
-    if not anchor_node:
-        logs.warn("no anchor node for %s" % get_path())
-        return false
-    _layer.clear()
-    # deselect other inspect nodes
-    for node in get_tree().get_nodes_in_group(Groups.UI_INSPECT_NODE) as Array[UIInspectNode]:
-        if node != self:
-            node._deselect()
-    _selected = true
-    selected.emit(_layer)
+    return set_state(State.SELECTED)
+
+func deselect() -> bool:
+    match _state:
+        State.SELECTED:
+            return set_state(State.VISIBLE)
     return true
 
-func _deselect():
-    if not _selected:
-        return
-    if not _layer:
-        return
-    outline.set_state(UIInspectOutline.State.VISIBLE)
-    _selected = false
-    deselected.emit()
+func is_enabled() -> bool:
+    return _state != State.HIDDEN
 
-func enable(layer:UILayer):
-    if _enabled:
+func _anchor_node_updated():
+    logs.debug("anchor node updated")
+    if not anchor_node:
+        logs.warn("no anchor node set")
         return
-    _enabled = true
-    _layer = layer
-    outline.set_state(UIInspectOutline.State.VISIBLE)
     # copy anchor to canvas to draw on top of background
-    if anchor_node:
-        outline.set_rect(get_rect())
-        # hide anchor node
-        _prev_visible = anchor_node.visible
-        anchor_node.visible = false
-        # configure anchor node copy
-        _anchor_node_copy = anchor_node.duplicate() as Node2D
-        _anchor_node_copy.global_position = anchor_node.global_position
-        _anchor_node_copy.scale = anchor_node.scale
-        _anchor_node_copy.visible = true
-        _anchor_node_copy.z_as_relative = true
-        _anchor_node_copy.z_index = 10
-        canvas_layer.add_child(_anchor_node_copy)
-        
-        visible_on_screen_notifier.rect = get_rect()
-    else:
-        logs.warn("no anchor node set (%s)" % get_path())
-
-func disable():
-    if not _enabled:
+    match _state:
+        State.HIDDEN:
+            logs.debug("remove anchor node copy")
+            anchor_node.visible = true
+            if _anchor_node_copy:
+                Util.destroy(_anchor_node_copy)
+        State.VISIBLE, State.SELECTED when not _anchor_node_copy:
+            logs.debug("copy anchor node")
+            # hide anchor node
+            _prev_visible = anchor_node.visible
+            anchor_node.visible = false
+            # configure anchor node copy
+            _anchor_node_copy = anchor_node.duplicate() as Node2D
+            _anchor_node_copy.global_position = anchor_node.global_position
+            _anchor_node_copy.scale = anchor_node.scale
+            _anchor_node_copy.visible = true
+            _anchor_node_copy.z_as_relative = true
+            _anchor_node_copy.z_index = 10
+            canvas_layer.add_child(_anchor_node_copy)
+    
+    if not outline:
+        logs.debug("outline is null (not loaded yet)")
         return
-    _enabled = false
-    _deselect()
-    outline.set_state(UIInspectOutline.State.HIDDEN)
-    if _anchor_node_copy:
-        Util.destroy(_anchor_node_copy)
-        anchor_node.visible = _prev_visible
+    if not canvas_layer:
+        logs.debug("canvas_layer is null (not loaded yet)")
+        return
+    outline.set_rect(get_rect())
+    visible_on_screen_notifier.rect = get_rect()
+
+func disable() -> bool:
+    return set_state(State.HIDDEN)
 
 func get_rect() -> Rect2:
+    var rect = Rect2(Vector2.ZERO, Vector2.ONE)
     if anchor_node:
-        return Util.get_rect(anchor_node)
-    return Rect2(Vector2.ZERO, Vector2.ONE)
+        rect = Util.get_rect(anchor_node) 
+    visible_on_screen_notifier.rect = rect
+    outline.set_rect(rect)
+    ui_title.position.y = -rect.size.length()
+    return rect
 
 func is_visible_on_screen() -> bool:
-    visible_on_screen_notifier.rect = get_rect()
     return _is_visible

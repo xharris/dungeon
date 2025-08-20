@@ -3,20 +3,24 @@ class_name Logger
 
 enum Level {NONE, ERROR, WARN, INFO, DEBUG}
 static var max_prefix_length = 0
+static var _global_level:Level = Level.NONE
 
-@export var _level:Level = Level.INFO
-@export var _prefix:String = "":
+static func set_global_level(level:Level):
+    print("[color=%s][b]set global log level %s[/b][/color]" % [Color.WHITE, Level.find_key(level)])
+    _global_level = level
+
+@export var ignore_repeats = false
+var _level:Level = Level.INFO
+var _prefix:String = "":
     set(v):
         v = v if v != null else ""
         _prefix = v.strip_edges()
         _update_full_prefix()
-@export var _id:String = "":
+var _id:String = "":
     set(v):
         v = v if v != null else ""
         _id = v.strip_edges()
         _update_full_prefix()
-@export var ignore_repeats = false
-
 var _full_prefix:String = ""
 var _prev_msg:String
 
@@ -59,21 +63,45 @@ func _print(color:Color, level:String, msg:String) -> bool:
     print_rich(formatted)
     return true
 
+func _is_level_enabled(level:Level) -> bool:
+    if Logger._global_level != Level.NONE:
+        return Logger._global_level >= level
+    return _level >= level
+
 func info(msg:String):
-    if _level < Level.INFO: return
+    if not _is_level_enabled(Level.INFO): return
     _print(Color.SKY_BLUE, "INFO", msg)
     
 func warn(msg:String):
-    if _level < Level.WARN: return
+    if not _is_level_enabled(Level.WARN): return
     if _print(Color.YELLOW, "WARN", msg):
         push_warning(msg)	
 
+## prints warning if [code]cond[/code] is [code]true[/code]
+##
+## Returns: [code]cond[/code]
+func warn_if(cond:bool, msg:String) -> bool:
+    if cond:
+        warn(msg)
+    return cond
+
 func debug(msg:String):
-    if _level < Level.DEBUG: return
+    if not _is_level_enabled(Level.DEBUG): return
     _print(Color.GREEN_YELLOW, "DEBUG", msg)
 
+## prints debug msg if [code]cond[/code] is [code]true[/code]
+##
+## Returns: [code]cond[/code]
+func debug_if(cond:bool, msg:String) -> bool:
+    if cond:
+        debug(msg)
+    return cond
+
+## raises error if [code]cond[/code] is [code]true[/code]
+##
+## Returns: [code]cond[/code]
 func error(cond:bool, msg:String) -> bool:
-    if _level < Level.ERROR and not cond:
+    if _is_level_enabled(Level.ERROR) and cond:
         _print(Color.RED, "ERROR", msg)
-    assert(cond, msg)
-    return not cond
+    assert(not cond, msg)
+    return cond

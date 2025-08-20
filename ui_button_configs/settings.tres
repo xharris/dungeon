@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="UIButtonConfig" load_steps=2 format=3 uid="uid://dw1qdkx56qdmi"]
+
+[ext_resource type="Script" uid="uid://0541gy4t7l8g" path="res://ui/ui_button_config.gd" id="1_bfyuo"]
+
+[resource]
+script = ExtResource("1_bfyuo")
+id = "settings"
+text = ""
+auto_focus = false
+shadow_size = 10
+disabled = false
+metadata/_custom_type_script = "uid://0541gy4t7l8g"

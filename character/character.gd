@@ -1,6 +1,9 @@
 class_name Character
 extends CharacterBody2D
 
+enum MovementState {NONE, TARGET, FALL}
+enum CombatState {NONE, ACTIVE}
+
 class State:
     var idle = false
     var move_to_target = false
@@ -13,12 +16,15 @@ signal move_to_finished
 @onready var held_item_l: Node2D = %HeldItemL
 @onready var held_item_r: Node2D = %HeldItemR
 @onready var attack_start_timer: Timer = $AttackStart
+@onready var inspect_node: UIInspectNode = $UIInspectNode
 
 var logs = Logger.new("character")#, Logger.Level.DEBUG)
 var stats:Stats
 var inventory:Inventory
 
 var id:String = "unknown"
+var _movement_state:MovementState
+var _combat_state:CombatState
 var state = State.new()
 var target_position: Vector2
 var target_distance: Vector2 = Vector2(20, 20)

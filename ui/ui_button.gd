@@ -6,8 +6,7 @@ enum State {NONE, NORMAL, ELEVATED, PRESSED}
 @onready var bg = $BG
 @onready var shadow = $BGShadow
 
-@export var auto_focus = false
-@export var shadow_size = 10
+@export var config:UIButtonConfig
 
 var logs = Logger.new("ui_button")
 var _state:State
@@ -18,6 +17,9 @@ var _theme_color:Dictionary = {
 var _prev_state:State
 
 func _ready() -> void:
+    add_to_group(Groups.UI_BUTTON)
+    
+    pressed.connect(config.pressed.emit)
     resized.connect(_on_resize)
     focus_entered.connect(set_state.bind(State.ELEVATED))
     focus_exited.connect(set_state.bind(State.NORMAL))
@@ -26,8 +28,9 @@ func _ready() -> void:
         set_state.bind(State.PRESSED),
         set_state.bind(State.ELEVATED)
     ]))
+    
     set_state(State.NORMAL)
-    if auto_focus:
+    if config.auto_focus:
         call_deferred("grab_focus")
     pivot_offset = size / 2
 
@@ -35,6 +38,9 @@ func _on_resize():
     pivot_offset = size / 2
 
 func _process(delta: float) -> void:
+    text = config.text
+    disabled = config.disabled
+    
     begin_bulk_theme_override()
     add_theme_color_override("font_color", _theme_color.get("font_color"))
     add_theme_color_override("font_focus_color", _theme_color.get("font_color"))
@@ -63,7 +69,7 @@ func set_state(state:State):
             bg_color = Color.WHITE
             shadow_color = Color.BLACK
             shadow_color.a = 0.75
-            shadow_position = Vector2.ONE * shadow_size
+            shadow_position = Vector2.ONE * config.shadow_size
             match state:
                 State.PRESSED:
                     var off = 0.2

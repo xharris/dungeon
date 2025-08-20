@@ -2,32 +2,26 @@ extends Node2D
 
 var logs = Logger.new("main")
 
+@onready var _ui_layer = $UILayer
 var ZONE_FOREST:ZoneConfig = preload("res://zones/forest/forest.tres")
 
 func _ready() -> void:
     # move player onto screen
     var player = Characters.get_player()
-    assert(player, "player not found")
+    logs.error(not player, "player not found")
     player.move(Vector2(Game.size.x / 3, 0))
     
-    var game_ui = Game.get_ui()
-    var ui_layer = game_ui.push_state(GameUI.State.TITLE)
-    if ui_layer:
-        ui_layer.set_background_color()
-        # play
-        var play_button = Scenes.UI_BUTTON.instantiate() as UIButton
-        play_button.text = "PLAY"
-        play_button.pressed.connect(_on_play_button_pressed)
-        play_button.auto_focus = true
-        ui_layer.add_to_bottom_row(play_button)
-        # settings
-        var settings_button = Scenes.UI_BUTTON.instantiate() as UIButton
-        settings_button.text = "SETTINGS"
-        #settings_button.pressed.connect(_)
-        ui_layer.add_to_bottom_row(settings_button)
+    # button events
+    for b in get_tree().get_nodes_in_group(Groups.UI_BUTTON) as Array[UIButton]:
+        match b.config.id:
+            "play":
+                b.pressed.connect(_on_play_button_pressed)
+            "settings":
+                pass
+            # TODO settings_button.pressed.connect(_)
 
 ## play game
 func _on_play_button_pressed() -> void:
     logs.info("pressed play")
     ZONE_FOREST.start()
-    Game.get_ui().pop_state()
+    _ui_layer.set_state(UILayer.State.HIDDEN)

@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="UILayerConfig" load_steps=5 format=3 uid="uid://bcg6on4tb283w"]
+
+[ext_resource type="Script" uid="uid://0541gy4t7l8g" path="res://ui/ui_button_config.gd" id="1_gx6wq"]
+[ext_resource type="Resource" uid="uid://csdp5h1qccpib" path="res://ui_button_configs/play.tres" id="2_jichk"]
+[ext_resource type="Resource" uid="uid://dw1qdkx56qdmi" path="res://ui_button_configs/settings.tres" id="3_0hq2l"]
+[ext_resource type="Script" uid="uid://tlqld3tml13u" path="res://ui/ui_layer_config.gd" id="4_11guw"]
+
+[resource]
+script = ExtResource("4_11guw")
+id = "title"
+type = 0
+background_color = Color(1, 1, 1, 0)
+top_row = Array[ExtResource("1_gx6wq")]([])
+bottom_row = Array[ExtResource("1_gx6wq")]([ExtResource("2_jichk"), ExtResource("3_0hq2l")])
+esc_to_close = false
+visible = true
+metadata/_custom_type_script = "uid://tlqld3tml13u"

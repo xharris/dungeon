@@ -6,23 +6,18 @@
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_3otji"]
 bg_color = Color(1, 1, 1, 0.341176)
 
-[node name="UILayer" type="Control"]
+[node name="UILayer" type="Node2D"]
+process_mode = 3
+visible = false
 z_index = 1
-layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
 script = ExtResource("1_3otji")
 
-[node name="Background" type="Panel" parent="."]
+[node name="CanvasLayerBG" type="CanvasLayer" parent="."]
+
+[node name="Background" type="Panel" parent="CanvasLayerBG"]
 unique_name_in_owner = true
 modulate = Color(0, 0, 0, 0)
 z_index = -1
-layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -30,34 +25,34 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_3otji")
 
-[node name="CanvasLayer" type="CanvasLayer" parent="Background"]
+[node name="CanvasLayerTopBottom" type="CanvasLayer" parent="."]
 layer = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="Background/CanvasLayer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayerTopBottom"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="MarginContainer" type="MarginContainer" parent="Background/CanvasLayer/VBoxContainer"]
+[node name="MarginContainer" type="MarginContainer" parent="CanvasLayerTopBottom/VBoxContainer"]
 layout_mode = 2
 theme = ExtResource("2_xqqt7")
 
-[node name="TopRow" type="HBoxContainer" parent="Background/CanvasLayer/VBoxContainer/MarginContainer"]
+[node name="TopRow" type="HBoxContainer" parent="CanvasLayerTopBottom/VBoxContainer/MarginContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 theme = ExtResource("2_xqqt7")
 
-[node name="Spacer" type="Control" parent="Background/CanvasLayer/VBoxContainer"]
+[node name="Spacer" type="Control" parent="CanvasLayerTopBottom/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="MarginContainer2" type="MarginContainer" parent="Background/CanvasLayer/VBoxContainer"]
+[node name="MarginContainer2" type="MarginContainer" parent="CanvasLayerTopBottom/VBoxContainer"]
 layout_mode = 2
 theme = ExtResource("2_xqqt7")
 
-[node name="BottomRow" type="HBoxContainer" parent="Background/CanvasLayer/VBoxContainer/MarginContainer2"]
+[node name="BottomRow" type="HBoxContainer" parent="CanvasLayerTopBottom/VBoxContainer/MarginContainer2"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 8
