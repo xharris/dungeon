@@ -7,8 +7,8 @@ var logs = Logger.new("main")
 @onready var environment:GameEnvironment = $Environment
 @onready var characters = $Characters
 @onready var rooms = $Rooms
-@onready var pause_ui:UILayer = $PauseUI
-@onready var looting_ui = $LootingUI
+@export var pause_ui:UILayer
+@export var looting_ui:UILayer
 
 var ROOM_TEST_COMBAT:RoomConfig = preload("res://rooms/test_combat.tres")
 var STARTING_ZONE:ZoneConfig = preload("res://zones/forest/forest.tres")

@@ -11,4 +11,5 @@ var logs = Logger.new("zone")
 @export var rooms:Array[RoomConfig]
 
 func start():
+    logs.info("start")
     Rooms.next_room(rooms.pick_random())

@@ -348,9 +348,10 @@ _data = {
 radius = 8.0
 height = 64.0
 
-[node name="Character" type="CharacterBody2D" groups=["character"]]
+[node name="Character" type="CharacterBody2D" node_paths=PackedStringArray("inspect_node") groups=["character"]]
 collision_layer = 2
 script = ExtResource("1_adhfm")
+inspect_node = NodePath("UIInspectNode")
 
 [node name="CharacterSprite" type="Node2D" parent="."]
 scale = Vector2(8, 8)
@@ -421,6 +422,7 @@ shape = SubResource("CapsuleShape2D_1l1n4")
 [node name="AttackStart" type="Timer" parent="."]
 
 [node name="UIInspectNode" parent="." node_paths=PackedStringArray("character", "anchor_node") instance=ExtResource("4_hx151")]
+unique_name_in_owner = true
 script = ExtResource("5_0rvpn")
 character = NodePath("..")
 anchor_node = NodePath("../CharacterSprite")

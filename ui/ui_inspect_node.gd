@@ -28,18 +28,13 @@ var _state:State
 func _ready() -> void:
     add_to_group(Groups.UI_INSPECT_NODE)
     
-    control.focus_entered.connect(select)
+    control.focus_entered.connect(set_state.bind(State.SELECTED))
     control.focus_exited.connect(_on_focus_exited)
     visible_on_screen_notifier.screen_entered.connect(_on_screen_entered)
     visible_on_screen_notifier.screen_exited.connect(_on_screen_exited)
-    visibility_changed.connect(_on_visibility_changed)
     
     remote_tansform.remote_path = remote_tansform.get_path_to(outline)
     set_state(State.HIDDEN)
-
-func _on_visibility_changed():
-    if visible:
-        set_state(State.HIDDEN)
 
 func _on_screen_entered():
     _is_visible = true
@@ -48,7 +43,9 @@ func _on_screen_exited():
     _is_visible = false
 
 func _on_focus_exited():
-    outline.set_state(UIInspectOutline.State.VISIBLE)
+    match _state:
+        State.SELECTED:
+            outline.set_state(UIInspectOutline.State.VISIBLE)
 
 func _clean_ui_layer() -> bool:
     if not _layer:
@@ -75,11 +72,13 @@ func set_state(state:State) -> bool:
                     
         State.SELECTED:
             if not _layer:
+                logs.warn("_layer is null")
                 return false
             # deselect other inspect nodes
-            for n in get_tree().get_nodes_in_group(Groups.UI_INSPECT_NODE):
-                if not n.deselect():
-                    return false
+            for n in get_tree().get_nodes_in_group(Groups.UI_INSPECT_NODE) as Array[UIInspectNode]:
+                if n.get_state() == State.SELECTED:
+                    n.set_state(State.VISIBLE)
+                    
             # enable visuals
             graphics.modulate = Color.WHITE
             outline.set_state(UIInspectOutline.State.SELECTED)
@@ -92,12 +91,19 @@ func set_state(state:State) -> bool:
     _anchor_node_updated()
     return true
 
+func get_state() -> State:
+    return _state
+
 func is_selected() -> bool:
     return _state == State.SELECTED
 
 func set_title(title:String):
     _title = title
     ui_title.text = title
+    name = "ui_inspect_node_%s" % [title]
+    control.name = "ui_inspect_node_ctrl_%s" % [title]
+    outline.name = "ui_inspect_node_outline_%s" % [title]
+    outline.logs.set_prefix(title)
 
 func set_layer(layer:UILayer = null):
     _layer = layer
@@ -164,3 +170,6 @@ func get_rect() -> Rect2:
 
 func is_visible_on_screen() -> bool:
     return _is_visible
+
+func is_valid_neighbor() -> bool:
+    return not logs.info_if(_state == State.HIDDEN, "invalid neighbor: hidden")

@@ -3,8 +3,6 @@ class_name UIButtonConfig
 
 static var logs = Logger.new("ui_button_config")
 
-signal pressed
-
 @export var id:String
 @export var text:String:
     get:

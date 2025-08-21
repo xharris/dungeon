@@ -21,8 +21,10 @@ fill_from = Vector2(1, 1)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_fc0e3"]
 size = Vector2(768, 20)
 
-[node name="Main" type="Node2D"]
+[node name="Main" type="Node2D" node_paths=PackedStringArray("pause_ui", "looting_ui")]
 script = ExtResource("1_1bvp3")
+pause_ui = NodePath("PauseUI")
+looting_ui = NodePath("LootingUI")
 
 [node name="GameCamera" parent="." instance=ExtResource("2_7mycd")]
 
@@ -58,6 +60,5 @@ config = ExtResource("5_7mycd")
 config = ExtResource("6_7mycd")
 
 [node name="PauseController" type="Node" parent="PauseUI" node_paths=PackedStringArray("pause_ui")]
-process_mode = 3
 script = ExtResource("7_272bh")
 pause_ui = NodePath("..")

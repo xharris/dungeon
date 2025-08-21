@@ -52,7 +52,7 @@ func set_id(id:String) -> Logger:
 
 func _print(color:Color, level:String, msg:String) -> bool:
     var pad = max(0, max_prefix_length - _full_prefix.length())
-    var formatted = "[color=%s][b]%s[/b][/color] \t%s %s %s" % [
+    var formatted = "[color=%s][b]%s[/b][/color] \t[b]%s[/b] %s %s" % [
         color.to_html(), level, 
         _full_prefix, " ".repeat(pad),
         msg
@@ -71,6 +71,11 @@ func _is_level_enabled(level:Level) -> bool:
 func info(msg:String):
     if not _is_level_enabled(Level.INFO): return
     _print(Color.SKY_BLUE, "INFO", msg)
+    
+func info_if(cond:bool, msg:String) -> bool:
+    if cond:
+        info(msg)
+    return cond
     
 func warn(msg:String):
     if not _is_level_enabled(Level.WARN): return

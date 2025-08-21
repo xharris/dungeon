@@ -5,8 +5,9 @@
 [ext_resource type="PackedScene" uid="uid://b82oisi4jdpgc" path="res://ui/ui_layer.tscn" id="3_tuxiw"]
 [ext_resource type="Resource" uid="uid://bcg6on4tb283w" path="res://ui_layer_configs/title.tres" id="4_di1x5"]
 
-[node name="Title" type="Node2D"]
+[node name="Title" type="Node2D" node_paths=PackedStringArray("ui_layer")]
 script = ExtResource("1_qgb08")
+ui_layer = NodePath("UILayer")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 follow_viewport_enabled = true
@@ -36,4 +37,5 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="UILayer" parent="." instance=ExtResource("3_tuxiw")]
+unique_name_in_owner = true
 config = ExtResource("4_di1x5")

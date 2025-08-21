@@ -14,4 +14,6 @@ top_row = Array[ExtResource("1_gx6wq")]([])
 bottom_row = Array[ExtResource("1_gx6wq")]([ExtResource("2_jichk"), ExtResource("3_0hq2l")])
 esc_to_close = false
 visible = true
+block_next_layer = Array[String]([])
+allow_next_layer = Array[String]([])
 metadata/_custom_type_script = "uid://tlqld3tml13u"

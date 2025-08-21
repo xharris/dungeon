@@ -8,5 +8,6 @@ id = "settings"
 text = ""
 auto_focus = false
 shadow_size = 10
-disabled = false
+disabled = true
+close_on_pressed = false
 metadata/_custom_type_script = "uid://0541gy4t7l8g"

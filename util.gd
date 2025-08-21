@@ -48,65 +48,68 @@ func chain_call(funcs:Array):
 class UI:
     static var logs = Logger.new("util.ui")#, Logger.Level.DEBUG)
     
+    ## Also includes starting node in search
+    static func find_parent_by_group(node:Node, group:StringName) -> Node:
+        if not node:
+            logs.debug("parent not found: %s" % group)
+            return null
+        if node.is_in_group(group):
+            logs.debug("found parent: %s" % group)
+            return node
+        node = node.get_parent()
+        return find_parent_by_group(node, group)
+    
     static func is_valid_neighbor(c:Node, neighbor_of:Node = null) -> bool:
         if c == null:
+            logs.warn("invalid neighbor: null")
             return false
-        if neighbor_of == c:
-            return false
-        if c is BaseButton and (c as BaseButton).disabled:
-            return false
-        if c is Control and (c as Control).focus_mode == Control.FocusMode.FOCUS_NONE:
-            return false
-        if not (
-            c.find_parent("UIInspectNode") or
-            c is UIButton or
-            c.get_class() == "Control"
-        ):
-            return false
-        return true
+        if c == neighbor_of:
+            logs.debug("invalid neighbor: same (%s)" % c)
+        
+        UI.logs.debug("is valid neighbor %s" % ("%s <- %s" % [c, neighbor_of] if neighbor_of else str(c)))
+           
+        var ui_button:UIButton = find_parent_by_group(c, Groups.UI_BUTTON)
+        var ui_inspect_node:UIInspectNode = find_parent_by_group(c, Groups.UI_INSPECT_NODE)
+
+        if ui_button:
+            return ui_button.is_valid_neighbor()
+            
+        if ui_inspect_node:
+            return ui_inspect_node.is_valid_neighbor()
+
+        logs.info("invalid neighbor: not supported")
+        return false
     
     static func set_neighbor_horiz(controls:Array[Control]) -> Array:
-        var i = 0
-        while i < controls.size() and controls.size() > 1:
+        UI.logs.debug("set horiz neighbors %s" % [controls])
+        for i in controls.size():
             var ctrl = controls[i]
-            var next_i = clampi(i + 1, 0, controls.size() - 1)
-            var next = controls[next_i]
-            if not is_valid_neighbor(next, ctrl):
-                controls.remove_at(next_i)
-            else:
-                i += 1
-        for j in controls.size():
-            var left = controls[j]
-            var right_j = clampi(j + 1, 0, controls.size() - 1)
-            var right = controls[right_j]
+            var next = controls[wrapi(i + 1, -1, controls.size() - 1)]
             
-            var right_path = right.get_path()
-            var left_path = left.get_path()
-            UI.logs.debug("connect %s" % {"left":left_path, "right":right_path})
-            left.focus_neighbor_right = right_path
-            right.focus_neighbor_left = left_path
+            if not is_valid_neighbor(ctrl, next):
+                continue
+                
+            var next_path = next.get_path()
+            var path = ctrl.get_path()
+                
+            ctrl.focus_neighbor_right = next_path
+            next.focus_neighbor_left = path
             
         return controls
 
     static func set_neighbor_vert(controls:Array[Control]) -> Array:
-        var i = 0
-        while i < controls.size() and controls.size() > 1:
+        UI.logs.debug("set vert neighbors %s" % [controls])
+        for i in controls.size():
             var ctrl = controls[i]
-            var next_i = clampi(i + 1, 0, controls.size() - 1)
-            var next = controls[next_i]
-            if not is_valid_neighbor(next, ctrl):
-                controls.remove_at(next_i)
-            else:
-                i += 1
-        for j in controls.size():
-            var top = controls[j]
-            var bottom_j = clampi(j + 1, 0, controls.size() - 1)
-            var bottom = controls[bottom_j]
+            var next = controls[wrapi(i + 1, -1, controls.size() - 1)]
             
-            var bottom_path = bottom.get_path()
-            var top_path = top.get_path()
-            UI.logs.debug("connect %s" % {"top":top_path, "bottom":bottom_path})
-            top.focus_neighbor_right = bottom_path
-            bottom.focus_neighbor_left = top_path
+            if not is_valid_neighbor(ctrl, next):
+                continue
+                
+            var next_path = next.get_path()
+            var path = ctrl.get_path()
+            
+            ctrl.focus_neighbor_bottom = next_path
+            next.focus_neighbor_top = path
             
         return controls

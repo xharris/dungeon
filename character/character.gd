@@ -16,7 +16,7 @@ signal move_to_finished
 @onready var held_item_l: Node2D = %HeldItemL
 @onready var held_item_r: Node2D = %HeldItemR
 @onready var attack_start_timer: Timer = $AttackStart
-@onready var inspect_node: UIInspectNode = $UIInspectNode
+@export var inspect_node: UIInspectNode
 
 var logs = Logger.new("character")#, Logger.Level.DEBUG)
 var stats:Stats
