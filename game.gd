@@ -2,7 +2,7 @@ extends Node
 
 enum State {NONE, TITLE, PLAY,}
 enum GameOverType {PLAYER_DEATH}
-static var ROOM_MAIN:RoomConfig = preload("res://rooms/title.tres")
+static var STARTING_ROOM:RoomConfig = preload("res://rooms/title.tres")
 
 signal over(type:GameOverType)
 signal paused
@@ -24,7 +24,7 @@ func _on_character_created(c:Character):
 func start():
     logs.info("game start")
     # create first room
-    var room = Rooms.next_room(ROOM_MAIN)
+    var room = Rooms.next_room(STARTING_ROOM)
 
 func _on_character_death(c:Character):
     if c.is_in_group(Groups.CHARACTER_PLAYER):

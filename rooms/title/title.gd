@@ -4,7 +4,7 @@ var ZONE_FOREST: ZoneConfig = preload("res://zones/forest/forest.tres")
 
 @export var ui_layer:UILayer
 
-var logs = Logger.new("main")
+var logs = Logger.new("title")
 
 func _ready() -> void:
     ui_layer.build_finished.connect(_on_ui_layer_build_finished)

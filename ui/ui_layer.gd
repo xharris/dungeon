@@ -84,7 +84,7 @@ func set_state(state: State, _from_layer: = false) -> bool:
             set_background_color(config.background_color)
             
     _state = state
-    state_changed.emit(state)
+    state_changed.emit.call_deferred(state)
     return true
 
 func _get_state_stack() -> Array[UILayer]:
@@ -120,7 +120,8 @@ func _build_ui():
         button.pressed_to_close.connect(_on_ui_button_pressed_to_close.bind(button))
         add_to_bottom_row(button)
     set_background_color(config.background_color)
-    build_finished.emit()
+    logs.info("emit build finished")
+    build_finished.emit.call_deferred()
 
 ## Update focus relationships for all controls
 func _update_focus() -> bool:
@@ -139,6 +140,13 @@ func _update_focus() -> bool:
 
     var ctrl_rows = [_top_row.get_children(), middle_row, _bottom_row.get_children()]
     var prev_rows_str = str(ctrl_rows)
+    var focus_ctrl:Control
+    
+    var err = _rows_last_selected_idx.resize(max(ctrl_rows.size(), _rows_last_selected_idx.size()))
+    if err != OK:
+        logs.warn("could not resize _rows_last_selected_idx, error=%d" % err)
+    logs.info("last selected control, row=%d col=%d" % [_current_selected_row, _rows_last_selected_idx[_current_selected_row]])
+        
     for i in ctrl_rows.size():
         var row: Array = ctrl_rows[i]
         
@@ -146,13 +154,15 @@ func _update_focus() -> bool:
         row = row.filter(func(c: Node): return Util.UI.is_valid_neighbor(c))
         
         if row.size() > 0:
-            var err = _rows_last_selected_idx.resize(i + 1) 
-            if err != OK:
-                logs.warn("could not resize _rows_last_selected_idx, error=%d" % err)
             var col = _rows_last_selected_idx[i]
-            logs.info("last selected control, row=%d col=%d" % [i, col])
             var row_has_focus = row.any(func(c: Control): return c.has_focus())
-            if not row_has_focus:
+            
+            if i == _current_selected_row:
+                # focus last selected element
+                focus_ctrl = row[col]
+                logs.info("was selected: %s" % focus_ctrl)
+            
+            elif not row_has_focus:
                 # only last selected control in other rows is focusable
                 row = [row[col]]
                 logs.info("narrow row %d" % [i])
@@ -194,24 +204,22 @@ func _update_focus() -> bool:
             all_ctrls.append_array(row)
     
     var auto_focus = true
-    var first_ctrl: Control
     for ctrl in all_ctrls:
         # check if this node is already focused
-        if not first_ctrl:
-            first_ctrl = ctrl
-            logs.debug("first control %s" % first_ctrl)
         if ctrl.has_focus():
             logs.debug("%s has focus" % ctrl)
             auto_focus = false
-                
-    if auto_focus and first_ctrl:
-        logs.debug("auto focus %s" % first_ctrl)
-        first_ctrl.grab_focus()
+        if not focus_ctrl:
+            focus_ctrl = ctrl
+    
+    if auto_focus and focus_ctrl:
+        logs.debug("auto focus %s" % focus_ctrl)
+        focus_ctrl.grab_focus()
         
     return true
         
 func _on_ui_button_pressed_to_close(me:UIButton):
-    logs.info("close on button pressed: %s" % me.config.id)
+    logs.info("close on button pressed: %s" % me)
     set_state(State.HIDDEN)
 
 ## normal visible background color is [code]Color.WHITE[/code]
