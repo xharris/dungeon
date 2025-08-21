@@ -20,17 +20,22 @@ func set_state(state:State, immediate = false):
         _tween.stop()
     _tween = create_tween()
     
+    var t = 0.2
     match state:
         State.VISIBLE:
-            _tween.tween_property(self, "modulate", Color(1, 1, 1, 0.25), 0.2)
+            _tween.tween_property(self, "modulate", Color(1, 1, 1, 0.25), t)
         State.SELECTED:
-            _tween.tween_property(self, "modulate", Color(1, 1, 1, 1), 0.2)
+            _tween.tween_property(self, "modulate", Color(1, 1, 1, 1), t)
         State.HIDDEN:
-            _tween.tween_property(self, "modulate", Color(1, 1, 1, 0), 0.2)
+            _tween.tween_property(self, "modulate", Color(1, 1, 1, 0), t)
 
-    _tween.play()
+    if immediate:
+        _tween.pause()
+        _tween.custom_step(t)
+    else:
+        _tween.play()
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
     if _tween and _tween.is_running():
         queue_redraw()
     

@@ -13,7 +13,6 @@ signal pressed_to_close
 
 var logs = Logger.new("ui_button")#, Logger.Level.DEBUG)
 var _state:State
-var _tween:Tween
 var _theme_color:Dictionary = {
     "font_color": Color.WHITE
 }
@@ -46,7 +45,7 @@ func _on_pressed():
 func _on_resize():
     pivot_offset = size / 2
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
     text = config.text
     disabled = config.disabled
     

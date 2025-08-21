@@ -6,9 +6,9 @@
 
 ## TODO
 
-- [ ] refactor: make ui_layer a node
-- [ ] feat: looting after combat
-- [ ] clean: decouple stuff
+- feat: looting
+- feat: projectile weapon
+- clean: find other stuff to decouple
 
 ## Glossary
 
@@ -19,7 +19,8 @@
 
 ## Zones
 
-Each zone has a unique mini game theme.
+Each zone has a unique mini game theme. Typically you can get to a new zone after
+**defeating the boss** in the previous zone or **completing an important quest**.
 
 - **Forest** get basic weapons, basic items, basic quests
 - **Town** lots of quests

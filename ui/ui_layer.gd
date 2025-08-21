@@ -3,7 +3,7 @@ class_name UILayer
 
 enum State {HIDDEN, VISIBLE}
 
-signal state_changed(state:State)
+signal state_changed(state: State)
 signal build_finished
 
 @onready var _top_row: HBoxContainer = %TopRow
@@ -12,20 +12,19 @@ signal build_finished
 
 @export var config: UILayerConfig
 
-var logs = Logger.new("ui_layer")#, Logger.Level.DEBUG)
+var logs = Logger.new("ui_layer") # , Logger.Level.DEBUG)
 var _rows_last_selected_idx: Array[int]
-var _current_selected_row: int = 0
 var _state: State
-var _prev_layer:UILayer
+var _prev_layer: UILayer
 
-func _ready() -> void:        
+func _ready() -> void:
     add_to_group(Groups.UI_LAYER)
     name = "%s_%s" % [Groups.UI_LAYER, config.id]
     logs.set_prefix(config.id)
     if config.visible:
         set_state(State.VISIBLE)
         
-func set_state(state: State, _from_layer: = false) -> bool:
+func set_state(state: State, _from_layer := false) -> bool:
     logs.info("set state %s%s" % [State.find_key(state), " (from layer)" if _from_layer else ""])
     
     match state:
@@ -43,7 +42,7 @@ func set_state(state: State, _from_layer: = false) -> bool:
                 
         State.VISIBLE:
             # check block list
-            var is_blocked = _prev_layer and config.block_next_layer.any(func(id:String):
+            var is_blocked = _prev_layer and config.block_next_layer.any(func(id: String):
                 return _prev_layer.config.id == id
             )
             if is_blocked:
@@ -52,8 +51,8 @@ func set_state(state: State, _from_layer: = false) -> bool:
             # check allow list
             var is_allowed = \
             not _prev_layer or \
-            config.allow_next_layer.size() == 0 or\
-            config.allow_next_layer.any(func(id:String):
+            config.allow_next_layer.size() == 0 or \
+            config.allow_next_layer.any(func(id: String):
                 return _prev_layer.config.id == id
             )
             if not is_allowed:
@@ -66,7 +65,7 @@ func set_state(state: State, _from_layer: = false) -> bool:
                     if l._state == State.VISIBLE and not _from_layer:
                         # get previous ui layer
                         logs.info("previous layer was '%s'" % l.config.id)
-                        _prev_layer = l 
+                        _prev_layer = l
                     # hide other layer
                     l.set_state(State.HIDDEN, true)
             visible = true
@@ -80,7 +79,7 @@ func set_state(state: State, _from_layer: = false) -> bool:
                     _show_inspect_nodes()
                    
             _build_ui()
-            _update_focus()     
+            _update_focus()
             set_background_color(config.background_color)
             
     _state = state
@@ -89,7 +88,7 @@ func set_state(state: State, _from_layer: = false) -> bool:
 
 func _get_state_stack() -> Array[UILayer]:
     var node = self
-    var stack:Array[UILayer] = []
+    var stack: Array[UILayer] = []
     while node:
         stack.append(node)
         node = node._prev_layer
@@ -111,15 +110,20 @@ func _hide_inspect_nodes():
 
 func _build_ui():
     logs.debug("build ui %s" % config)
+    get_viewport().gui_release_focus()
+    
     for c in config.top_row:
         var button = UIElements.button(c)
         button.pressed_to_close.connect(_on_ui_button_pressed_to_close.bind(button))
         add_to_top_row(button)
+        
     for c in config.bottom_row:
         var button = UIElements.button(c)
         button.pressed_to_close.connect(_on_ui_button_pressed_to_close.bind(button))
         add_to_bottom_row(button)
+        
     set_background_color(config.background_color)
+    
     logs.info("emit build finished")
     build_finished.emit.call_deferred()
 
@@ -133,19 +137,22 @@ func _update_focus() -> bool:
     var inspect_controls = inspect_nodes \
         .filter(func(n: UIInspectNode): return n.is_visible_on_screen()) \
         .map(func(n: UIInspectNode): return n.control) as Array[Control]
-    var selected_inspect_node = _get_selected_inspect_node()
     
     # connect inspect node(s)
     var middle_row = inspect_controls
 
     var ctrl_rows = [_top_row.get_children(), middle_row, _bottom_row.get_children()]
     var prev_rows_str = str(ctrl_rows)
-    var focus_ctrl:Control
+    var focus_ctrl: Control = null
+    
+    var current_selected_row = ctrl_rows.find_custom(func(r:Array):
+        return r.any(func(c): return c is Control and c.has_focus())    
+    )
     
     var err = _rows_last_selected_idx.resize(max(ctrl_rows.size(), _rows_last_selected_idx.size()))
     if err != OK:
         logs.warn("could not resize _rows_last_selected_idx, error=%d" % err)
-    logs.info("last selected control, row=%d col=%d" % [_current_selected_row, _rows_last_selected_idx[_current_selected_row]])
+    logs.info("last selected control, row=%d col=%d" % [current_selected_row, _rows_last_selected_idx[current_selected_row]])
         
     for i in ctrl_rows.size():
         var row: Array = ctrl_rows[i]
@@ -155,14 +162,13 @@ func _update_focus() -> bool:
         
         if row.size() > 0:
             var col = _rows_last_selected_idx[i]
-            var row_has_focus = row.any(func(c: Control): return c.has_focus())
             
-            if i == _current_selected_row:
+            if i == current_selected_row and not focus_ctrl:
                 # focus last selected element
                 focus_ctrl = row[col]
                 logs.info("was selected: %s" % focus_ctrl)
             
-            elif not row_has_focus:
+            elif i != current_selected_row:
                 # only last selected control in other rows is focusable
                 row = [row[col]]
                 logs.info("narrow row %d" % [i])
@@ -172,7 +178,7 @@ func _update_focus() -> bool:
         ctrl_rows[i] = row
         
     logs.info_if(
-        str(ctrl_rows) != prev_rows_str, 
+        str(ctrl_rows) != prev_rows_str,
         "nodes were filtered\n\n\tbefore %s\n\n\tafter %s\n" % [prev_rows_str, ctrl_rows]
     )
     
@@ -197,28 +203,33 @@ func _update_focus() -> bool:
             
             var vert_controls: Array[Control]
             for r2 in ctrl_rows.size():
-                var c2 = clampi(r + 1, 0, ctrl_rows[r2].size() - 1)
+                var c2 = clampi(r, 0, ctrl_rows[r2].size() - 1)
                 vert_controls.append(ctrl_rows[r2][c2])
             Util.UI.set_neighbor_vert(vert_controls)
             
             all_ctrls.append_array(row)
     
-    var auto_focus = true
+    var skip_auto_focus = false
     for ctrl in all_ctrls:
-        # check if this node is already focused
         if ctrl.has_focus():
-            logs.debug("%s has focus" % ctrl)
-            auto_focus = false
+            skip_auto_focus = true
         if not focus_ctrl:
             focus_ctrl = ctrl
     
-    if auto_focus and focus_ctrl:
-        logs.debug("auto focus %s" % focus_ctrl)
-        focus_ctrl.grab_focus()
+    logs.warn_if(all_ctrls.size() > 0 and not focus_ctrl, "focus_ctrl is null")
+    
+    if not skip_auto_focus and focus_ctrl:
+        _focus_control(focus_ctrl)
         
     return true
-        
-func _on_ui_button_pressed_to_close(me:UIButton):
+
+func _focus_control(control:Control):
+    logs.info("focus_ctrl: %s" % control)
+    if logs.warn_if(control and not control.is_visible_in_tree(), "focus_ctrl is not visible in tree"):
+        return
+    control.grab_focus()
+
+func _on_ui_button_pressed_to_close(me: UIButton):
     logs.info("close on button pressed: %s" % me)
     set_state(State.HIDDEN)
 
@@ -281,7 +292,6 @@ func _get_selected_inspect_node() -> UIInspectNode:
     return null
 
 func _set_current_selected(row: int, col: int):
-    _current_selected_row = row
-    _rows_last_selected_idx.resize(row + 1)
+    _rows_last_selected_idx.resize(max(row + 1, _rows_last_selected_idx.size()))
     _rows_last_selected_idx[row] = col
     logs.info("save place in row %d: %d" % [row, col])

@@ -1,8 +1,6 @@
 extends Resource
 class_name ZoneConfig
 
-signal finished
-
 var logs = Logger.new("zone")
 @export var id:String = "unknown":
     set(v):

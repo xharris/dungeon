@@ -23,8 +23,8 @@ var stats:Stats
 var inventory:Inventory
 
 var id:String = "unknown"
-var _movement_state:MovementState
-var _combat_state:CombatState
+var _movement_state:MovementState ## TODO
+var _combat_state:CombatState ## TODO
 var state = State.new()
 var target_position: Vector2
 var target_distance: Vector2 = Vector2(20, 20)

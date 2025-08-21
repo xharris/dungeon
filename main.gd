@@ -30,7 +30,7 @@ func _on_game_over(_type:Game.GameOverType):
     environment.reset()
     Game.start()
 
-func _on_room_finished(room:Rooms.Room):
+func _on_room_finished(_room:Rooms.Room):
     # disable combat
     for c in Characters.get_all():
         c.disable_combat()
@@ -40,18 +40,18 @@ func _on_room_created(room:Rooms.Room):
     environment.expand()
     
     # add characters
-    for c in room.config.characters:
-        var char = Scenes.CHARACTER.instantiate() as Character
-        char.use_config(c)
-        char.global_position += room.node.global_position
-        match c.group:
+    for config in room.config.characters:
+        var c = Scenes.CHARACTER.instantiate() as Character
+        c.use_config(config)
+        c.global_position += room.node.global_position
+        match config.group:
             Groups.CHARACTER_PLAYER:
-                char.global_position.x -= (Game.size.x / 2) + (Util.get_rect(char).size.x * 2)
+                c.global_position.x -= (Game.size.x / 2) + (Util.get_rect(c).size.x * 2)
             Groups.CHARACTER_ENEMY:
-                char.global_position.x += (Game.size.x / 2) + (Util.get_rect(char).size.x * 2)
-        char.position.y = 0
-        char.stats.death.connect(_on_character_death.bind(char, room))
-        room.characters.append(char)
+                c.global_position.x += (Game.size.x / 2) + (Util.get_rect(c).size.x * 2)
+        c.position.y = 0
+        c.stats.death.connect(_on_character_death.bind(c, room))
+        room.characters.append(c)
     # add characters to tree
     for c in room.characters:
         characters.add_child(c)  
@@ -62,7 +62,7 @@ func _on_room_created(room:Rooms.Room):
     
     await Characters.arrange_characters(room)
 
-func _on_character_death(character:Character, room:Rooms.Room):
+func _on_character_death(_character:Character, room:Rooms.Room):
     var enemies:Array[Character] = room.characters.filter(func(c:Character): 
         return c.is_in_group(Groups.CHARACTER_ENEMY)
     )

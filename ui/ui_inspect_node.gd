@@ -69,6 +69,9 @@ func set_state(state:State) -> bool:
                 State.SELECTED:
                     _clean_ui_layer()
                     deselected.emit()
+                State.HIDDEN:
+                    if control.has_focus():
+                        set_state.bind(State.SELECTED)
                     
         State.SELECTED:
             if not _layer:

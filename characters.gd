@@ -2,6 +2,7 @@ extends Node
 
 enum GroupSide {Left, Right}
 
+@warning_ignore("unused_signal")
 signal character_created(c:Character)
 signal arrange_finished
 
