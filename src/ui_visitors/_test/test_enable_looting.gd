@@ -12,7 +12,7 @@ func _lootable_count() -> int:
             count += 1
     return count
 
-func test_groups():
+func loot_enemies():
     var visitor = load("res://src/ui_visitors/loot_enemies.tres") as VisitorEnableLooting
     
     _create_character(Groups.CHARACTER_PLAYER)
