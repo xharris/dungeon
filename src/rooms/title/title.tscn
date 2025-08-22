@@ -1,0 +1,41 @@
+[gd_scene load_steps=5 format=3 uid="uid://csd34w7fjq0wn"]
+
+[ext_resource type="Script" uid="uid://dvcwml0htnsdr" path="res://src/rooms/title/title.gd" id="1_qgb08"]
+[ext_resource type="Theme" uid="uid://dag7ei43suxu7" path="res://themes/base.tres" id="2_362mf"]
+[ext_resource type="PackedScene" uid="uid://b82oisi4jdpgc" path="res://src/ui/ui_layer.tscn" id="3_tuxiw"]
+[ext_resource type="Resource" uid="uid://bcg6on4tb283w" path="res://src/ui_layer_configs/title.tres" id="4_di1x5"]
+
+[node name="Title" type="Node2D" node_paths=PackedStringArray("ui_layer")]
+script = ExtResource("1_qgb08")
+ui_layer = NodePath("UILayer")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+follow_viewport_enabled = true
+follow_viewport_scale = 0.8
+
+[node name="Control" type="CenterContainer" parent="CanvasLayer"]
+offset_right = 1259.0
+offset_bottom = 138.0
+size_flags_horizontal = 0
+use_top_left = true
+
+[node name="RichTextLabel" type="RichTextLabel" parent="CanvasLayer/Control"]
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 8
+theme = ExtResource("2_362mf")
+theme_override_constants/outline_size = 10
+theme_override_constants/shadow_offset_y = 20
+theme_override_constants/shadow_offset_x = 20
+theme_override_constants/shadow_outline_size = 5
+theme_override_font_sizes/normal_font_size = 120
+text = "GAME TITLE"
+fit_content = true
+scroll_active = false
+autowrap_mode = 0
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="UILayer" parent="." instance=ExtResource("3_tuxiw")]
+unique_name_in_owner = true
+config = ExtResource("4_di1x5")

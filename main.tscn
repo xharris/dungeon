@@ -1,12 +1,12 @@
 [gd_scene load_steps=12 format=3 uid="uid://dcfgo1ktqljvl"]
 
 [ext_resource type="Script" uid="uid://de8rli5juvd1i" path="res://main.gd" id="1_1bvp3"]
-[ext_resource type="PackedScene" uid="uid://ddmafsyxkbsus" path="res://game_camera.tscn" id="2_7mycd"]
-[ext_resource type="Script" uid="uid://ci3duvo8atgnv" path="res://game_environment.gd" id="3_7mycd"]
-[ext_resource type="PackedScene" uid="uid://b82oisi4jdpgc" path="res://ui/ui_layer.tscn" id="4_lquwl"]
-[ext_resource type="Resource" uid="uid://dgl8u4hjv3q88" path="res://ui_layer_configs/looting.tres" id="5_7mycd"]
-[ext_resource type="Resource" uid="uid://byium2luvm3tc" path="res://ui_layer_configs/pause.tres" id="6_7mycd"]
-[ext_resource type="Script" uid="uid://crbyl6davp4vt" path="res://pause_controller.gd" id="7_272bh"]
+[ext_resource type="PackedScene" uid="uid://ddmafsyxkbsus" path="res://src/game_camera.tscn" id="2_7mycd"]
+[ext_resource type="Script" uid="uid://ci3duvo8atgnv" path="res://src/game_environment.gd" id="3_7mycd"]
+[ext_resource type="PackedScene" uid="uid://b82oisi4jdpgc" path="res://src/ui/ui_layer.tscn" id="4_lquwl"]
+[ext_resource type="Resource" uid="uid://dgl8u4hjv3q88" path="res://src/ui_layer_configs/looting.tres" id="5_7mycd"]
+[ext_resource type="Resource" uid="uid://byium2luvm3tc" path="res://src/ui_layer_configs/pause.tres" id="6_7mycd"]
+[ext_resource type="Script" uid="uid://crbyl6davp4vt" path="res://src/pause_controller.gd" id="7_272bh"]
 
 [sub_resource type="Gradient" id="Gradient_80nbo"]
 offsets = PackedFloat32Array(0, 0.907407)

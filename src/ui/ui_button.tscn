@@ -1,0 +1,35 @@
+[gd_scene load_steps=3 format=3 uid="uid://yjdox0ugdqwx"]
+
+[ext_resource type="Script" uid="uid://x8nt7dgg87nj" path="res://src/ui/ui_button.gd" id="1_3tkkc"]
+[ext_resource type="Theme" uid="uid://dag7ei43suxu7" path="res://themes/base.tres" id="1_iqfff"]
+
+[node name="UIButton" type="Button"]
+offset_right = 154.0
+offset_bottom = 45.0
+mouse_filter = 2
+theme = ExtResource("1_iqfff")
+text = "TEXT"
+flat = true
+icon_alignment = 1
+script = ExtResource("1_3tkkc")
+
+[node name="BGShadow" type="ColorRect" parent="."]
+z_index = -1
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+color = Color(0, 0, 0, 0.431373)
+
+[node name="BG" type="ColorRect" parent="."]
+z_index = -1
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1

@@ -1,0 +1,59 @@
+[gd_scene load_steps=4 format=3 uid="uid://b82oisi4jdpgc"]
+
+[ext_resource type="Script" uid="uid://dlx1s3r4r36od" path="res://src/ui/ui_layer.gd" id="1_3otji"]
+[ext_resource type="Theme" uid="uid://dag7ei43suxu7" path="res://themes/base.tres" id="2_xqqt7"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_3otji"]
+bg_color = Color(1, 1, 1, 0.341176)
+
+[node name="UILayer" type="Node2D"]
+process_mode = 3
+visible = false
+z_index = 1
+script = ExtResource("1_3otji")
+
+[node name="CanvasLayerBG" type="CanvasLayer" parent="."]
+
+[node name="Background" type="Panel" parent="CanvasLayerBG"]
+unique_name_in_owner = true
+modulate = Color(0, 0, 0, 0)
+z_index = -1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_3otji")
+
+[node name="CanvasLayerTopBottom" type="CanvasLayer" parent="."]
+layer = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayerTopBottom"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="CanvasLayerTopBottom/VBoxContainer"]
+layout_mode = 2
+theme = ExtResource("2_xqqt7")
+
+[node name="TopRow" type="HBoxContainer" parent="CanvasLayerTopBottom/VBoxContainer/MarginContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme = ExtResource("2_xqqt7")
+
+[node name="Spacer" type="Control" parent="CanvasLayerTopBottom/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="MarginContainer2" type="MarginContainer" parent="CanvasLayerTopBottom/VBoxContainer"]
+layout_mode = 2
+theme = ExtResource("2_xqqt7")
+
+[node name="BottomRow" type="HBoxContainer" parent="CanvasLayerTopBottom/VBoxContainer/MarginContainer2"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 8
+theme = ExtResource("2_xqqt7")

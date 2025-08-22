@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="UIButtonConfig" load_steps=2 format=3 uid="uid://csdp5h1qccpib"]
+
+[ext_resource type="Script" uid="uid://0541gy4t7l8g" path="res://src/ui/ui_button_config.gd" id="1_pjnkm"]
+
+[resource]
+script = ExtResource("1_pjnkm")
+id = "play"
+text = ""
+auto_focus = true
+shadow_size = 10
+disabled = false
+close_on_pressed = true
+metadata/_custom_type_script = "uid://0541gy4t7l8g"

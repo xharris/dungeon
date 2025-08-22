@@ -10,8 +10,8 @@ var logs = Logger.new("main")
 @export var pause_ui:UILayer
 @export var looting_ui:UILayer
 
-var ROOM_TEST_COMBAT:RoomConfig = preload("res://rooms/test_combat.tres")
-var STARTING_ZONE:ZoneConfig = preload("res://zones/forest/forest.tres")
+var ROOM_TEST_COMBAT:RoomConfig = preload("res://src/rooms/test_combat.tres")
+var STARTING_ZONE:ZoneConfig = preload("res://src/zones/forest/forest.tres")
 
 func _init() -> void:
     #Logger.set_global_level(Logger.Level.DEBUG)
@@ -83,6 +83,9 @@ func _on_character_death(_character:Character, room:Rooms.Room):
         # show create looting ui
         if logs.warn_if(looting_ui.set_state(UILayer.State.VISIBLE), "could not create looting ui"):
             return
+        for c in Characters.get_all():
+            if c.is_in_character_group(Groups.CHARACTER_ENEMY):
+                c.inventory.lootable = true
             
         var first = false
         for c in Characters.get_all():

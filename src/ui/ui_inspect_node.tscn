@@ -1,0 +1,70 @@
+[gd_scene load_steps=4 format=3 uid="uid://dwtj0afn88aat"]
+
+[ext_resource type="Script" uid="uid://bo5owqrk3njvg" path="res://src/ui/ui_inspect_node.gd" id="1_l56yj"]
+[ext_resource type="Script" uid="uid://b8eya62rdf0e5" path="res://src/ui/ui_inspect_outline.gd" id="2_xuxwk"]
+[ext_resource type="Theme" uid="uid://dag7ei43suxu7" path="res://themes/base.tres" id="3_5o1j6"]
+
+[node name="UIInspectNode" type="Node2D" groups=["ui_inspect_node"]]
+script = ExtResource("1_l56yj")
+
+[node name="VisibleOnScreenNotifier2D" type="VisibleOnScreenNotifier2D" parent="."]
+unique_name_in_owner = true
+
+[node name="Graphics" type="Node2D" parent="."]
+unique_name_in_owner = true
+
+[node name="UIInspectNodeControl" type="Control" parent="Graphics"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+focus_mode = 2
+
+[node name="CanvasLayer" type="CanvasLayer" parent="Graphics"]
+unique_name_in_owner = true
+follow_viewport_enabled = true
+
+[node name="Outline" type="Node2D" parent="Graphics/CanvasLayer"]
+unique_name_in_owner = true
+process_mode = 3
+script = ExtResource("2_xuxwk")
+
+[node name="Control" type="Control" parent="Graphics/CanvasLayer/Outline"]
+layout_mode = 3
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -20.0
+offset_top = -40.0
+offset_right = 20.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="UIInspectTitle" type="RichTextLabel" parent="Graphics/CanvasLayer/Outline/Control"]
+unique_name_in_owner = true
+clip_contents = false
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -73.0
+offset_top = -37.0
+offset_right = 73.0
+grow_horizontal = 2
+grow_vertical = 0
+theme = ExtResource("3_5o1j6")
+text = "test"
+fit_content = true
+scroll_active = false
+autowrap_mode = 0
+horizontal_alignment = 1
+vertical_alignment = 2
+
+[node name="RemoteTransform2D" type="RemoteTransform2D" parent="Graphics"]
+unique_name_in_owner = true
+update_rotation = false
+update_scale = false

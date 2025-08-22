@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="RoomConfig" load_steps=7 format=3 uid="uid://bqieqo887m8kg"]
+
+[ext_resource type="Script" uid="uid://bedyejdsvyux6" path="res://src/character_config.gd" id="1_gb1by"]
+[ext_resource type="Resource" uid="uid://ctlbypk5vki7g" path="res://src/characters/goblin.tres" id="2_1aumj"]
+[ext_resource type="Script" uid="uid://btoexdkxgn0jv" path="res://src/visitor.gd" id="3_7ww3w"]
+[ext_resource type="Script" uid="uid://b203xg7y1pucw" path="res://src/ui_visitors/enable_looting.gd" id="4_5ff3d"]
+[ext_resource type="Script" uid="uid://df011ese0wh1b" path="res://src/room_config.gd" id="5_fhxjf"]
+
+[sub_resource type="Resource" id="Resource_gb1by"]
+script = ExtResource("4_5ff3d")
+character_groups = Array[String](["enemy"])
+metadata/_custom_type_script = "uid://b203xg7y1pucw"
+
+[resource]
+script = ExtResource("5_fhxjf")
+id = "test_combat"
+characters = Array[ExtResource("1_gb1by")]([ExtResource("2_1aumj")])
+enable_combat = true
+enable_continue = true
+on_room_finished = Array[ExtResource("3_7ww3w")]([SubResource("Resource_gb1by")])
+metadata/_custom_type_script = "uid://df011ese0wh1b"

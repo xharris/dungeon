@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="UILayerConfig" load_steps=3 format=3 uid="uid://dgl8u4hjv3q88"]
+
+[ext_resource type="Script" uid="uid://0541gy4t7l8g" path="res://src/ui/ui_button_config.gd" id="1_cpi03"]
+[ext_resource type="Script" uid="uid://tlqld3tml13u" path="res://src/ui/ui_layer_config.gd" id="2_q1kn8"]
+
+[resource]
+script = ExtResource("2_q1kn8")
+id = "looting"
+type = 0
+background_color = Color(1, 1, 1, 0)
+top_row = Array[ExtResource("1_cpi03")]([])
+bottom_row = Array[ExtResource("1_cpi03")]([])
+esc_to_close = true
+visible = false
+metadata/_custom_type_script = "uid://tlqld3tml13u"

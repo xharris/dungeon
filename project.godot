@@ -22,14 +22,14 @@ config/icon="res://icon.svg"
 
 [autoload]
 
-Game="*res://game.gd"
-Rooms="*res://rooms.gd"
-Characters="*res://characters.gd"
-MUI="*res://mui.gd"
-Groups="*res://groups.gd"
-Scenes="*res://scenes.gd"
-Util="*res://util.gd"
-UIElements="*res://ui/ui_elements.gd"
+Game="*res://src/game.gd"
+Rooms="*res://src/rooms.gd"
+Characters="*res://src/characters.gd"
+MUI="*res://src/mui.gd"
+Groups="*res://src/groups.gd"
+Scenes="*res://src/scenes.gd"
+Util="*res://src/util.gd"
+UIElements="*res://src/ui/ui_elements.gd"
 
 [display]
 
@@ -48,7 +48,7 @@ version_control/autoload_on_startup=true
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/script-ide/plugin.cfg")
+enabled=PackedStringArray("res://addons/gut/plugin.cfg", "res://addons/script-ide/plugin.cfg")
 
 [global_group]
 
