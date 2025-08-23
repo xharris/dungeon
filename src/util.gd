@@ -25,7 +25,7 @@ func clear_children(node:Node):
 
 func get_rect(node:Node2D) -> Rect2:
     var top_left:Vector2 = Vector2.ZERO
-    var size:Vector2 = Vector2.ZERO
+    var out:Vector2 = Vector2.ZERO
     for n in node.find_children("*"):
         var n_top_left = Vector2.ZERO
         var n_size = Vector2.ZERO
@@ -40,9 +40,9 @@ func get_rect(node:Node2D) -> Rect2:
             n_size *= n.global_scale
             
         top_left = top_left.min(n_top_left)
-        size = size.max(n_top_left + n_size)
+        out = out.max(n_top_left + n_size)
     
-    return Rect2(top_left, size)
+    return Rect2(top_left, out)
 
 func chain_call(funcs:Array):
     for f in funcs:

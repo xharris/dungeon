@@ -30,10 +30,6 @@ func arrange(characters:Array[Character], center:Vector2):
         GroupSide.Left: [] as Array[Character],
         GroupSide.Right: [] as Array[Character],
     }
-    var side_start_x = {
-        GroupSide.Left: 0,
-        GroupSide.Right: 0,
-    }
     var move_signals:Array[Signal] = []
     
     # put characters in a side depending on group

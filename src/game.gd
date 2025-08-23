@@ -24,7 +24,7 @@ func _ready() -> void:
     Events.room_created.connect(_on_room_created)
     Events.character_created.connect(_on_character_created)
     
-func _on_room_created(config:RoomConfig, node:Node2D):
+func _on_room_created(_config:RoomConfig, node:Node2D):
     environment.expand()
     # move camera to current room
     camera.move_to(node.position)
@@ -39,8 +39,6 @@ func _on_character_created(c:Character):
     else:
         c.global_position.x = room_center.x - offset_x
     c.position.y = 0
-    # add character to tree
-    characters.add_child(c)  
     c.stats.death.connect(_on_character_death.bind(c), CONNECT_ONE_SHOT)
     # arrange
     await characters.arrange([c], room_center)

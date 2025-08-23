@@ -1,8 +1,6 @@
 extends Node2D
 class_name Rooms
 
-signal room_created(room:RoomConfig, node:Node2D)
-
 var logs = Logger.new("rooms")
 ## index of current room
 var _index = -1

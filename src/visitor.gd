@@ -1,6 +1,7 @@
 extends Resource
 class_name Visitor
 
+@warning_ignore("unused_signal")
 signal finished
 
 var logs = Logger.new("visitor")
