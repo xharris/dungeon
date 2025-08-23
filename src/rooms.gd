@@ -1,82 +1,55 @@
-extends Node
+extends Node2D
+class_name Rooms
 
-class Room:
-    var characters:Array[Character]
-    var node:Node2D
-    var config:RoomConfig
-
-signal room_created(room:Room)
-signal room_finished(room:Room)
+signal room_created(room:RoomConfig, node:Node2D)
 
 var logs = Logger.new("rooms")
 ## index of current room
-var rooms:Array[Room]
+var _index = -1
+var _last_room_node:Node2D
+var _last_room:RoomConfig
+var _next_rooms:Array[RoomConfig]
 
 func _ready() -> void:
-    Characters.arrange_finished.connect(_on_arrange_finished)
+    Events.trigger_rooms_next.connect(_on_trigger_rooms_next)
 
-func _on_arrange_finished():
-    var current = current_room()
-    if current and current.config.enable_combat:
-        # enable combat
-        for c in current_characters():
-            c.enable_combat()
+func _on_trigger_rooms_next():
+    next()
 
-func destroy_all():
-    logs.info("destroy all")
-    for r in rooms:
-        # remove node
-        Util.destroy(r.node)
-        # remove characters
-        for c in r.characters:
-            c.destroy()
-    rooms.clear()
-    
-func current_room() -> Room:
-    if rooms.size() > 0:
-        return rooms[-1]
-    return null
+func last_room() -> RoomConfig:
+    return _last_room
 
-## get all characters in current room (plus player)
-func current_characters() -> Array[Character]:
-    var current = current_room()
-    var out:Array[Character]
-    # add player
-    var player = Characters.get_player()
-    if player:
-        out.append(player)
-    # add characters in currenet room
-    if current:
-        out.append_array(current.characters)
-    return out
+func push_room(config:RoomConfig) -> Rooms:
+    logs.info("push room: %s" % config.id)
+    _next_rooms.append(config)
+    return self
 
-func next_room(config:RoomConfig) -> Room:    
-    var room = Room.new()
-    room.config = config
-    
+func reset():
+    logs.info("reset")
+    Util.clear_children(self)
+
+func center() -> Vector2:
+    if _last_room_node:
+        return _last_room_node.global_position
+    return Vector2.ZERO
+
+func next() -> bool:   
+    var config = _next_rooms.pop_front()
+    if not config:
+        logs.info("no rooms left in queue")
+        return false
+    _index += 1
+    var node = Node2D.new()    
     # position room node
-    room.node = Node2D.new()
-    room.node.name = "room-%d-%s" % [rooms.size(), config.id]
-    if rooms.size() > 0:
-        room.node.position += \
-            rooms[-1].node.position + \
-            Vector2(Game.size.x, 0)
+    node.name = "room-%d-%s" % [_index, config.id]
+    if _last_room_node:
+        node.position += \
+            _last_room_node.position + \
+            Vector2(Util.size.x, 0)
+    _last_room_node = node
+    logs.info("next: %s position=%.0v" % [config.id, node.global_position])
+    add_child(node)
     
-    logs.info("next_room %s position=%.0v" % [config.id, room.node.global_position])
-    
-    # instantiate scene
-    if config.scene:
-        var scene = config.scene.instantiate()
-        room.node.add_child(scene)
-    
-    room_created.emit(room)
-    rooms.append(room)
-    return room
-
-func finish_room():
-    var current = current_room()
-    if current:
-        logs.info("'%s' finished" % current.config.id)
-        for v in current.config.on_room_finished:
-            v.run()
-        room_finished.emit(current)
+    config.run_events()
+    Events.room_created.emit(config, node)
+    return true

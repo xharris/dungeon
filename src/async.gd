@@ -19,6 +19,8 @@ class AwaitAll:
         
     func go():
         for s in _signals:
+            if s.is_connected(_done):
+                s.disconnect(_done)
             s.connect(_done, CONNECT_ONE_SHOT)
         await all_done
         

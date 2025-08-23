@@ -22,14 +22,13 @@ config/icon="res://icon.svg"
 
 [autoload]
 
-Game="*res://src/game.gd"
-Rooms="*res://src/rooms.gd"
-Characters="*res://src/characters.gd"
 MUI="*res://src/mui.gd"
 Groups="*res://src/groups.gd"
 Scenes="*res://src/scenes.gd"
 Util="*res://src/util.gd"
 UIElements="*res://src/ui/ui_elements.gd"
+Events="*res://src/events.gd"
+GameUtil="*res://src/game_util.gd"
 
 [display]
 

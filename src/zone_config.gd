@@ -2,12 +2,14 @@ extends Resource
 class_name ZoneConfig
 
 var logs = Logger.new("zone")
-@export var id:String = "unknown":
+@export var id:String:
     set(v):
         id = v
         logs.set_prefix(id)
 @export var rooms:Array[RoomConfig]
 
-func start():
-    logs.info("start")
-    Rooms.next_room(rooms.pick_random())
+func get_starting_room() -> RoomConfig:
+    logs.error(rooms.size() == 0, "no rooms")
+    var room:RoomConfig = rooms.pick_random()
+    logs.info("starting room: %s" % room.id)
+    return room

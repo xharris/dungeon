@@ -38,11 +38,13 @@ func use_config(config:CharacterConfig):
     stats.id = id
     inventory.id = id
     # position depending on group
-    #match config.group:
-        #Groups.CHARACTER_PLAYER, Groups.CHARACTER_ALLY:
-            #global_position.x = 0
-        #Groups.CHARACTER_ENEMY:
-            #global_position.x = Game.size.x - 30
+    match config.group:
+        Groups.CHARACTER_PLAYER:
+            global_position.x -= (Util.size.x / 2) + (Util.get_rect(self).size.x * 2)
+        _:
+            global_position.x += (Util.size.x / 2) + (Util.get_rect(self).size.x * 2)
+    position.y = 0
+    
     add_to_group(config.group)
     add_to_group(Groups.CHARACTER_ANY)
 
@@ -62,7 +64,7 @@ func _ready() -> void:
         _on_item_added(item)
     
     add_to_group(Groups.CHARACTER_ANY)
-    Characters.character_created.emit(self)
+    Events.character_created.emit(self)
 
 func _on_death():
     disable_combat()
@@ -210,21 +212,27 @@ func stop_moving():
         sprite.stand()
         move_to_finished.emit()
 
-func enable_combat():
-    if state.combat or not stats.is_alive():
-        return
+func enable_combat() -> bool:
+    if state.combat:
+        return true
     logs.info("enable combat")
-    sprite.stand()
+    if not stats.is_alive():
+        logs.info("not alive")
+        return false
     state.combat = true
-    attack_start_timer.start()
-
-func disable_combat():
-    if not state.combat:
-        return
-    logs.info("disable combat")
     sprite.stand()
+    attack_start_timer.start()
+    return true
+
+func disable_combat() -> bool:
+    if not state.combat:
+        return true
+    logs.info("disable combat")
     state.combat = false
+    if stats.is_alive():
+        sprite.stand()
     attack_start_timer.stop()
+    return true
 
 func destroy():
     if Util.destroy(self):

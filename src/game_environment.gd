@@ -5,11 +5,11 @@ class_name GameEnvironment
 #var floors:Array[Polygon2D]
 #
 func _ready() -> void:
-    _floor.position.x -= Game.size.x * 2
+    _floor.position.x -= Util.size.x * 2
     _floor.scale.x *= 3
 
 func expand():
-    _floor.position.x += Game.size.x
+    _floor.position.x += Util.size.x
     
 func reset():
-    _floor.position.x = -Game.size.x * 2
+    _floor.position.x = -Util.size.x * 2

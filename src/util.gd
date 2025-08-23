@@ -3,6 +3,10 @@ extends Node
 var logs = Logger.new("util")
 var main_node:Node2D
 
+var size:Vector2:
+    get:
+        return get_viewport().get_visible_rect().size
+        
 ## Returns [code]false[/code] if object is already being destroyed
 func destroy(node:Node) -> bool:
     if node == null:

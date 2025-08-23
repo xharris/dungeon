@@ -1,7 +1,12 @@
 extends Node
 
+var UI_LAYER = preload("res://src/ui/ui_layer.tscn")
 var UI_BUTTON = preload("res://src/ui/ui_button.tscn")
 var THEME_BASE = preload("res://themes/base.tres")
+
+func layer() -> UILayer:
+    var e = UI_LAYER.instantiate()
+    return e
 
 func rich_text_label() -> RichTextLabel:
     var e = RichTextLabel.new()

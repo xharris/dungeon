@@ -7,13 +7,13 @@ func _create_character(group:StringName):
 
 func _lootable_count() -> int:
     var count = 0
-    for c in Characters.get_all():
+    for c in GameUtil.all_characters():
         if c.inventory.lootable:
             count += 1
     return count
 
 func loot_enemies():
-    var visitor = load("res://src/ui_visitors/loot_enemies.tres") as VisitorEnableLooting
+    var visitor = load("res://src/visitors/set_looting.gd").new() as VisitorSetLooting
     
     _create_character(Groups.CHARACTER_PLAYER)
     _create_character(Groups.CHARACTER_ALLY)
@@ -24,7 +24,7 @@ func loot_enemies():
 
     # enable looting on enemies
     visitor.run()
-    for c in Characters.get_all():
+    for c in GameUtil.all_characters():
         assert_false(c.is_in_character_group(Groups.CHARACTER_PLAYER), "player should not be lootable")
         assert_false(c.is_in_character_group(Groups.CHARACTER_ALLY), "allies should not be lootable")
         assert_true(c.is_in_character_group(Groups.CHARACTER_ENEMY), "enemies should be lootable")

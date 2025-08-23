@@ -1,64 +1,21 @@
-[gd_scene load_steps=12 format=3 uid="uid://dcfgo1ktqljvl"]
+[gd_scene load_steps=6 format=3 uid="uid://dcfgo1ktqljvl"]
 
 [ext_resource type="Script" uid="uid://de8rli5juvd1i" path="res://main.gd" id="1_1bvp3"]
-[ext_resource type="PackedScene" uid="uid://ddmafsyxkbsus" path="res://src/game_camera.tscn" id="2_7mycd"]
-[ext_resource type="Script" uid="uid://ci3duvo8atgnv" path="res://src/game_environment.gd" id="3_7mycd"]
+[ext_resource type="PackedScene" uid="uid://6r7lwgjglfjs" path="res://src/game.tscn" id="2_lquwl"]
 [ext_resource type="PackedScene" uid="uid://b82oisi4jdpgc" path="res://src/ui/ui_layer.tscn" id="4_lquwl"]
-[ext_resource type="Resource" uid="uid://dgl8u4hjv3q88" path="res://src/ui_layer_configs/looting.tres" id="5_7mycd"]
 [ext_resource type="Resource" uid="uid://byium2luvm3tc" path="res://src/ui_layer_configs/pause.tres" id="6_7mycd"]
 [ext_resource type="Script" uid="uid://crbyl6davp4vt" path="res://src/pause_controller.gd" id="7_272bh"]
 
-[sub_resource type="Gradient" id="Gradient_80nbo"]
-offsets = PackedFloat32Array(0, 0.907407)
-colors = PackedColorArray(0.24, 0.24, 0.24, 1, 0.47, 0.47, 0.47, 1)
-
-[sub_resource type="GradientTexture2D" id="GradientTexture2D_e2o6t"]
-gradient = SubResource("Gradient_80nbo")
-fill_from = Vector2(1, 1)
-
-[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_fc0e3"]
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_fc0e3"]
-size = Vector2(768, 20)
-
-[node name="Main" type="Node2D" node_paths=PackedStringArray("pause_ui", "looting_ui")]
+[node name="Main" type="Node2D"]
 script = ExtResource("1_1bvp3")
-pause_ui = NodePath("PauseUI")
-looting_ui = NodePath("LootingUI")
 
-[node name="GameCamera" parent="." instance=ExtResource("2_7mycd")]
-
-[node name="Environment" type="Node2D" parent="."]
-script = ExtResource("3_7mycd")
-
-[node name="Floor" type="Polygon2D" parent="Environment"]
-position = Vector2(-960, 544)
-scale = Vector2(6, 1.66667)
-color = Color(0.631373, 0.533333, 0.498039, 1)
-texture = SubResource("GradientTexture2D_e2o6t")
-polygon = PackedVector2Array(4.29153e-06, -96, 320, -96, 320, 2.38419e-06, 0, 3.33786e-06, 0, -46.6263)
-uv = PackedVector2Array(1.63, 0.619999, 63.13, 0.619999, 66.13, 63.12, 3.13, 61.62)
-
-[node name="StaticBody2D" type="StaticBody2D" parent="Environment/Floor"]
-position = Vector2(0, -352.595)
-scale = Vector2(0.5, 0.979432)
-collision_mask = 2
-physics_material_override = SubResource("PhysicsMaterial_fc0e3")
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/Floor/StaticBody2D"]
-position = Vector2(320, 272)
-shape = SubResource("RectangleShape2D_fc0e3")
-
-[node name="Characters" type="Node2D" parent="."]
-
-[node name="Rooms" type="Node2D" parent="."]
-
-[node name="LootingUI" parent="." instance=ExtResource("4_lquwl")]
-config = ExtResource("5_7mycd")
+[node name="Game" parent="." instance=ExtResource("2_lquwl")]
 
 [node name="PauseUI" parent="." instance=ExtResource("4_lquwl")]
 config = ExtResource("6_7mycd")
 
-[node name="PauseController" type="Node" parent="PauseUI" node_paths=PackedStringArray("pause_ui")]
+[node name="PauseController" type="Node" parent="." node_paths=PackedStringArray("pause_node", "show_ui")]
+unique_name_in_owner = true
 script = ExtResource("7_272bh")
-pause_ui = NodePath("..")
+pause_node = NodePath("")
+show_ui = NodePath("../PauseUI")

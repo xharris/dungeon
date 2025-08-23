@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="ZoneConfig" load_steps=3 format=3 uid="uid://chugco6k7wa8b"]
+
+[ext_resource type="Script" uid="uid://df011ese0wh1b" path="res://src/room_config.gd" id="1_220a0"]
+[ext_resource type="Script" uid="uid://douhn25qpaexf" path="res://src/zone_config.gd" id="2_kdei6"]
+
+[resource]
+script = ExtResource("2_kdei6")
+id = "dev"
+rooms = Array[ExtResource("1_220a0")]([])
+metadata/_custom_type_script = "uid://douhn25qpaexf"

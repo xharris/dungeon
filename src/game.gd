@@ -1,30 +1,58 @@
 extends Node
+class_name Game
 
 enum State {NONE, TITLE, PLAY,}
 enum GameOverType {PLAYER_DEATH}
-static var STARTING_ROOM:RoomConfig = preload("res://src/rooms/title.tres")
 
 signal over(type:GameOverType)
-signal paused
-signal resumed
+signal started
+signal resetted
+
+@onready var camera:GameCamera = $GameCamera
+@onready var environment:GameEnvironment = $Environment
+@onready var characters:Characters = $Characters
+@onready var rooms:Rooms = $Rooms
+
+@export var title_room:RoomConfig = preload("res://src/rooms/title.tres")
+@export var starting_zone:ZoneConfig = preload("res://src/zones/forest/forest.tres")
 
 var logs = Logger.new("game")
-var size:Vector2:
-    get:
-        return get_viewport().get_visible_rect().size
-var _paused = false
 
 func _ready() -> void:
     process_mode = Node.PROCESS_MODE_ALWAYS
-    Characters.character_created.connect(_on_character_created)
+    
+    Events.room_created.connect(_on_room_created)
+    Events.character_created.connect(_on_character_created)
+    
+func _on_room_created(config:RoomConfig, node:Node2D):
+    environment.expand()
+    # move camera to current room
+    camera.move_to(node.position)
+    var all_chars = characters.get_all()
+    await characters.arrange(all_chars, node.global_position)
 
 func _on_character_created(c:Character):
+    var room_center = rooms.center()
+    var offset_x = (Util.size.x / 2) + (Util.get_rect(c).size.x * 2)
+    if c.is_in_group(Groups.CHARACTER_ENEMY):
+        c.global_position.x = room_center.x + offset_x
+    else:
+        c.global_position.x = room_center.x - offset_x
+    c.position.y = 0
+    # add character to tree
+    characters.add_child(c)  
     c.stats.death.connect(_on_character_death.bind(c), CONNECT_ONE_SHOT)
+    # arrange
+    await characters.arrange([c], room_center)
 
 func start():
     logs.info("game start")
-    # create first room
-    Rooms.next_room(STARTING_ROOM)
+    
+    rooms.push_room(title_room)
+    rooms.push_room(starting_zone.get_starting_room())
+    rooms.next()
+    
+    started.emit()
 
 func _on_character_death(c:Character):
     if c.is_in_group(Groups.CHARACTER_PLAYER):
@@ -33,39 +61,19 @@ func _on_character_death(c:Character):
 
 func reset():
     logs.info("game reset")
-    Characters.destroy_all()
-    Rooms.destroy_all()
+    
+    camera.reset()
+    environment.reset()
+    rooms.reset()
+    for c in characters.get_all():
+        Util.destroy(c)
+    
+    resetted.emit()
+
+func restart():
+    reset()
+    start()
 
 func is_over() -> bool:
-    var player = Characters.get_player()
+    var player = characters.get_player()
     return player and not player.stats.is_alive()
-
-func is_paused() -> bool:
-    return _paused
-
-func toggle_pause() -> bool:
-    if _paused:
-        return resume()
-    return pause()
-
-func pause() -> bool:
-    logs.info("pause")
-    if logs.warn_if(_paused, "game already paused"):
-        return false
-
-    # pause
-    _paused = true
-    paused.emit()
-    get_tree().paused = true
-    return true
-
-func resume() -> bool:
-    logs.info("resume")
-    if logs.warn_if(not _paused, "game not paused"):
-        return false
-        
-    # resume game
-    _paused = false
-    get_tree().paused = false
-    resumed.emit()
-    return true

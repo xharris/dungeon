@@ -1,8 +1,0 @@
-[gd_resource type="Resource" script_class="VisitorEnableLooting" load_steps=2 format=3 uid="uid://8nc5810wy7qh"]
-
-[ext_resource type="Script" uid="uid://b203xg7y1pucw" path="res://src/ui_visitors/enable_looting.gd" id="1_8iwbu"]
-
-[resource]
-script = ExtResource("1_8iwbu")
-character_groups = Array[String](["enemy"])
-metadata/_custom_type_script = "uid://b203xg7y1pucw"

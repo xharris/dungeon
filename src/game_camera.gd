@@ -15,4 +15,4 @@ func move_to(v:Vector2):
     tween.play()
 
 func reset():
-    position = Game.size / 2
+    position = Util.size / 2

@@ -1,15 +1,60 @@
-[gd_resource type="Resource" script_class="RoomConfig" load_steps=5 format=3 uid="uid://065toav6180h"]
+[gd_resource type="Resource" script_class="RoomConfig" load_steps=19 format=3 uid="uid://065toav6180h"]
 
-[ext_resource type="Script" uid="uid://bedyejdsvyux6" path="res://src/character_config.gd" id="1_41m7i"]
 [ext_resource type="Resource" uid="uid://ctlbypk5vki7g" path="res://src/characters/goblin.tres" id="2_4s0sn"]
 [ext_resource type="Script" uid="uid://df011ese0wh1b" path="res://src/room_config.gd" id="2_j74vj"]
 [ext_resource type="Script" uid="uid://btoexdkxgn0jv" path="res://src/visitor.gd" id="3_4s0sn"]
+[ext_resource type="Script" uid="uid://bxluh27mtef27" path="res://src/visitors/add_character.gd" id="3_au72f"]
+[ext_resource type="Script" uid="uid://cxr4md3rik2h" path="res://src/visitors/set_combat.gd" id="4_xh3v4"]
+[ext_resource type="Script" uid="uid://b203xg7y1pucw" path="res://src/visitors/set_looting.gd" id="5_xh3v4"]
+[ext_resource type="Script" uid="uid://fkw6ws1q3sbg" path="res://src/visitors/add_dialog.gd" id="6_8ubsu"]
+[ext_resource type="Script" uid="uid://cuq3hyb652hxm" path="res://src/dialog/choice.gd" id="6_tupp8"]
+[ext_resource type="Script" uid="uid://88f2xbx53hbg" path="res://src/dialog/prompt.gd" id="7_kgail"]
+[ext_resource type="Script" uid="uid://so7c3oa5m7s2" path="res://src/visitors/replay_room.gd" id="7_wlpj3"]
+
+[sub_resource type="Resource" id="Resource_8ubsu"]
+script = ExtResource("3_au72f")
+config = ExtResource("2_4s0sn")
+metadata/_custom_type_script = "uid://bxluh27mtef27"
+
+[sub_resource type="Resource" id="Resource_churg"]
+script = ExtResource("4_xh3v4")
+combat_enabled = true
+metadata/_custom_type_script = "uid://cxr4md3rik2h"
+
+[sub_resource type="Resource" id="Resource_tupp8"]
+script = ExtResource("5_xh3v4")
+character_groups = Array[String](["enemy"])
+metadata/_custom_type_script = "uid://b203xg7y1pucw"
+
+[sub_resource type="Resource" id="Resource_wlpj3"]
+script = ExtResource("6_tupp8")
+text = "Let's move on"
+on_select = Array[ExtResource("3_4s0sn")]([])
+metadata/_custom_type_script = "uid://cuq3hyb652hxm"
+
+[sub_resource type="Resource" id="Resource_r2cuc"]
+script = ExtResource("7_wlpj3")
+metadata/_custom_type_script = "uid://so7c3oa5m7s2"
+
+[sub_resource type="Resource" id="Resource_r7wxj"]
+script = ExtResource("6_tupp8")
+text = "I'm not done yet!"
+on_select = Array[ExtResource("3_4s0sn")]([SubResource("Resource_r2cuc")])
+metadata/_custom_type_script = "uid://cuq3hyb652hxm"
+
+[sub_resource type="Resource" id="Resource_hvjos"]
+script = ExtResource("7_kgail")
+text = "That was easy"
+choices = Array[ExtResource("6_tupp8")]([SubResource("Resource_wlpj3"), SubResource("Resource_r7wxj")])
+metadata/_custom_type_script = "uid://88f2xbx53hbg"
+
+[sub_resource type="Resource" id="Resource_kgail"]
+script = ExtResource("6_8ubsu")
+prompt = SubResource("Resource_hvjos")
+metadata/_custom_type_script = "uid://fkw6ws1q3sbg"
 
 [resource]
 script = ExtResource("2_j74vj")
 id = "combat_goblins"
-characters = Array[ExtResource("1_41m7i")]([ExtResource("2_4s0sn")])
-enable_combat = true
-enable_continue = true
-on_room_finished = Array[ExtResource("3_4s0sn")]([])
+events = Array[ExtResource("3_4s0sn")]([SubResource("Resource_8ubsu"), SubResource("Resource_churg"), SubResource("Resource_tupp8"), SubResource("Resource_kgail")])
 metadata/_custom_type_script = "uid://df011ese0wh1b"
