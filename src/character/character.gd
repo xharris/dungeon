@@ -254,7 +254,7 @@ func _physics_process(delta: float) -> void:
         else:
             velocity.x += delta * max_velocity.x * sign(norm_move_to_target.x)
             sprite.walk()
-            sprite.speed_scale = lerpf(1, 1.75, norm_move_to_target.x)
+            sprite.speed_scale = lerpf(1, 1.75, abs(norm_move_to_target.x))
         # face left/right
         sprite.scale.x = (-1 if norm_move_to_target.x < 0 else 1) * abs(sprite.scale.x)
 

@@ -4,12 +4,7 @@ class_name UIButtonConfig
 static var logs = Logger.new("ui_button_config")
 
 @export var id:String
-@export var text:String:
-    get:
-        if text.length() == 0:
-            logs.error(id.length() == 0, "button is missing id")                
-            return id.capitalize()
-        return text
+@export var text:String
 @export var auto_focus:bool = false
 @export var shadow_size:int = 10
 @export var disabled:bool = false

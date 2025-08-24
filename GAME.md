@@ -16,10 +16,4 @@ Each zone has a unique mini game theme. Typically you can get to a new zone afte
 - **Town** lots of quests
 - **Medieval Times** quick time events
 
-## Items (name `charges` effect)
-
-- **Hand (default)** `0` (no effect)
-- **Sword** `0` `+2 charge`
-- **Spear** `3` attack twice
-- **Wand**
-- **Dagger** `5` quick_attack `x++` times
+https://docs.google.com/spreadsheets/d/1gJya1l7MXsAT54gTafpR7CL8yq3fiI8Q0mO2TwX-r54/edit?usp=sharing

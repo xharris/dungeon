@@ -6,8 +6,8 @@ enum State {NONE, NORMAL, ELEVATED, PRESSED}
 ## pressed + close_on_press
 signal pressed_to_close
 
-@onready var bg = $BG
-@onready var shadow = $BGShadow
+@onready var bg:ColorRect = $BG
+@onready var shadow:ColorRect = $BGShadow
 
 @export var config:UIButtonConfig
 
@@ -48,6 +48,7 @@ func _on_resize():
 func _process(_delta: float) -> void:
     text = config.text
     disabled = config.disabled
+    custom_minimum_size = Vector2(bg.size.y, 0)
     
     begin_bulk_theme_override()
     add_theme_color_override("font_color", _theme_color.get("font_color"))

@@ -6,6 +6,7 @@ var LOOTING:UILayerConfig = preload("res://src/ui_layer_configs/looting.tres")
 @export_enum(
     Groups.CHARACTER_ALLY, Groups.CHARACTER_ENEMY,
     ) var character_groups:Array[String]
+@export var enabled:bool = true
 
 func _init() -> void:
     logs.set_id("enable_looting")

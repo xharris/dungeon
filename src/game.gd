@@ -19,8 +19,6 @@ signal resetted
 var logs = Logger.new("game")
 
 func _ready() -> void:
-    process_mode = Node.PROCESS_MODE_ALWAYS
-    
     Events.room_created.connect(_on_room_created)
     Events.character_created.connect(_on_character_created)
     

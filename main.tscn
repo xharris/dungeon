@@ -14,8 +14,7 @@ script = ExtResource("1_1bvp3")
 [node name="PauseUI" parent="." instance=ExtResource("4_lquwl")]
 config = ExtResource("6_7mycd")
 
-[node name="PauseController" type="Node" parent="." node_paths=PackedStringArray("pause_node", "show_ui")]
+[node name="PauseController" type="Node" parent="." node_paths=PackedStringArray("show_ui")]
 unique_name_in_owner = true
 script = ExtResource("7_272bh")
-pause_node = NodePath("")
 show_ui = NodePath("../PauseUI")

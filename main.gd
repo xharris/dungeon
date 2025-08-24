@@ -19,7 +19,3 @@ func _ready() -> void:
     
 func _on_game_over(_type:Game.GameOverType):
     game.restart()
-
-func _unhandled_input(event: InputEvent) -> void:
-    if event.is_action_pressed("pause"):
-        pause_controller.toggle_pause()

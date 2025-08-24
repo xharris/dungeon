@@ -10,7 +10,7 @@ var id:String = "":
     set(v):
         id = v
         logs.set_prefix(id)
-@export var capacity:int = 2
+@export var capacity:int = 1
 @export var items:Array[Item]
 @export var lootable:bool = false
 
@@ -31,9 +31,15 @@ func count(item_id:String = "") -> int:
 ## Remove [code]n[/code] instances of item [code]item_id[/code]
 func remove_item(item_id:String, n:int = 1):
     for i in items.size():
-        if items[i].id == item_id:
+        var item = items[i]
+        if item.id == item_id:
             items.remove_at(i)
             n -= 1
-            item_removed.emit(items[i])
+            item_removed.emit(item)
         if n <= 0:
             return
+
+func get_item_at(i:int) -> Item:
+    if i < items.size():
+        return items[i]
+    return null

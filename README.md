@@ -9,4 +9,3 @@
 
 - feat: looting
 - feat: projectiles
-- clean: find other stuff to decouple

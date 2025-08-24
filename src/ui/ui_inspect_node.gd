@@ -111,6 +111,9 @@ func set_title(title:String):
 func set_layer(layer:UILayer = null):
     _layer = layer
 
+func get_layer() -> UILayer:
+    return _layer
+
 ## node is selected
 func select() -> bool:
     return set_state(State.SELECTED)

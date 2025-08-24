@@ -24,6 +24,7 @@ metadata/_custom_type_script = "uid://cxr4md3rik2h"
 [sub_resource type="Resource" id="Resource_tupp8"]
 script = ExtResource("5_xh3v4")
 character_groups = Array[String](["enemy"])
+enabled = true
 metadata/_custom_type_script = "uid://b203xg7y1pucw"
 
 [sub_resource type="Resource" id="Resource_wlpj3"]

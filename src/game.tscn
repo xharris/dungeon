@@ -1,6 +1,7 @@
-[gd_scene load_steps=10 format=3 uid="uid://6r7lwgjglfjs"]
+[gd_scene load_steps=11 format=3 uid="uid://6r7lwgjglfjs"]
 
 [ext_resource type="Script" uid="uid://bjkk1no4qjk4e" path="res://src/game.gd" id="1_7jktm"]
+[ext_resource type="Resource" uid="uid://bfres5ikig3oe" path="res://src/dev/room.tres" id="2_pk08u"]
 [ext_resource type="PackedScene" uid="uid://ddmafsyxkbsus" path="res://src/game_camera.tscn" id="2_ryrav"]
 [ext_resource type="Script" uid="uid://ci3duvo8atgnv" path="res://src/game_environment.gd" id="3_eow3j"]
 [ext_resource type="PackedScene" uid="uid://dh8l7rcfqnx1p" path="res://src/rooms.tscn" id="4_j5wjh"]
@@ -21,6 +22,7 @@ size = Vector2(768, 20)
 
 [node name="Game" type="Node2D"]
 script = ExtResource("1_7jktm")
+title_room = ExtResource("2_pk08u")
 
 [node name="GameCamera" parent="." instance=ExtResource("2_ryrav")]
 

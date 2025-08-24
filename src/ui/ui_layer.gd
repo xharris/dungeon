@@ -161,7 +161,7 @@ func _update_focus() -> bool:
         row = row.filter(func(c: Node): return Util.UI.is_valid_neighbor(c))
         
         if row.size() > 0:
-            var col = _rows_last_selected_idx[i]
+            var col = clampi(_rows_last_selected_idx[i], 0, row.size()-1)
             
             if i == current_selected_row and not focus_ctrl:
                 # focus last selected element

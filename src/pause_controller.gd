@@ -5,12 +5,19 @@ class_name PauseController
 signal paused
 signal resumed
 
-@export var pause_node:Node
 @export var show_ui:UILayer
+@export var action:String = "pause"
 
 var logs = Logger.new("pause_controller")
 var _paused = false
 
+func _ready() -> void:
+    process_mode = Node.PROCESS_MODE_ALWAYS
+
+func _unhandled_input(event: InputEvent) -> void:
+    if event.is_action_pressed(action):
+        toggle_pause()
+        
 func is_paused() -> bool:
     return _paused
 

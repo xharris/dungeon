@@ -4,6 +4,8 @@ var UI_LAYER = preload("res://src/ui/ui_layer.tscn")
 var UI_BUTTON = preload("res://src/ui/ui_button.tscn")
 var THEME_BASE = preload("res://themes/base.tres")
 
+var logs = Logger.new("ui_elements")
+
 func layer() -> UILayer:
     var e = UI_LAYER.instantiate()
     return e
