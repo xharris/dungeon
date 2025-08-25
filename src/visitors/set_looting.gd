@@ -14,7 +14,7 @@ func _init() -> void:
 func run():
     for c in GameUtil.all_characters():
         if character_groups.any(func(g:String):
-            return c.is_in_character_group(g)
+            return c.is_in_group(g)
         ):
             c.inventory.lootable = true
     # TODO show looting ui and connect `finished` to when UI is closed

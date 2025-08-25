@@ -24,6 +24,9 @@ signal item_activated(item: Item)
 @export var icon: Texture2D
 ## which hand the item is held in
 @export var hold: Hold
+@export var animation_library:AnimationLibrary
+## optional, if this item is a weapon
+@export var weapon_visitor:Array[WeaponVisitor]
 
 # combat
 

@@ -1,14 +1,12 @@
 class_name Character
 extends CharacterBody2D
 
-enum MovementState {NONE, TARGET, FALL}
-enum CombatState {NONE, ACTIVE}
+enum CombatState {DISABLED, ENABLED}
 
-class State:
+class MovementState:
     var idle = false
     var move_to_target = false
     var fall = false
-    var combat = false
 
 signal move_to_finished
 
@@ -16,16 +14,17 @@ signal move_to_finished
 @onready var held_item_l: Node2D = %HeldItemL
 @onready var held_item_r: Node2D = %HeldItemR
 @onready var attack_start_timer: Timer = $AttackStart
-@export var inspect_node: UIInspectNode
+@onready var _weapon_animation_player: AnimationPlayer = $CharacterSprite/WeaponAnimationPlayer
+@onready var _attack_timer: AttackTimer = $AttackTimer
+@onready var inspect_node: UICharacterInspect = %UICharacterInspect
 
 var logs = Logger.new("character")#, Logger.Level.DEBUG)
 var stats:Stats
 var inventory:Inventory
 
 var id:String = "unknown"
-var _movement_state:MovementState ## TODO
-var _combat_state:CombatState ## TODO
-var state = State.new()
+var _combat_state:CombatState
+var _movement_state = MovementState.new()
 var target_position: Vector2
 var target_distance: Vector2 = Vector2(20, 20)
 var _max_velocity: Vector2 = Vector2(400, 500)
@@ -57,6 +56,7 @@ func _ready() -> void:
     inventory.item_removed.connect(_on_item_removed)
     stats.damage_taken.connect(_on_damage_taken)
     stats.death.connect(_on_death)
+    _attack_timer.attack_finished.connect(_on_attack_finished)
     
     # trigger signal for default items
     for item in inventory.items:
@@ -103,6 +103,10 @@ func _on_item_added(item: Item):
         held_item_node.get_children().map(func(c:Node): remove_child(c))
         # add held item
         held_item_node.add_child(item_node)
+    # weapon animation
+    if item.animation_library:
+        _weapon_animation_player.add_animation_library(item.id, item.animation_library)
+        _weapon_animation_player.get_animation_library(item.id)
 
 func _on_item_removed(item: Item, _left: int):
     if inventory.count(item.id) == 0:
@@ -126,7 +130,7 @@ func _on_attack_start_timeout() -> void:
             # start animation
             sprite.swing()
 
-func _on_attack_landed() -> void:
+func _on_attack_finished(is_sweet_spot:bool) -> void:
     var ctx = _attack_ctx
     _attack_ctx = null
     if ctx == null:
@@ -134,7 +138,9 @@ func _on_attack_landed() -> void:
         return
     # calculate damage
     var damage = 0
-    for item in inventory.items:        
+    for item in inventory.items:
+        if item.weapon_sweet_spot:
+            pass
         for v in item.visitors: 
             # get possible targets
             var possible_targets = v.on_get_possible_targets()
@@ -181,9 +187,6 @@ func _on_attack_landed() -> void:
             else:
                 logs.warn("no targets found: %s" % ctx.stringify())
         
-func is_in_character_group(group:String):
-    return is_in_group(group)
-        
 func held_items() -> Array[Item]:
     return []
     
@@ -192,7 +195,7 @@ func move_to_x(x: int) -> bool:
     if stats.is_alive():
         logs.info("move to x=%d" % x)
         target_position.x = x
-        state.move_to_target = true
+        _movement_state.move_to_target = true
         return true
     return false
 
@@ -200,39 +203,44 @@ func move(relative_pos: Vector2) -> bool:
     if stats.is_alive():
         logs.info("move %.0v + %.0v" % [global_position, relative_pos])
         target_position = global_position + relative_pos
-        state.move_to_target = true
+        _movement_state.move_to_target = true
         return true
     return false
     
 func stop_moving():
-    if state.move_to_target:
+    if _movement_state.move_to_target:
         logs.debug("stop moving")
-        state.move_to_target = false
+        _movement_state.move_to_target = false
         velocity.x = 0
         sprite.stand()
         move_to_finished.emit()
 
 func enable_combat() -> bool:
-    if state.combat:
-        return true
-    logs.info("enable combat")
-    if not stats.is_alive():
-        logs.info("not alive")
-        return false
-    state.combat = true
-    sprite.stand()
-    attack_start_timer.start()
-    return true
+    return set_combat_state(CombatState.ENABLED)
 
 func disable_combat() -> bool:
-    if not state.combat:
-        return true
-    logs.info("disable combat")
-    state.combat = false
-    if stats.is_alive():
-        sprite.stand()
-    attack_start_timer.stop()
-    return true
+    return set_combat_state(CombatState.DISABLED)
+
+func set_combat_state(state:CombatState) -> bool:
+    logs.info("set combat _movement_state: %s" % CombatState.find_key(state))
+    
+    match state:
+        CombatState.DISABLED:
+            _weapon_animation_player.active = false
+            if stats.is_alive():
+                sprite.stand()
+            attack_start_timer.stop()
+
+        CombatState.ENABLED:
+            if not stats.is_alive():
+                logs.info("not alive")
+                return false
+            _weapon_animation_player.active = true
+            sprite.stand()
+            attack_start_timer.start()
+ 
+    _combat_state = state
+    return true 
 
 func destroy():
     if Util.destroy(self):
@@ -248,7 +256,7 @@ func _physics_process(delta: float) -> void:
     var max_velocity = stats.movespeed * _max_velocity
 
     # walking animation
-    if state.move_to_target:
+    if _movement_state.move_to_target:
         if arrived:
             stop_moving()
         else:
@@ -258,16 +266,11 @@ func _physics_process(delta: float) -> void:
         # face left/right
         sprite.scale.x = (-1 if norm_move_to_target.x < 0 else 1) * abs(sprite.scale.x)
 
-    if state.idle:
+    if _movement_state.idle:
         sprite.stand()
-
-    # combat: attack enemy
-    if not state.combat and not attack_start_timer.is_stopped():
-        logs.debug("stop combat")
-        attack_start_timer.stop()
 
     velocity = velocity.clamp(-max_velocity, max_velocity)
 
-    # update state
-    state.fall = not is_on_floor()
-    state.idle = is_on_floor() and norm_move_to_target.length() == 0
+    # update _movement_state
+    _movement_state.fall = not is_on_floor()
+    _movement_state.idle = is_on_floor() and norm_move_to_target.length() == 0

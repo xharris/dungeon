@@ -25,6 +25,6 @@ func loot_enemies():
     # enable looting on enemies
     visitor.run()
     for c in GameUtil.all_characters():
-        assert_false(c.is_in_character_group(Groups.CHARACTER_PLAYER), "player should not be lootable")
-        assert_false(c.is_in_character_group(Groups.CHARACTER_ALLY), "allies should not be lootable")
-        assert_true(c.is_in_character_group(Groups.CHARACTER_ENEMY), "enemies should be lootable")
+        assert_false(c.is_in_group(Groups.CHARACTER_PLAYER), "player should not be lootable")
+        assert_false(c.is_in_group(Groups.CHARACTER_ALLY), "allies should not be lootable")
+        assert_true(c.is_in_group(Groups.CHARACTER_ENEMY), "enemies should be lootable")

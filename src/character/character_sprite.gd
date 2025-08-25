@@ -2,30 +2,33 @@ class_name CharacterSprite
 extends Node2D
 
 @onready var animation_player:AnimationPlayer = $AnimationPlayer
+@onready var weapon_animation_player:AnimationPlayer = $WeaponAnimationPlayer
 
 @export var speed_scale = 1.0
 
+class MovementState:
+    var idle = false
+    var walk = false
+
+
 var _speed_scale = 1.0
 var _swing_up = false
+var _state
 
 func stand():
     animation_player.play("RESET")
     animation_player.advance(0)
-    animation_player.play("stand")
+    animation_player.play("character_movement/idle")
     _speed_scale = 1.0
 
 func walk():
-    animation_player.play("walk")
+    animation_player.play("character_movement/walk")
     _speed_scale = 6.0
 
 func swing():
-    animation_player.play("swing_up" if _swing_up else "swing_down")
-    _swing_up = !_swing_up
+    var animations = weapon_animation_player.get_animation_list()
+    weapon_animation_player.play(animations[randi() % animations.size()])
     await animation_player.animation_finished
-
-func swing_up():
-    animation_player.play("swing_up")
-    _swing_up = false
 
 func reset_speed_scale():
     speed_scale = 1.0

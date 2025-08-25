@@ -1,15 +1,14 @@
-[gd_resource type="Resource" script_class="CharacterConfig" load_steps=8 format=3 uid="uid://ctlbypk5vki7g"]
+[gd_resource type="Resource" script_class="CharacterConfig" load_steps=7 format=3 uid="uid://ctlbypk5vki7g"]
 
-[ext_resource type="Script" uid="uid://oedsddb184wt" path="res://src/item.gd" id="1_45aqr"]
+[ext_resource type="Script" uid="uid://oedsddb184wt" path="res://src/item.gd" id="1_gkk7u"]
 [ext_resource type="Script" uid="uid://bedyejdsvyux6" path="res://src/character_config.gd" id="1_ryqsm"]
-[ext_resource type="Resource" uid="uid://d4eo2x47h5he7" path="res://src/items/stick/stick.tres" id="2_45aqr"]
 [ext_resource type="Script" uid="uid://brhyw2hs6qpeh" path="res://src/stats.gd" id="2_a2yxw"]
 [ext_resource type="Script" uid="uid://bergs16kyq55l" path="res://src/inventory.gd" id="3_a2g3e"]
 
 [sub_resource type="Resource" id="Resource_r4smr"]
 script = ExtResource("3_a2g3e")
 capacity = 1
-items = Array[ExtResource("1_45aqr")]([ExtResource("2_45aqr")])
+items = Array[ExtResource("1_gkk7u")]([])
 lootable = false
 metadata/_custom_type_script = "uid://bergs16kyq55l"
 
