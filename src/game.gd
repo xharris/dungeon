@@ -66,6 +66,7 @@ func reset():
     
     resetted.emit()
 
+## BUG not working as expected
 func restart():
     reset()
     start()

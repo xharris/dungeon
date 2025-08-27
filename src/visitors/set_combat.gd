@@ -30,9 +30,10 @@ func _on_character_death(_character:Character):
     var enemies_alive = enemies.reduce(func(prev:int, curr:Character): 
         return prev + (1 if curr.stats.is_alive() else 0)
     , 0)
-    
+
     if enemies_alive == 0:
         # combat is over
+        logs.info("combat finished")
         for c in GameUtil.all_characters():
             c.disable_combat()
         finished.emit()

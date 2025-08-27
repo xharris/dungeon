@@ -1,12 +1,21 @@
 extends Visitor
 class_name VisitorAddCharacter
 
+static var _player_created: bool = false
+
 @export var config:CharacterConfig
 
 func _init() -> void:
     logs.set_prefix("add_character")
 
 func run():
+    # only one player
+    if _player_created and config.group == Groups.CHARACTER_PLAYER:
+        logs.warn("cannot create multiple players")
+        return
+    if config.group == Groups.CHARACTER_PLAYER:
+        _player_created = true
+    
     var c = Scenes.CHARACTER.instantiate() as Character
     c.use_config(config)
     logs.info("add %s" % config.id)

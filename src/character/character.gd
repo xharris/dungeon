@@ -13,6 +13,7 @@ signal move_to_finished
 @onready var sprite: CharacterSprite = $CharacterSprite
 @onready var held_item_l: Node2D = %HeldItemL
 @onready var held_item_r: Node2D = %HeldItemR
+@onready var _animation_player: AnimationPlayer = $CharacterSprite/AnimationPlayer
 @onready var _weapon_animation_player: AnimationPlayer = $CharacterSprite/WeaponAnimationPlayer
 @onready var _attack_timer: AttackTimer = $AttackTimer
 @onready var inspect_node: UICharacterInspect = %UICharacterInspect
@@ -51,6 +52,8 @@ func _ready() -> void:
     name = "char-%s-%d" % [id, get_instance_id()]
     logs.set_id(id)
     _attack_timer.id = id
+    _weapon_animation_player.active = true
+    _animation_player.play("RESET")
     
     logs.info("create %s at %.2v" % [id, global_position])
     
@@ -86,7 +89,6 @@ func _on_attack_timer_started():
         var animation_name = "%s/%s" % [_weapon.id, _weapon.attack_config.next_animation()]
         logs.warn_if(not _weapon_animation_player.has_animation(animation_name), "missing weapon animation: %s" % animation_name)
         logs.debug("play animation: %s" % animation_name)
-        _weapon_animation_player.stop()
         _weapon_animation_player.play(animation_name)
         _weapon_animation_player.speed_scale = _attack_timer.speed
 
@@ -96,7 +98,7 @@ func _on_death():
 
 func _on_damage_taken(amount: int):
     var text = Scenes.ACTION_TEXT.instantiate()
-    get_tree().root.add_child(text)
+    Util.main_node.add_child(text)
     text.global_position = global_position
     text.text = str(-amount)
     text.velocity.y = -700
@@ -111,7 +113,7 @@ func _on_damage_taken(amount: int):
 func _on_item_added(item: Item):
     if not item.is_weapon:
         return
-    var item_node = item.scene.instantiate() if item.scene else null
+    var item_node = item.scene.instantiate() as Node2D if item.scene else null
     # hold in hand?
     var held_item_node = \
         held_item_l if item.hold == Item.Hold.Primary else\

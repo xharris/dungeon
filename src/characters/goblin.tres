@@ -17,6 +17,7 @@ script = ExtResource("2_a2yxw")
 max_hp = 10
 hp = 10
 movespeed = Vector2(1, 1)
+strength = 4
 metadata/_custom_type_script = "uid://brhyw2hs6qpeh"
 
 [resource]

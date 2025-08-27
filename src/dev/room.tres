@@ -25,14 +25,15 @@ metadata/_custom_type_script = "uid://bergs16kyq55l"
 
 [sub_resource type="Resource" id="Resource_4j03v"]
 script = ExtResource("8_3iphe")
-max_hp = 10
-hp = 10
+max_hp = 30
+hp = 30
 movespeed = Vector2(1, 1)
+strength = 4
 metadata/_custom_type_script = "uid://brhyw2hs6qpeh"
 
 [sub_resource type="Resource" id="Resource_p8kkm"]
 script = ExtResource("7_1vep8")
-id = "lootablechar"
+id = "some_nobody"
 group = "enemy"
 stats = SubResource("Resource_4j03v")
 inventory = SubResource("Resource_2gais")

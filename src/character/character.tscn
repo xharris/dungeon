@@ -81,9 +81,11 @@ script = ExtResource("2_ugqs2")
 rotation = -0.785398
 
 [node name="HandL" type="Node2D" parent="CharacterSprite/ArmL"]
+z_index = -1
 position = Vector2(0, 6)
 
 [node name="HandSprite" type="Sprite2D" parent="CharacterSprite/ArmL/HandL"]
+z_index = 1
 rotation = -3.14159
 texture = ExtResource("3_hx151")
 hframes = 6
@@ -133,7 +135,6 @@ libraries = {
 }
 
 [node name="WeaponAnimationPlayer" type="AnimationPlayer" parent="CharacterSprite"]
-active = false
 reset_on_save = false
 libraries = {
 &"sword": ExtResource("4_56uj1")

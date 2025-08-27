@@ -6,6 +6,7 @@ signal paused
 signal resumed
 
 @export var show_ui:UILayer
+## input action to trigger pause
 @export var action:String = "pause"
 
 var logs = Logger.new("pause_controller")

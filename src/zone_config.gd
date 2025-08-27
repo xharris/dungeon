@@ -11,5 +11,5 @@ var logs = Logger.new("zone")
 func get_starting_room() -> RoomConfig:
     logs.error(rooms.size() == 0, "no rooms")
     var room:RoomConfig = rooms.pick_random()
-    logs.info("starting room: %s" % room.id)
+    logs.info("first room: %s" % room.id)
     return room

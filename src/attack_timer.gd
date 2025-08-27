@@ -36,9 +36,10 @@ func set_state(state:State) -> bool:
     return true
 
 func start():
-    if _state != State.ENABLED:
-        return
     logs.debug("start")
+    if _state != State.ENABLED:
+        logs.warn("not enabled")
+        return
     _timer = 0
     _attack_done = false
     _sweet_spot_done = false
@@ -48,6 +49,7 @@ func start():
         _animation_length = 1.0
     else:
         _animation_length = animation_player.current_animation_length
+        logs.debug("animation length: %.2f" % _animation_length)
     logs.warn_if(not _attack_config, "need attack config")
 
 func set_attack_config(config: ItemAttackConfig):
