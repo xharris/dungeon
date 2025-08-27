@@ -9,7 +9,7 @@ func _init() -> void:
     
 func run():
     if combat_enabled:
-        logs.info("wait for arrange")
+        logs.info("enable combat, wait for arrange")
         Events.characters_arranged.connect(_on_arrange_finished, CONNECT_ONE_SHOT)
     else:
         for c in GameUtil.all_characters():
@@ -24,7 +24,8 @@ func _on_arrange_finished():
 
 func _on_character_death(_character:Character):
     var enemies:Array[Character] = GameUtil.all_characters().filter(func(c:Character): 
-        return c.state.combat and c.is_in_group(Groups.CHARACTER_ENEMY)
+        return c.get_combat_state() == Character.CombatState.ENABLED and \
+            c.is_in_group(Groups.CHARACTER_ENEMY)
     )
     var enemies_alive = enemies.reduce(func(prev:int, curr:Character): 
         return prev + (1 if curr.stats.is_alive() else 0)

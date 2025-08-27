@@ -13,7 +13,6 @@ signal move_to_finished
 @onready var sprite: CharacterSprite = $CharacterSprite
 @onready var held_item_l: Node2D = %HeldItemL
 @onready var held_item_r: Node2D = %HeldItemR
-@onready var attack_start_timer: Timer = $AttackStart
 @onready var _weapon_animation_player: AnimationPlayer = $CharacterSprite/WeaponAnimationPlayer
 @onready var _attack_timer: AttackTimer = $AttackTimer
 @onready var inspect_node: UICharacterInspect = %UICharacterInspect
@@ -28,6 +27,7 @@ var _movement_state = MovementState.new()
 var target_position: Vector2
 var target_distance: Vector2 = Vector2(20, 20)
 var _max_velocity: Vector2 = Vector2(400, 500)
+var _weapon: Item
 
 func use_config(config:CharacterConfig):
     id = config.id
@@ -50,13 +50,15 @@ func use_config(config:CharacterConfig):
 func _ready() -> void:
     name = "char-%s-%d" % [id, get_instance_id()]
     logs.set_id(id)
+    _attack_timer.id = id
+    
     logs.info("create %s at %.2v" % [id, global_position])
     
     inventory.item_added.connect(_on_item_added)
     inventory.item_removed.connect(_on_item_removed)
     stats.damage_taken.connect(_on_damage_taken)
     stats.death.connect(_on_death)
-    _attack_timer.attack_finished.connect(_on_attack_finished)
+    _attack_timer.attack_started.connect(_on_attack_timer_started)
     
     # trigger signal for default items
     for item in inventory.items:
@@ -65,6 +67,28 @@ func _ready() -> void:
     
     add_to_group(Groups.CHARACTER_ANY)
     Events.character_created.emit(self)
+
+func _on_attack_timer_started():
+    if not _weapon:
+        logs.warn("missing weapon")
+        return
+    if not _weapon.attack_config:
+        logs.warn("missing weapon.attack_config: %s" % _weapon.id)
+        return
+    # weapon animation
+    if not _weapon_animation_player.has_animation_library(_weapon.id):
+        logs.info("add animation library: %s (%s)" % [_weapon.id, _weapon.animation_library.get_animation_list()])
+        _weapon_animation_player.add_animation_library(_weapon.id, _weapon.animation_library)
+    _attack_timer.set_attack_config(_weapon.attack_config)
+
+    # play attack animation, set animation speed to attack timer speed
+    if not logs.warn_if(_weapon.attack_config.animation_name.length() == 0, "missing weapon attack config animation name for '%s' (expecting one of: %s)" % [_weapon.id, _weapon.animation_library.get_animation_list()]):
+        var animation_name = "%s/%s" % [_weapon.id, _weapon.attack_config.next_animation()]
+        logs.warn_if(not _weapon_animation_player.has_animation(animation_name), "missing weapon animation: %s" % animation_name)
+        logs.debug("play animation: %s" % animation_name)
+        _weapon_animation_player.stop()
+        _weapon_animation_player.play(animation_name)
+        _weapon_animation_player.speed_scale = _attack_timer.speed
 
 func _on_death():
     disable_combat()
@@ -85,13 +109,8 @@ func _on_damage_taken(amount: int):
     tween.tween_property(text, "modulate", Color.TRANSPARENT, 0.25)
 
 func _on_item_added(item: Item):
-    # trigger item visitors
-    for i in inventory.items:
-        for v in i.visitors:
-            v.ctx = ItemVisitor.Context.new()
-            v.ctx.source = self
-            v.ctx.item = i
-            v.on_equip()
+    if not item.is_weapon:
+        return
     var item_node = item.scene.instantiate() if item.scene else null
     # hold in hand?
     var held_item_node = \
@@ -100,13 +119,10 @@ func _on_item_added(item: Item):
         null
     if held_item_node and item_node:
         # clear currently held item
-        held_item_node.get_children().map(func(c:Node): remove_child(c))
+        Util.clear_children(held_item_node)
         # add held item
         held_item_node.add_child(item_node)
-    # weapon animation
-    if item.animation_library:
-        _weapon_animation_player.add_animation_library(item.id, item.animation_library)
-        _weapon_animation_player.get_animation_library(item.id)
+    _weapon = item
 
 func _on_item_removed(item: Item, _left: int):
     if inventory.count(item.id) == 0:
@@ -114,79 +130,7 @@ func _on_item_removed(item: Item, _left: int):
         for held_item in held_item_l.get_children() as Array[Item]:
             if held_item.id == item.id:
                 pass
-                
-var _attack_ctx: ItemVisitor.Context
-func _on_attack_start_timeout() -> void:
-    # iter items
-    for item in inventory.items:        
-        var ctx = ItemVisitor.Context.new()
-        ctx.item = item
-        ctx.source = self
-        
-        if item.attack_animation == Item.AttackAnimation.Swing:
-            logs.debug("swing %s" % item.id)
-            ctx.trigger_item = item
-            _attack_ctx = ctx
-            # start animation
-            sprite.swing()
 
-func _on_attack_finished(is_sweet_spot:bool) -> void:
-    var ctx = _attack_ctx
-    _attack_ctx = null
-    if ctx == null:
-        logs.warn("attack landed, missing context")
-        return
-    # calculate damage
-    var damage = 0
-    for item in inventory.items:
-        if item.weapon_sweet_spot:
-            pass
-        for v in item.visitors: 
-            # get possible targets
-            var possible_targets = v.on_get_possible_targets()
-            var targets = []
-            for t in possible_targets:
-                var groups:Array[String]
-                if t is int: # specific character
-                    var instance = instance_from_id(t)
-                    if instance is Character:
-                        targets.append(instance)
-                        
-                elif t == ItemVisitor.TARGET.SELF: # target self
-                    targets.append(self)
-                    
-                elif t == ItemVisitor.TARGET.ALLY: # target same team
-                    if is_in_group(ItemVisitor.TARGET.ENEMY):
-                        groups.append(Groups.CHARACTER_ENEMY)
-                    elif is_in_group(Groups.CHARACTER_PLAYER):
-                        groups.append(Groups.CHARACTER_ALLY)
-                    elif is_in_group(ItemVisitor.TARGET.ALLY):
-                        groups.append(Groups.CHARACTER_PLAYER)
-                        
-                elif t == ItemVisitor.TARGET.ENEMY: # target opposite team
-                    if is_in_group(ItemVisitor.TARGET.ENEMY):
-                        groups.append(Groups.CHARACTER_ALLY)
-                        groups.append(Groups.CHARACTER_PLAYER)
-                    elif is_in_group(Groups.CHARACTER_PLAYER) or is_in_group(ItemVisitor.TARGET.ALLY):
-                        groups.append(Groups.CHARACTER_ENEMY)
-                        
-                # get characters in groups
-                for group in groups:
-                    targets.append_array(get_tree().get_nodes_in_group(group))
-
-            v.ctx = ctx
-            v.ctx.item = item
-            # pick target
-            targets = targets.filter(func(t:Character): return t.stats.is_alive())
-            v.ctx.target = targets.pick_random()
-            if v.ctx.target:
-                damage += v.on_apply_damage()
-            # apply damage
-            if ctx.target:
-                ctx.target.stats.take_damage(damage)
-            else:
-                logs.warn("no targets found: %s" % ctx.stringify())
-        
 func held_items() -> Array[Item]:
     return []
     
@@ -221,23 +165,24 @@ func enable_combat() -> bool:
 func disable_combat() -> bool:
     return set_combat_state(CombatState.DISABLED)
 
+func get_combat_state() -> CombatState:
+    return _combat_state
+
 func set_combat_state(state:CombatState) -> bool:
-    logs.info("set combat _movement_state: %s" % CombatState.find_key(state))
+    logs.info("set combat state: %s" % CombatState.find_key(state))
     
     match state:
         CombatState.DISABLED:
-            _weapon_animation_player.active = false
             if stats.is_alive():
                 sprite.stand()
-            attack_start_timer.stop()
+            _attack_timer.set_state(AttackTimer.State.DISABLED)
 
         CombatState.ENABLED:
             if not stats.is_alive():
                 logs.info("not alive")
                 return false
-            _weapon_animation_player.active = true
             sprite.stand()
-            attack_start_timer.start()
+            _attack_timer.set_state(AttackTimer.State.ENABLED)
  
     _combat_state = state
     return true 

@@ -1,24 +1,18 @@
-[gd_resource type="Resource" script_class="Item" load_steps=6 format=3 uid="uid://d4eo2x47h5he7"]
+[gd_resource type="Resource" script_class="Item" load_steps=5 format=3 uid="uid://d4eo2x47h5he7"]
 
-[ext_resource type="PackedScene" uid="uid://dsq24q8bbxyk3" path="res://src/items/stick/stick.tscn" id="1_a7epv"]
-[ext_resource type="Script" uid="uid://oedsddb184wt" path="res://src/item.gd" id="1_hatwu"]
-[ext_resource type="Script" uid="uid://kph2nlb6g2pw" path="res://src/item_visitor.gd" id="2_kskdl"]
-[ext_resource type="Script" uid="uid://4k6i60hx4dfu" path="res://src/items/_visitors/basic_weapon.gd" id="4_ti5er"]
-
-[sub_resource type="Resource" id="Resource_e0ipe"]
-script = ExtResource("4_ti5er")
-metadata/_custom_type_script = "uid://4k6i60hx4dfu"
+[ext_resource type="PackedScene" uid="uid://dsq24q8bbxyk3" path="res://src/items/stick/stick_sprite.tscn" id="1_a7epv"]
+[ext_resource type="Script" uid="uid://oedsddb184wt" path="res://src/item/item.gd" id="1_hatwu"]
+[ext_resource type="AnimationLibrary" uid="uid://df2bo6bawi54v" path="res://src/items/_animations/swing_animation.res" id="1_t0rfu"]
+[ext_resource type="Resource" uid="uid://dse3ma3t1jdju" path="res://src/items/_animations/swing_attack_config.tres" id="2_4qy0p"]
 
 [resource]
 script = ExtResource("1_hatwu")
-visitors = Array[ExtResource("2_kskdl")]([SubResource("Resource_e0ipe")])
 id = "stick"
-max_stack = 1
 hide = false
 disable_unequip = false
+is_weapon = true
 scene = ExtResource("1_a7epv")
 hold = 1
-attack_animation = 1
-max_charge = 0
-base_damage = 2
+animation_library = ExtResource("1_t0rfu")
+attack_config = ExtResource("2_4qy0p")
 metadata/_custom_type_script = "uid://oedsddb184wt"

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="Item" load_steps=4 format=3 uid="uid://b1deofgdqomju"]
+
+[ext_resource type="AnimationLibrary" uid="uid://df2bo6bawi54v" path="res://src/items/_animations/swing_animation.res" id="1_ih3pm"]
+[ext_resource type="PackedScene" uid="uid://dwivmcifukgo6" path="res://src/items/sword/sword_sprite.tscn" id="1_rcxuj"]
+[ext_resource type="Script" uid="uid://oedsddb184wt" path="res://src/item/item.gd" id="5_incka"]
+
+[resource]
+script = ExtResource("5_incka")
+id = "sword"
+hide = false
+disable_unequip = false
+is_weapon = true
+scene = ExtResource("1_rcxuj")
+hold = 1
+animation_library = ExtResource("1_ih3pm")
+metadata/_custom_type_script = "uid://oedsddb184wt"

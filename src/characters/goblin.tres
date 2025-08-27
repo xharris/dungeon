@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="CharacterConfig" load_steps=7 format=3 uid="uid://ctlbypk5vki7g"]
 
-[ext_resource type="Script" uid="uid://oedsddb184wt" path="res://src/item.gd" id="1_gkk7u"]
+[ext_resource type="Script" uid="uid://oedsddb184wt" path="res://src/item/item.gd" id="1_gkk7u"]
 [ext_resource type="Script" uid="uid://bedyejdsvyux6" path="res://src/character_config.gd" id="1_ryqsm"]
 [ext_resource type="Script" uid="uid://brhyw2hs6qpeh" path="res://src/stats.gd" id="2_a2yxw"]
 [ext_resource type="Script" uid="uid://bergs16kyq55l" path="res://src/inventory.gd" id="3_a2g3e"]

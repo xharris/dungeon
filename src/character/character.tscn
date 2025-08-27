@@ -3,13 +3,62 @@
 [ext_resource type="Script" uid="uid://orgeq2888yy8" path="res://src/character/character.gd" id="1_adhfm"]
 [ext_resource type="Script" uid="uid://cx02tvmol43rj" path="res://src/character/character_sprite.gd" id="2_ugqs2"]
 [ext_resource type="Texture2D" uid="uid://x6yxorfmb7pj" path="res://assets/character_template.png" id="3_hx151"]
-[ext_resource type="AnimationLibrary" uid="uid://df2bo6bawi54v" path="res://src/items/sword/sword_animation.res" id="4_56uj1"]
+[ext_resource type="AnimationLibrary" uid="uid://df2bo6bawi54v" path="res://src/items/_animations/swing_animation.res" id="4_56uj1"]
 [ext_resource type="AnimationLibrary" uid="uid://bik0f5cvqasrr" path="res://src/character/character_movement.res" id="4_a5pac"]
 [ext_resource type="PackedScene" uid="uid://dwtj0afn88aat" path="res://src/ui/ui_inspect_node.tscn" id="4_hx151"]
 [ext_resource type="Script" uid="uid://xkofkxdheath" path="res://src/character/ui_character_inspect.gd" id="5_0rvpn"]
-[ext_resource type="Script" uid="uid://du4371e1ury1v" path="res://src/character/attack_timer.gd" id="7_fi36g"]
+[ext_resource type="Script" uid="uid://du4371e1ury1v" path="res://src/attack_timer.gd" id="7_fi36g"]
 
 [sub_resource type="Animation" id="Animation_a5pac"]
+step = 1.0
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0, 0)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("ArmL:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [-0.785398]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("ArmL/HandL:rotation")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("%HeldItemL:rotation")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [1.5708]
+}
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_m366t"]
 _data = {
@@ -29,6 +78,7 @@ scale = Vector2(8, 8)
 script = ExtResource("2_ugqs2")
 
 [node name="ArmL" type="Node2D" parent="CharacterSprite"]
+rotation = -0.785398
 
 [node name="HandL" type="Node2D" parent="CharacterSprite/ArmL"]
 position = Vector2(0, 6)
@@ -43,7 +93,7 @@ frame = 2
 [node name="HeldItemL" type="Node2D" parent="CharacterSprite/ArmL/HandL"]
 unique_name_in_owner = true
 position = Vector2(-0.2, 0)
-rotation = -1.5708
+rotation = 1.5708
 
 [node name="Body" type="Sprite2D" parent="CharacterSprite"]
 texture = ExtResource("3_hx151")
@@ -79,8 +129,7 @@ frame = 2
 deterministic = true
 libraries = {
 &"": SubResource("AnimationLibrary_m366t"),
-&"character_movement": ExtResource("4_a5pac"),
-&"sword_animation": ExtResource("4_56uj1")
+&"character_movement": ExtResource("4_a5pac")
 }
 
 [node name="WeaponAnimationPlayer" type="AnimationPlayer" parent="CharacterSprite"]
@@ -95,15 +144,13 @@ position = Vector2(0, 72)
 rotation = 1.57079
 shape = SubResource("CapsuleShape2D_1l1n4")
 
-[node name="AttackStart" type="Timer" parent="."]
-
 [node name="UICharacterInspect" parent="." node_paths=PackedStringArray("character", "anchor_node") instance=ExtResource("4_hx151")]
 unique_name_in_owner = true
 script = ExtResource("5_0rvpn")
 character = NodePath("..")
 anchor_node = NodePath("../CharacterSprite")
 
-[node name="AttackTimer" type="Node" parent="."]
+[node name="AttackTimer" type="Node" parent="." node_paths=PackedStringArray("animation_player", "character")]
 script = ExtResource("7_fi36g")
-
-[connection signal="timeout" from="AttackStart" to="." method="_on_attack_start_timeout"]
+animation_player = NodePath("../CharacterSprite/WeaponAnimationPlayer")
+character = NodePath("..")

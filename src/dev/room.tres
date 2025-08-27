@@ -3,12 +3,12 @@
 [ext_resource type="Script" uid="uid://btoexdkxgn0jv" path="res://src/visitor.gd" id="1_1kfpf"]
 [ext_resource type="Resource" uid="uid://fgagrkai80mk" path="res://src/characters/player.tres" id="2_nxokt"]
 [ext_resource type="Script" uid="uid://bxluh27mtef27" path="res://src/visitors/add_character.gd" id="3_rqftd"]
-[ext_resource type="Script" uid="uid://oedsddb184wt" path="res://src/item.gd" id="4_8xvyj"]
+[ext_resource type="Script" uid="uid://oedsddb184wt" path="res://src/item/item.gd" id="4_8xvyj"]
 [ext_resource type="Resource" uid="uid://d4eo2x47h5he7" path="res://src/items/stick/stick.tres" id="5_2yus2"]
 [ext_resource type="Script" uid="uid://bergs16kyq55l" path="res://src/inventory.gd" id="6_l04pt"]
 [ext_resource type="Script" uid="uid://bedyejdsvyux6" path="res://src/character_config.gd" id="7_1vep8"]
 [ext_resource type="Script" uid="uid://brhyw2hs6qpeh" path="res://src/stats.gd" id="8_3iphe"]
-[ext_resource type="Script" uid="uid://b203xg7y1pucw" path="res://src/visitors/set_looting.gd" id="9_x747b"]
+[ext_resource type="Script" uid="uid://cxr4md3rik2h" path="res://src/visitors/set_combat.gd" id="9_1kfpf"]
 [ext_resource type="Script" uid="uid://df011ese0wh1b" path="res://src/room_config.gd" id="10_27gxg"]
 
 [sub_resource type="Resource" id="Resource_0i0me"]
@@ -43,14 +43,13 @@ script = ExtResource("3_rqftd")
 config = SubResource("Resource_p8kkm")
 metadata/_custom_type_script = "uid://bxluh27mtef27"
 
-[sub_resource type="Resource" id="Resource_au4ic"]
-script = ExtResource("9_x747b")
-character_groups = Array[String](["enemy"])
-enabled = true
-metadata/_custom_type_script = "uid://b203xg7y1pucw"
+[sub_resource type="Resource" id="Resource_nxokt"]
+script = ExtResource("9_1kfpf")
+combat_enabled = true
+metadata/_custom_type_script = "uid://cxr4md3rik2h"
 
 [resource]
 script = ExtResource("10_27gxg")
 id = "test"
-events = Array[ExtResource("1_1kfpf")]([SubResource("Resource_0i0me"), SubResource("Resource_rbnx6"), SubResource("Resource_au4ic")])
+events = Array[ExtResource("1_1kfpf")]([SubResource("Resource_0i0me"), SubResource("Resource_rbnx6"), SubResource("Resource_nxokt")])
 metadata/_custom_type_script = "uid://df011ese0wh1b"

@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="ItemAttackConfig" load_steps=4 format=3 uid="uid://dse3ma3t1jdju"]
+
+[ext_resource type="Script" uid="uid://cfkl8e4vj5aja" path="res://src/item/attack_strategy.gd" id="1_yylkl"]
+[ext_resource type="Resource" uid="uid://b1g5gqqepf61v" path="res://src/attack_strategies/slash.tres" id="2_7yqst"]
+[ext_resource type="Script" uid="uid://cosq5g2atvso1" path="res://src/item/item_attack_config.gd" id="2_hsum5"]
+
+[resource]
+resource_local_to_scene = true
+script = ExtResource("2_hsum5")
+difficulty = 0
+midpoint = 0.85
+animation_name = "swing_up,swing_down"
+animation_order = 0
+sweet_spot_skip_attack = false
+attack_strategy = Array[ExtResource("1_yylkl")]([ExtResource("2_7yqst")])
+sweet_spot_strategy = Array[ExtResource("1_yylkl")]([])
+metadata/_custom_type_script = "uid://cosq5g2atvso1"

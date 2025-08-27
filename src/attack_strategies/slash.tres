@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="AttackStrategy" load_steps=2 format=3 uid="uid://b1g5gqqepf61v"]
+
+[ext_resource type="Script" uid="uid://cfkl8e4vj5aja" path="res://src/item/attack_strategy.gd" id="1_6trv6"]
+
+[resource]
+script = ExtResource("1_6trv6")
+add_health = -5
+target = 2
+metadata/_custom_type_script = "uid://cfkl8e4vj5aja"
