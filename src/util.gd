@@ -53,7 +53,10 @@ func strip_bbcode(source:String) -> String:
     var regex = RegEx.new()
     regex.compile("\\[.+?\\]")
     return regex.sub(source, "", true)
-    
+
+func diminishing(x:float, max_x:float = 100) -> float:
+    return x / (x + max_x) + 1
+
 class UI:
     static var logs = Logger.new("util.ui")#, Logger.Level.DEBUG)
     

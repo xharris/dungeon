@@ -1,7 +1,6 @@
 extends Node
 
 var CHARACTER = preload("res://src/character/character.tscn")
-var ACTION_TEXT = preload("res://src/action_text.tscn")
 
 var UI_BUTTON = preload("res://src/ui/ui_button.tscn")
 var UI_LAYER = preload("res://src/ui/ui_layer.tscn")

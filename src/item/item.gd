@@ -28,7 +28,11 @@ signal item_activated(item: Item)
 
 # combat
 
-@export var attack_config: ItemAttackConfig
+@export var attack_config: ItemAttackConfig:
+    set(v):
+        attack_config = v
+        if attack_config:
+            attack_config = attack_config.duplicate()
 
 func get_description() -> String:
     var texts:Array[String] = [id]  

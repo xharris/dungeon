@@ -81,6 +81,7 @@ script = ExtResource("2_ugqs2")
 rotation = -0.785398
 
 [node name="HandL" type="Node2D" parent="CharacterSprite/ArmL"]
+unique_name_in_owner = true
 z_index = -1
 position = Vector2(0, 6)
 
@@ -114,6 +115,7 @@ frame = 17
 rotation = 0.785398
 
 [node name="HandR" type="Node2D" parent="CharacterSprite/ArmR"]
+unique_name_in_owner = true
 
 [node name="HeldItemR" type="Node2D" parent="CharacterSprite/ArmR/HandR"]
 unique_name_in_owner = true

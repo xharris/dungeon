@@ -19,6 +19,7 @@ max_hp = 20
 hp = 20
 movespeed = Vector2(1, 1)
 strength = 8
+attack_speed = 0.5
 metadata/_custom_type_script = "uid://brhyw2hs6qpeh"
 
 [resource]

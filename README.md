@@ -7,6 +7,5 @@
 
 ## TODO
 
-- feat: weapon sweet spot
-    - small window around [0,100]% of animation to press ACTION
+- bug: camera moving to new room is wonky
 - feat: projectiles
