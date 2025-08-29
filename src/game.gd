@@ -17,17 +17,25 @@ signal resetted
 @export var starting_zone:ZoneConfig = preload("res://src/zones/forest/forest.tres")
 
 var logs = Logger.new("game")
+var _current_zone: ZoneConfig
 
 func _ready() -> void:
+    _current_zone = starting_zone
     Events.room_created.connect(_on_room_created)
     Events.character_created.connect(_on_character_created)
     
 func _on_room_created(_config:RoomConfig, node:Node2D):
+    _config.events_finished.connect(_on_room_events_finished)
     environment.expand()
     # move camera to current room
     camera.move_to(node.position)
     var all_chars = characters.get_all()
     await characters.arrange(all_chars, node.global_position)
+
+func _on_room_events_finished():
+    var ok = rooms.next()
+    if not ok:
+        pass # TODO show next zone roullette
 
 func _on_character_created(c:Character):
     var room_center = rooms.center()
@@ -45,10 +53,13 @@ func start():
     logs.info("game start")
     
     rooms.push_room(title_room)
-    rooms.push_room(starting_zone.get_starting_room())
-    rooms.next()
-    
+    enter_zone(_current_zone)
     started.emit()
+
+func enter_zone(config:ZoneConfig):
+    for r in config.get_rooms():
+        rooms.push_room(r)
+    rooms.next()
 
 func _on_character_death(c:Character):
     if c.is_in_group(Groups.CHARACTER_PLAYER):

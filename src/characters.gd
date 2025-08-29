@@ -4,6 +4,7 @@ class_name Characters
 enum GroupSide {Left=0, Right=1}
 
 var logs = Logger.new("characters")
+var await_arrange = Async.AwaitAll.new()
     
 func _ready() -> void:
     add_to_group(Groups.CHARACTERS)
@@ -18,6 +19,7 @@ func get_player() -> Character:
 
 # arrange all characters to their designated side of the screen
 func arrange(characters:Array[Character], center:Vector2):
+    logs.info("arrange characters (%d)" % characters.size())
     characters = GameUtil.all_characters()
     
     var side_order = [GroupSide.Left, GroupSide.Right]
@@ -33,12 +35,14 @@ func arrange(characters:Array[Character], center:Vector2):
     var move_signals:Array[Signal] = []
     
     # put characters in a side depending on group
+    await_arrange.reset()
     for c in characters:
         for g in group_side:
             if c.is_in_group(g):
                 var side:GroupSide = group_side[g]
                 side_chars[side].append(c)
-                move_signals.append(c.move_to_finished)
+                await_arrange.add(c.move_to_finished)
+    await_arrange.done.connect(_on_arrange_finished, CONNECT_ONE_SHOT)
     
     var x = center.x - Util.size.x/2 + 30
     var w = center.x + Util.size.x/2 - 30
@@ -51,9 +55,12 @@ func arrange(characters:Array[Character], center:Vector2):
         var char_count = side_chars[side].size()
         var chars_w = side_sep * (char_count - 1)
         logs.debug("side: %s, size: %d" % [GroupSide.find_key(side), char_count])
-        for c in char_count:
-            var character = side_chars[side][c] as Character
-            character.move_to_x(x + side_x + (side_size / 2) - (chars_w / 2))
+        for j in char_count:
+            var c = side_chars[side][j] as Character
+            var ok = c.move_to_x(x + side_x + (side_size / 2) - (chars_w / 2))
+            if not ok:
+                await_arrange.remove(c.move_to_finished)
 
-    await Async.all(move_signals)
+func _on_arrange_finished():
+    logs.info("arrange finished") # BUG finishing too early
     Events.characters_arranged.emit()

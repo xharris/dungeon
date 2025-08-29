@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1_bfyuo")
 id = "settings"
-text = ""
+text = "Settings"
 auto_focus = false
 shadow_size = 10
 disabled = true

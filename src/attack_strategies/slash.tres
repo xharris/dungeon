@@ -4,6 +4,8 @@
 
 [resource]
 script = ExtResource("1_6trv6")
-add_health = -5
+id = "slash"
+deal_damage = true
+strength_ratio = 1
 target = 2
 metadata/_custom_type_script = "uid://cfkl8e4vj5aja"

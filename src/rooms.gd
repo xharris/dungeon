@@ -31,6 +31,7 @@ func center() -> Vector2:
         return _last_room_node.global_position
     return Vector2.ZERO
 
+## returns false if a room is not loaded
 func next() -> bool:   
     var config = _next_rooms.pop_front()
     if not config:

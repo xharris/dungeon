@@ -52,7 +52,7 @@ func use_config(config: CharacterConfig):
 
 func _ready() -> void:
     name = "char-%s-%d" % [id, get_instance_id()]
-    logs.set_id(id)
+    logs.set_id("%s-%d" % [id, get_instance_id()])
     _attack_timer.id = id
     _weapon_animation_player.active = true
     _animation_player.play("RESET")
@@ -196,7 +196,7 @@ func move(relative_pos: Vector2) -> bool:
         _movement_state.move_to_target = true
         return true
     return false
-    
+
 func stop_moving():
     if _movement_state.move_to_target:
         logs.debug("stop moving")
@@ -222,6 +222,8 @@ func set_combat_state(state: CombatState) -> bool:
             if stats.is_alive():
                 sprite.stand()
             _attack_timer.set_state(AttackTimer.State.DISABLED)
+            _weapon_animation_player.stop(true)
+            _animation_player.play(&"RESET")
 
         CombatState.ENABLED:
             if not stats.is_alive():
@@ -252,6 +254,7 @@ func _physics_process(delta: float) -> void:
     # walking animation
     if _movement_state.move_to_target:
         if arrived:
+            logs.info("arrived at target")
             stop_moving()
         else:
             velocity.x += delta * max_velocity.x * sign(norm_move_to_target.x)

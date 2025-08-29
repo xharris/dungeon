@@ -12,7 +12,7 @@ signal sweet_spot_triggered
 signal sweet_spot_missed
 signal state_changed(state:State)
 
-var logs = Logger.new("attack_timer", Logger.Level.DEBUG)
+var logs = Logger.new("attack_timer")#, Logger.Level.DEBUG)
 @export var animation_player:AnimationPlayer
 @export var character: Character
 
@@ -96,7 +96,7 @@ func _process(delta: float) -> void:
                 start()
 
 func _unhandled_input(event: InputEvent) -> void:
-    if character.is_in_group(Groups.CHARACTER_PLAYER) and event.is_action_pressed("action"):
+    if _state == State.ENABLED and character.is_in_group(Groups.CHARACTER_PLAYER) and event.is_action_pressed("action"):
         if _attack_config:
             var is_in_sweet_spot = _sweet_spot_entered and not _sweet_spot_done
             if is_in_sweet_spot:

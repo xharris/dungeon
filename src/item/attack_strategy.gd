@@ -3,6 +3,7 @@ class_name AttackStrategy
 
 enum TARGET {SELF, ALLY, ENEMY}
 
+@export var id:String
 @export var deal_damage:bool = true
 @export var strength_ratio:int = 1.0
 @export var target:TARGET

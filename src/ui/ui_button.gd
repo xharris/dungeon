@@ -17,6 +17,7 @@ var _theme_color:Dictionary = {
     "font_color": Color.WHITE
 }
 var _prev_state:State
+var _prev_disabled:bool = false
 
 func _ready() -> void:
     add_to_group(Groups.UI_BUTTON)
@@ -49,6 +50,13 @@ func _process(_delta: float) -> void:
     text = config.text
     disabled = config.disabled
     custom_minimum_size = Vector2(bg.size.y, 0)
+    if disabled != _prev_disabled:
+        _prev_disabled = disabled
+        match disabled:
+            true:
+                modulate.a = 0.5
+            false:
+                modulate.a = 1.0
     
     begin_bulk_theme_override()
     add_theme_color_override("font_color", _theme_color.get("font_color"))

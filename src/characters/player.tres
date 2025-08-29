@@ -15,11 +15,12 @@ metadata/_custom_type_script = "uid://bergs16kyq55l"
 
 [sub_resource type="Resource" id="Resource_gafta"]
 script = ExtResource("5_ymyix")
+ignore_limits = false
 max_hp = 20
 hp = 20
 movespeed = Vector2(1, 1)
 strength = 8
-attack_speed = 0.5
+attack_speed = 0.8
 metadata/_custom_type_script = "uid://brhyw2hs6qpeh"
 
 [resource]
