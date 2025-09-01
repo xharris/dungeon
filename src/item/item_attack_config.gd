@@ -11,7 +11,7 @@ class_name ItemAttackConfig
         animation_name = v
         _animation_names.assign(v.split(",", false))
         logs.info("set animation names: %s -> %s" % [v, _animation_names])
-@export var animation_order:Order
+@export var animation_order:Order.Type
 ## if the sweet spot is triggered, ignore the normal attack strategy
 @export var sweet_spot_skip_attack:bool = false
 @export var attack_strategy:Array[AttackStrategy]
@@ -21,10 +21,13 @@ class_name ItemAttackConfig
 var logs = Logger.new("item_attack_config")
 
 var _animation_names:Array[String]
+var _order:Order
 
 func next_animation() -> String:
-    animation_order.set_items(_animation_names)
-    return animation_order.next()
+    if not _order:
+        _order = Order.new()
+    _order.set_items(_animation_names)
+    return _order.next()
 
 func get_sweet_spot_size() -> float:
     return [0.1, 0.075, 0.05][difficulty]
