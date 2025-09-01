@@ -4,8 +4,6 @@ extends Resource
 enum AttackAnimation {None, Swing}
 enum Hold {None, Primary, Secondary}
 
-signal item_activated(item: Item)
-
 # config
 
 @export var id: String = "unknown"
@@ -19,8 +17,6 @@ signal item_activated(item: Item)
 ## scene to use when creating an instance
 @export var scene: PackedScene
 @export var icon: Texture2D
-## which hand the item is held in
-@export var hold: Hold
 @export var animation_library:AnimationLibrary:
     set(v):
         animation_library = v.duplicate()

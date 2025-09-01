@@ -19,9 +19,11 @@ func destroy(node:Node) -> bool:
     node.queue_free()
     return true
 
-func clear_children(node:Node):
+func clear_children(node:Node, free:bool = false):
     for c in node.get_children():
         node.remove_child(c)
+        if free:
+            c.queue_free()
 
 func get_rect(node:Node2D) -> Rect2:
     var top_left:Vector2 = Vector2.ZERO

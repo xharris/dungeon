@@ -10,6 +10,7 @@ static func create(modifiers: Array[Callable] = []) -> ActionText:
     Util.main_node.add_child(me)
     for m in modifiers:
         m.call(me)
+    me._tween.finished.connect(me._done)
     return me
 
 class FontSize:
@@ -39,8 +40,9 @@ class Mod extends Object:
     static func set_text(text):
         return func(me: ActionText):
             me.text = str(text)
+            me.name = "action-text-%s" % me.text
 
-    static func float(initial_speed: Vector2 = Vector2(0, -700)):
+    static func velocity(initial_speed: Vector2 = Vector2(0, -700)):
         return func(me: ActionText):
             me.velocity = initial_speed
             # slow down
@@ -52,12 +54,15 @@ class Mod extends Object:
             if from != Color.TRANSPARENT:
                 t.from(from)
 
+signal finished
+
 @onready var _label = %RichTextLabel as RichTextLabel
 
 @export var text: String = "":
     set(v):
         text = v
         _label.text = text
+@export var destroy_when_finished:bool = true
 
 var velocity: Vector2
 @warning_ignore("unused_private_class_variable")
@@ -65,3 +70,8 @@ var _tween: Tween
 
 func _process(delta: float) -> void:
     global_position += velocity * delta
+
+func _done():
+    finished.emit()
+    if destroy_when_finished:
+        Util.destroy(self)

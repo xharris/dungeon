@@ -1,4 +1,4 @@
-extends Object
+extends Resource
 class_name Order
 
 enum Type {LINEAR, RANDOM, PING_PONG}
@@ -11,7 +11,7 @@ var _increment:bool = true
 func set_items(items:Array):
     _items.assign(items)
     
-func set_type(type:Order.Type):
+func set_type(type:Type):
     _type = type
     
 func next():

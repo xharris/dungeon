@@ -58,6 +58,11 @@ func get_lines() -> Array[String]:
 func _to_string() -> String:
     return "\n".join(_lines)
 
+func _strip_bbcode(source:String) -> String:
+    var regex = RegEx.new()
+    regex.compile("\\[.+?\\]")
+    return regex.sub(source, "", true)
+
 func _print(color:Color, level:String, msg:String) -> bool:
     var pad = max(0, Logger._max_prefix_length - _full_prefix.length())
     var formatted = "[color=%s][b]%s[/b][/color] \t[b]%s[/b] %s %s" % [
@@ -69,7 +74,7 @@ func _print(color:Color, level:String, msg:String) -> bool:
         return false # avoid printing same message twice
     _prev_msg = formatted
     print_rich(formatted)
-    _lines.append(Util.strip_bbcode(formatted))
+    _lines.append(_strip_bbcode(formatted))
     return true
 
 func _is_level_enabled(level:Level) -> bool:

@@ -2,6 +2,7 @@ class_name Character
 extends CharacterBody2D
 
 enum CombatState {DISABLED, ENABLED}
+enum Hand {LEFT, RIGHT}
 
 class MovementState:
     var idle = false
@@ -31,6 +32,7 @@ var target_position: Vector2
 var target_distance: Vector2 = Vector2(20, 20)
 var _max_velocity: Vector2 = Vector2(400, 500)
 var _weapon: Item
+var _primary_hand: Hand = Hand.LEFT
 
 func use_config(config: CharacterConfig):
     id = config.id
@@ -54,6 +56,7 @@ func _ready() -> void:
     name = "char-%s-%d" % [id, get_instance_id()]
     logs.set_id("%s-%d" % [id, get_instance_id()])
     _attack_timer.id = id
+    _attack_timer.particle_node = get_primary_hand_node()
     _weapon_animation_player.active = true
     _animation_player.play("RESET")
     
@@ -65,31 +68,14 @@ func _ready() -> void:
     stats.damage_taken.connect(_on_damage_taken)
     stats.death.connect(_on_death)
     _attack_timer.attack_started.connect(_on_attack_timer_started)
-    _attack_timer.sweet_spot_entered.connect(_on_sweet_spot_entered)
-    _attack_timer.sweet_spot_exited.connect(_on_sweet_spot_exited)
-    _attack_timer.state_changed.connect(_on_attack_timer_state_changed)
     
     # trigger signal for default items
     for item in inventory.items:
         logs.debug("add default item: %s" % item.id)
         _on_item_added(item)
-    
+
     add_to_group(Groups.CHARACTER_ANY)
     Events.character_created.emit(self)
-
-func _on_attack_timer_state_changed(state: AttackTimer.State):
-    match state:
-        AttackTimer.State.DISABLED:
-            _clear_sweet_spot_effect()
-
-func _on_sweet_spot_entered():
-    if not _weapon:
-        logs.warn("missing weapon")
-    _hand_l.modulate = Color.RED
-    _hand_r.modulate = Color.RED
-
-func _on_sweet_spot_exited():
-    _clear_sweet_spot_effect()
 
 func _on_attack_timer_started():
     if not _weapon:
@@ -122,9 +108,9 @@ func _show_stats_action_text(stat_name:String, change_amount:float):
         ActionText.create([
             ActionText.Mod.set_duration(1),
             ActionText.Mod.use_global_position(self),
-            ActionText.Mod.set_text("%s %s%.2f" % [stat_name, "+" if change_amount > 0 else "", change_amount]),
+            ActionText.Mod.set_text("%s%s" % [stat_name, "+" if change_amount > 0 else ""]),
             ActionText.Mod.set_font_size(ActionText.FontSize.SMALL),
-            ActionText.Mod.float(Vector2(0, -100 if change_amount > 0 else 100)), # float up
+            ActionText.Mod.velocity(Vector2(0, -100 if change_amount > 0 else 100)), # float up
             ActionText.Mod.modulate(MUI.YellowA400, MUI.Yellow200) if change_amount > 0 else\
             ActionText.Mod.modulate(MUI.RedA400, MUI.Red200),
 
@@ -134,13 +120,13 @@ func _show_stats_action_text(stat_name:String, change_amount:float):
         ])
 
 func _on_stats_modified(amount:Stats):    
-    _show_stats_action_text("ATK SPEED", amount.attack_speed)        
+    _show_stats_action_text("SPEED", amount.attack_speed)        
 
 func _on_damage_taken(amount: int):
     ActionText.create([
         ActionText.Mod.use_global_position(self),
         ActionText.Mod.set_text("-%d" % amount),
-        ActionText.Mod.float(), # float up
+        ActionText.Mod.velocity(), # float up
         ActionText.Mod.modulate(MUI.RedA400, MUI.Red200),
 
         ActionText.Mod.chain(),
@@ -148,21 +134,30 @@ func _on_damage_taken(amount: int):
         ActionText.Mod.modulate(Color.TRANSPARENT), # fade out
     ])
 
+func get_primary_hand_node() -> Node2D:
+    return \
+        _hand_l if _primary_hand == Hand.LEFT else \
+        _hand_r
+
+func get_primary_hand_held_item_node() -> Node2D:
+    return \
+        held_item_l if _primary_hand == Hand.LEFT else \
+        held_item_r
+
 func _on_item_added(item: Item):
     if not item.is_weapon:
         return
-    var item_node = item.scene.instantiate() as Node2D if item.scene else null
-    # hold in hand?
-    var held_item_node = \
-        held_item_l if item.hold == Item.Hold.Primary else \
-        held_item_r if item.hold == Item.Hold.Secondary else \
-        null
-    if held_item_node and item_node:
-        # clear currently held item
-        Util.clear_children(held_item_node)
-        # add held item
-        held_item_node.add_child(item_node)
+    var parent_node = get_primary_hand_held_item_node()
+    _attack_timer.particle_node = parent_node
     _weapon = item
+    # add item to hand
+    var item_node = item.scene.instantiate() as Node2D if item.scene else null
+    if item_node:
+        # clear currently held item
+        Util.clear_children(held_item_l)
+        Util.clear_children(held_item_r)
+        # add held item
+        parent_node.add_child(item_node)
 
 func _on_item_removed(item: Item, _left: int):
     if inventory.count(item.id) == 0:
@@ -170,12 +165,6 @@ func _on_item_removed(item: Item, _left: int):
         for held_item in held_item_l.get_children() as Array[Item]:
             if held_item.id == item.id:
                 pass
-
-func _clear_sweet_spot_effect():
-    if not _weapon:
-        logs.warn("missing weapon")
-    _hand_l.modulate = Color.WHITE
-    _hand_r.modulate = Color.WHITE
 
 func held_items() -> Array[Item]:
     return []
@@ -216,7 +205,7 @@ func get_combat_state() -> CombatState:
 
 func set_combat_state(state: CombatState) -> bool:
     logs.info("set combat state: %s" % CombatState.find_key(state))
-    
+
     match state:
         CombatState.DISABLED:
             if stats.is_alive():
@@ -233,6 +222,7 @@ func set_combat_state(state: CombatState) -> bool:
             _attack_timer.set_state(AttackTimer.State.ENABLED)
  
     _combat_state = state
+    _attack_timer.update_particles()
     return true
 
 func destroy():

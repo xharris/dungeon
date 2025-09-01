@@ -15,7 +15,7 @@ func set_rect(rect:Rect2):
     queue_redraw()
 
 func set_state(state:State, immediate = false):
-    logs.info("set state %s" % State.find_key(state))
+    logs.debug("set state %s" % State.find_key(state))
     if _tween:
         _tween.stop()
     _tween = create_tween()

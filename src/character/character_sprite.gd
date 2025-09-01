@@ -10,10 +10,7 @@ class MovementState:
     var idle = false
     var walk = false
 
-
 var _speed_scale = 1.0
-var _swing_up = false
-var _state
 
 func stand():
     animation_player.play("RESET")

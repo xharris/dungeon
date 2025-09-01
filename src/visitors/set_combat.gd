@@ -22,7 +22,7 @@ func _on_arrange_finished():
         c.stats.death.connect(_on_character_death.bind(c))
         c.enable_combat()
 
-func _on_character_death(_character:Character):
+func _on_character_death(character:Character):
     var enemies:Array[Character] = GameUtil.all_characters().filter(func(c:Character): 
         return c.get_combat_state() == Character.CombatState.ENABLED and \
             c.is_in_group(Groups.CHARACTER_ENEMY)
@@ -31,7 +31,7 @@ func _on_character_death(_character:Character):
         return prev + (1 if curr.stats.is_alive() else 0)
     , 0)
 
-    if enemies_alive == 0:
+    if enemies_alive == 0 or character.is_in_group(Groups.CHARACTER_PLAYER):
         # combat is over
         logs.info("combat finished")
         for c in GameUtil.all_characters():

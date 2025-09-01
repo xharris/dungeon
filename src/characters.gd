@@ -5,10 +5,15 @@ enum GroupSide {Left=0, Right=1}
 
 var logs = Logger.new("characters")
 var await_arrange = Async.AwaitAll.new()
-    
+
 func _ready() -> void:
     add_to_group(Groups.CHARACTERS)
-    
+
+static func create(config: CharacterConfig) -> Character:
+    var c = Scenes.CHARACTER.instantiate() as Character
+    c.use_config(config)
+    return c
+
 func get_all() -> Array[Character]:
     var out:Array[Character]
     out.append_array(get_tree().get_nodes_in_group(Groups.CHARACTER_ANY))
@@ -32,7 +37,6 @@ func arrange(characters:Array[Character], center:Vector2):
         GroupSide.Left: [] as Array[Character],
         GroupSide.Right: [] as Array[Character],
     }
-    var move_signals:Array[Signal] = []
     
     # put characters in a side depending on group
     await_arrange.reset()

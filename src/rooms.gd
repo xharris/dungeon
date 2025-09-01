@@ -9,8 +9,18 @@ var _last_room:RoomConfig
 var _next_rooms:Array[RoomConfig]
 
 func _ready() -> void:
+    Events.room_created.connect(_on_room_created)
     Events.trigger_rooms_next.connect(_on_trigger_rooms_next)
 
+func _on_room_created(config:RoomConfig, node:Node2D):
+    if config.id != Scenes.ROOM_TITLE.id:
+        config.events_finished.connect(_on_room_events_finished, CONNECT_ONE_SHOT)
+    
+func _on_room_events_finished():
+    var ok = next()
+    if not ok:
+        pass # TODO show next zone roullette
+        
 func _on_trigger_rooms_next():
     next()
 
@@ -24,7 +34,11 @@ func push_room(config:RoomConfig) -> Rooms:
 
 func reset():
     logs.info("reset")
-    Util.clear_children(self)
+    Util.clear_children(self, true)
+    _index = -1
+    _last_room_node = null
+    _last_room = null
+    _next_rooms.clear()
 
 func center() -> Vector2:
     if _last_room_node:

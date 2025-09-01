@@ -64,7 +64,7 @@ func set_state(state: State, _from_layer := false) -> bool:
                 if l != self:
                     if l._state == State.VISIBLE and not _from_layer:
                         # get previous ui layer
-                        logs.info("previous layer was '%s'" % l.config.id)
+                        logs.debug("previous layer was '%s'" % l.config.id)
                         _prev_layer = l
                     # hide other layer
                     l.set_state(State.HIDDEN, true)
@@ -99,12 +99,12 @@ func _unhandled_input(event: InputEvent) -> void:
         set_state(State.HIDDEN)
 
 func _show_inspect_nodes():
-    logs.info("show inspect nodes")
+    logs.debug("show inspect nodes")
     for n in _get_inspect_nodes():
         n.set_state(UIInspectNode.State.VISIBLE)
 
 func _hide_inspect_nodes():
-    logs.info("hide inspect nodes")
+    logs.debug("hide inspect nodes")
     for n in _get_inspect_nodes():
         n.set_state(UIInspectNode.State.HIDDEN)
 
@@ -124,12 +124,12 @@ func _build_ui():
         
     set_background_color(config.background_color)
     
-    logs.info("emit build finished")
+    logs.debug("emit build finished")
     build_finished.emit.call_deferred()
 
 ## Update focus relationships for all controls
 func _update_focus() -> bool:
-    logs.info("update focus")
+    logs.debug("update focus")
     var inspect_nodes = _get_inspect_nodes()
     for n in inspect_nodes:
         n.set_layer(self)
@@ -152,7 +152,7 @@ func _update_focus() -> bool:
     var err = _rows_last_selected_idx.resize(max(ctrl_rows.size(), _rows_last_selected_idx.size()))
     if err != OK:
         logs.warn("could not resize _rows_last_selected_idx, error=%d" % err)
-    logs.info("last selected control, row=%d col=%d" % [current_selected_row, _rows_last_selected_idx[current_selected_row]])
+    logs.debug("last selected control, row=%d col=%d" % [current_selected_row, _rows_last_selected_idx[current_selected_row]])
         
     for i in ctrl_rows.size():
         var row: Array = ctrl_rows[i]
@@ -166,12 +166,12 @@ func _update_focus() -> bool:
             if i == current_selected_row and not focus_ctrl:
                 # focus last selected element
                 focus_ctrl = row[col]
-                logs.info("was selected: %s" % focus_ctrl)
+                logs.debug("was selected: %s" % focus_ctrl)
             
             elif i != current_selected_row:
                 # only last selected control in other rows is focusable
                 row = [row[col]]
-                logs.info("narrow row %d" % [i])
+                logs.debug("narrow row %d" % [i])
         else:
             logs.debug("empty row: %s" % [row])
             
@@ -224,13 +224,13 @@ func _update_focus() -> bool:
     return true
 
 func _focus_control(control:Control):
-    logs.info("focus_ctrl: %s" % control)
+    logs.debug("focus_ctrl: %s" % control)
     if logs.warn_if(control and not control.is_visible_in_tree(), "focus_ctrl is not visible in tree"):
         return
     control.grab_focus()
 
 func _on_ui_button_pressed_to_close(me: UIButton):
-    logs.info("close on button pressed: %s" % me)
+    logs.debug("close on button pressed: %s" % me)
     set_state(State.HIDDEN)
 
 ## normal visible background color is [code]Color.WHITE[/code]
@@ -270,7 +270,7 @@ func clear() -> UILayer:
     return self
 
 func set_title(text: String) -> Label:
-    logs.info("set title: %s" % text)
+    logs.debug("set title: %s" % text)
     var label = UIElements.label(text)
     add_to_top_row(label)
     return label
@@ -294,4 +294,4 @@ func _get_selected_inspect_node() -> UIInspectNode:
 func _set_current_selected(row: int, col: int):
     _rows_last_selected_idx.resize(max(row + 1, _rows_last_selected_idx.size()))
     _rows_last_selected_idx[row] = col
-    logs.info("save place in row %d: %d" % [row, col])
+    logs.debug("save place in row %d: %d" % [row, col])

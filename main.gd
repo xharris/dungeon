@@ -6,7 +6,7 @@ static var STARTING_ZONE:ZoneConfig = preload("res://src/zones/forest/forest.tre
 
 var logs = Logger.new("main")
 
-@onready var game:Game = $Game
+@onready var _game:Game = $Game
 @onready var pause_controller:PauseController = %PauseController
 
 func _init() -> void:
@@ -14,8 +14,18 @@ func _init() -> void:
     Util.main_node = self
 
 func _ready() -> void:
-    game.over.connect(_on_game_over)
-    game.start()
+    _setup_game()
+    _game.start()
+    
+func _setup_game():
+    _game.over.connect(_on_game_over)
     
 func _on_game_over(_type:Game.GameOverType):
-    game.restart()
+    # destroy current game
+    _game.destroy()
+    # create new game
+    var new_game = Scenes.GAME.instantiate()
+    _game = new_game
+    _setup_game()
+    add_child(new_game)
+    #new_game.start()

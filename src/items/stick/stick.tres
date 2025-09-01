@@ -12,7 +12,6 @@ hide = false
 disable_unequip = false
 is_weapon = true
 scene = ExtResource("1_a7epv")
-hold = 1
 animation_library = ExtResource("1_t0rfu")
 attack_config = ExtResource("2_4qy0p")
 metadata/_custom_type_script = "uid://oedsddb184wt"

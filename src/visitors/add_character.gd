@@ -6,6 +6,7 @@ static var _player_created: bool = false
 @export var config:CharacterConfig
 
 func _init() -> void:
+    id = "VisitorAddCharacter"
     logs.set_prefix("add_character")
 
 func run():
@@ -16,8 +17,10 @@ func run():
     if config.group == Groups.CHARACTER_PLAYER:
         _player_created = true
     
-    var c = Scenes.CHARACTER.instantiate() as Character
-    c.use_config(config)
+    var c = Characters.create(config)
     logs.info("add %s" % config.id)
     GameUtil.characters().add_child(c)
     finished.emit()
+
+func reset():
+    _player_created = false

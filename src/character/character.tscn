@@ -7,7 +7,7 @@
 [ext_resource type="AnimationLibrary" uid="uid://bik0f5cvqasrr" path="res://src/character/character_movement.res" id="4_a5pac"]
 [ext_resource type="PackedScene" uid="uid://dwtj0afn88aat" path="res://src/ui/ui_inspect_node.tscn" id="4_hx151"]
 [ext_resource type="Script" uid="uid://xkofkxdheath" path="res://src/character/ui_character_inspect.gd" id="5_0rvpn"]
-[ext_resource type="Script" uid="uid://du4371e1ury1v" path="res://src/attack_timer.gd" id="7_fi36g"]
+[ext_resource type="PackedScene" uid="uid://crgons7k8uieg" path="res://src/attack_timer/attack_timer.tscn" id="8_a5pac"]
 
 [sub_resource type="Animation" id="Animation_a5pac"]
 step = 1.0
@@ -153,7 +153,7 @@ script = ExtResource("5_0rvpn")
 character = NodePath("..")
 anchor_node = NodePath("../CharacterSprite")
 
-[node name="AttackTimer" type="Node" parent="." node_paths=PackedStringArray("animation_player", "character")]
-script = ExtResource("7_fi36g")
+[node name="AttackTimer" parent="." node_paths=PackedStringArray("animation_player", "character", "particle_node") instance=ExtResource("8_a5pac")]
 animation_player = NodePath("../CharacterSprite/WeaponAnimationPlayer")
 character = NodePath("..")
+particle_node = NodePath("../CharacterSprite/ArmL/HandL")

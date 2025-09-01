@@ -15,6 +15,8 @@ func get_targets(source:Character, _target:TARGET = target) -> Array[Character]:
     var possible_characters:Array[Character]
     var self_is_ally = source.is_in_group(Groups.CHARACTER_PLAYER) or source.is_in_group(Groups.CHARACTER_ALLY)
     for c in GameUtil.all_characters():
+        if not c.stats.is_alive():
+            continue
         var add:bool = false
         var other_is_ally = c.is_in_group(Groups.CHARACTER_PLAYER) or c.is_in_group(Groups.CHARACTER_ALLY)
         match _target:

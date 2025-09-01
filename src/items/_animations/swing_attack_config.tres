@@ -9,6 +9,7 @@
 [sub_resource type="Resource" id="Resource_g5nww"]
 script = ExtResource("5_625v2")
 attack_strategy = ExtResource("4_7yqst")
+id = ""
 deal_damage = true
 strength_ratio = 1
 target = 0

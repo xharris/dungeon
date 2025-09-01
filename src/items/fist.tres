@@ -10,7 +10,6 @@ id = "fist"
 hide = false
 disable_unequip = false
 is_weapon = true
-hold = 1
 animation_library = ExtResource("1_bgr1c")
 attack_config = ExtResource("2_ht42l")
 metadata/_custom_type_script = "uid://oedsddb184wt"

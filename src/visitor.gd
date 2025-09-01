@@ -5,6 +5,7 @@ class_name Visitor
 signal finished
 
 var logs = Logger.new("visitor")
+var id:String = "Visitor"
 
 ## WARNING Do not override
 func visit():
@@ -13,4 +14,7 @@ func visit():
 ## Emit [code]finished[/code] when done. Optional, but can cause
 ## bugs if it has connections but it's not called
 func run():
+    pass
+
+func reset():
     pass

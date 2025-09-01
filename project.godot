@@ -49,6 +49,21 @@ version_control/autoload_on_startup=true
 
 enabled=PackedStringArray("res://addons/gut/plugin.cfg", "res://addons/script-ide/plugin.cfg")
 
+[file_customization]
+
+folder_colors={
+"res://src/attack_strategies/": "yellow",
+"res://src/characters/": "yellow",
+"res://src/dev/": "orange",
+"res://src/items/": "yellow",
+"res://src/rooms/": "orange",
+"res://src/ui/": "green",
+"res://src/ui_button_configs/": "green",
+"res://src/ui_layer_configs/": "green",
+"res://src/visitors/": "blue",
+"res://src/zones/": "yellow"
+}
+
 [global_group]
 
 character=""
@@ -106,6 +121,5 @@ action={
 [rendering]
 
 textures/canvas_textures/default_texture_filter=0
-renderer/rendering_method="gl_compatibility"
-renderer/rendering_method.mobile="gl_compatibility"
+renderer/rendering_method="mobile"
 2d/snap/snap_2d_transforms_to_pixel=true

@@ -1,11 +1,16 @@
-[gd_scene load_steps=11 format=3 uid="uid://6r7lwgjglfjs"]
+[gd_scene load_steps=13 format=3 uid="uid://6r7lwgjglfjs"]
 
 [ext_resource type="Script" uid="uid://bjkk1no4qjk4e" path="res://src/game.gd" id="1_7jktm"]
-[ext_resource type="Resource" uid="uid://bfres5ikig3oe" path="res://src/dev/room.tres" id="2_pk08u"]
 [ext_resource type="PackedScene" uid="uid://ddmafsyxkbsus" path="res://src/game_camera.tscn" id="2_ryrav"]
+[ext_resource type="Script" uid="uid://btoexdkxgn0jv" path="res://src/visitor.gd" id="3_cdx1q"]
 [ext_resource type="Script" uid="uid://ci3duvo8atgnv" path="res://src/game_environment.gd" id="3_eow3j"]
+[ext_resource type="Script" uid="uid://bxluh27mtef27" path="res://src/visitors/add_character.gd" id="4_4bcji"]
 [ext_resource type="PackedScene" uid="uid://dh8l7rcfqnx1p" path="res://src/rooms.tscn" id="4_j5wjh"]
 [ext_resource type="Script" uid="uid://c0akj433rf2px" path="res://src/characters.gd" id="5_vef74"]
+
+[sub_resource type="Resource" id="Resource_uktfx"]
+script = ExtResource("4_4bcji")
+metadata/_custom_type_script = "uid://bxluh27mtef27"
 
 [sub_resource type="Gradient" id="Gradient_80nbo"]
 offsets = PackedFloat32Array(0, 0.907407)
@@ -22,7 +27,7 @@ size = Vector2(768, 20)
 
 [node name="Game" type="Node2D"]
 script = ExtResource("1_7jktm")
-title_room = ExtResource("2_pk08u")
+reset_visitors = Array[ExtResource("3_cdx1q")]([SubResource("Resource_uktfx")])
 
 [node name="GameCamera" parent="." instance=ExtResource("2_ryrav")]
 

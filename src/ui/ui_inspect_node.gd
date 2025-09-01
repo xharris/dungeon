@@ -25,6 +25,9 @@ var _anchor_node_copy:Node2D
 var _layer:UILayer
 var _state:State
 
+static func reset():
+    _last_selected_node = null
+
 func _ready() -> void:
     add_to_group(Groups.UI_INSPECT_NODE)
     
@@ -55,7 +58,7 @@ func _clean_ui_layer() -> bool:
     return true
 
 func set_state(state:State) -> bool:
-    logs.info("set state %s" % State.find_key(state))
+    logs.debug("set state %s" % State.find_key(state))
     
     match state:
         State.HIDDEN:
@@ -178,4 +181,4 @@ func is_visible_on_screen() -> bool:
     return _is_visible
 
 func is_valid_neighbor() -> bool:
-    return not logs.info_if(_state == State.HIDDEN, "invalid neighbor: hidden")
+    return not logs.debug_if(_state == State.HIDDEN, "invalid neighbor: hidden")

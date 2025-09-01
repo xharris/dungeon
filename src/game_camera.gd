@@ -5,6 +5,8 @@ signal tween_finished
 
 @export var tween_duration:float = 5
 
+@onready var _initial_position: Vector2 = position
+
 func move_to(v:Vector2):
     # move camera to current Rooms
     var tween = create_tween()
@@ -15,4 +17,4 @@ func move_to(v:Vector2):
     tween.play()
 
 func reset():
-    position = Util.size / 2
+    position = _initial_position

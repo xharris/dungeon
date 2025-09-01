@@ -21,5 +21,7 @@ func _run_event(idx:int):
         events_finished.emit()
         return
     var event = events[idx]
-    event.finished.connect(_run_event.bind(idx + 1))
+    var fn = _run_event.bind(idx + 1)
+    if not event.finished.is_connected(fn):
+        event.finished.connect(fn)
     event.visit()
