@@ -19,5 +19,7 @@ metadata/_custom_type_script = "uid://cxr4md3rik2h"
 [resource]
 script = ExtResource("2_j74vj")
 id = "combat_goblins"
+halt = false
 events = Array[ExtResource("3_4s0sn")]([SubResource("Resource_8ubsu"), SubResource("Resource_churg")])
+event_order = 0
 metadata/_custom_type_script = "uid://df011ese0wh1b"

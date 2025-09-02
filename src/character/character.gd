@@ -9,6 +9,8 @@ class MovementState:
     var move_to_target = false
     var fall = false
 
+static var SCENE = preload("res://src/character/character.tscn")
+
 signal move_to_finished
 
 @onready var sprite: CharacterSprite = $CharacterSprite
@@ -33,6 +35,12 @@ var target_distance: Vector2 = Vector2(20, 20)
 var _max_velocity: Vector2 = Vector2(400, 500)
 var _weapon: Item
 var _primary_hand: Hand = Hand.LEFT
+
+static func create(config: CharacterConfig) -> Character:
+    var me = SCENE.instantiate() as Character
+    me.use_config(config)
+    Events.character_created.emit(me)
+    return me
 
 func use_config(config: CharacterConfig):
     id = config.id
@@ -75,7 +83,6 @@ func _ready() -> void:
         _on_item_added(item)
 
     add_to_group(Groups.CHARACTER_ANY)
-    Events.character_created.emit(self)
 
 func _on_attack_timer_started():
     if not _weapon:

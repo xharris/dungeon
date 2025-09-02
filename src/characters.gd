@@ -8,11 +8,10 @@ var await_arrange = Async.AwaitAll.new()
 
 func _ready() -> void:
     add_to_group(Groups.CHARACTERS)
-
-static func create(config: CharacterConfig) -> Character:
-    var c = Scenes.CHARACTER.instantiate() as Character
-    c.use_config(config)
-    return c
+    Events.character_created.connect(_on_character_created)
+    
+func _on_character_created(c:Character):
+    add_child(c)
 
 func get_all() -> Array[Character]:
     var out:Array[Character]

@@ -9,19 +9,27 @@ var logs = Logger.new("room")
     set(v):
         id = v
         logs.set_prefix(id)
+@export var scene:PackedScene
+## stop advancing to the next room automatically
+@export var halt:bool = true
 @export var events:Array[Visitor]
+@export var event_order: Order.Type = Order.Type.LINEAR
+
+var _order: Order
 
 func run_events():
     logs.info("run events")
-    _run_event(0)
+    _order = Order.new()
+    _order.set_items(events)
+    _order.set_type(event_order)
+    _run_event()
 
-func _run_event(idx:int):
-    if idx >= events.size():
+func _run_event():
+    var event = _order.next() as Visitor
+    if not event:
         logs.info("all events finished")
         events_finished.emit()
         return
-    var event = events[idx]
-    var fn = _run_event.bind(idx + 1)
-    if not event.finished.is_connected(fn):
-        event.finished.connect(fn)
+    if not event.finished.is_connected(_run_event):
+        event.finished.connect(_run_event, CONNECT_ONE_SHOT)
     event.visit()

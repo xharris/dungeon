@@ -9,23 +9,10 @@ var logs = Logger.new("main")
 @onready var _game:Game = $Game
 @onready var pause_controller:PauseController = %PauseController
 
-func _init() -> void:
-    #Logger.set_global_level(Logger.Level.DEBUG)
-    Util.main_node = self
-
 func _ready() -> void:
-    _setup_game()
+    Util.main_node = self
+    _game.over.connect(_on_game_over)
     _game.start()
     
-func _setup_game():
-    _game.over.connect(_on_game_over)
-    
 func _on_game_over(_type:Game.GameOverType):
-    # destroy current game
-    _game.destroy()
-    # create new game
-    var new_game = Scenes.GAME.instantiate()
-    _game = new_game
-    _setup_game()
-    add_child(new_game)
-    #new_game.start()
+    _game.restart()

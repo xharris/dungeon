@@ -1,10 +1,9 @@
-[gd_resource type="Resource" script_class="RoomConfig" load_steps=9 format=3 uid="uid://bs5nyqrnrwjm7"]
+[gd_resource type="Resource" script_class="RoomConfig" load_steps=7 format=3 uid="uid://bs5nyqrnrwjm7"]
 
 [ext_resource type="Script" uid="uid://btoexdkxgn0jv" path="res://src/visitor.gd" id="1_w25jc"]
 [ext_resource type="Resource" uid="uid://fgagrkai80mk" path="res://src/characters/player.tres" id="2_5sqdj"]
 [ext_resource type="Script" uid="uid://bxluh27mtef27" path="res://src/visitors/add_character.gd" id="3_frx7w"]
 [ext_resource type="PackedScene" uid="uid://csd34w7fjq0wn" path="res://src/rooms/title/title.tscn" id="3_l5x2m"]
-[ext_resource type="Script" uid="uid://dbp6afc4wf6ql" path="res://src/visitors/add_scene.gd" id="3_vbe0n"]
 [ext_resource type="Script" uid="uid://df011ese0wh1b" path="res://src/room_config.gd" id="4_8ptao"]
 
 [sub_resource type="Resource" id="Resource_w81v2"]
@@ -12,13 +11,10 @@ script = ExtResource("3_frx7w")
 config = ExtResource("2_5sqdj")
 metadata/_custom_type_script = "uid://bxluh27mtef27"
 
-[sub_resource type="Resource" id="Resource_frx7w"]
-script = ExtResource("3_vbe0n")
-scene = ExtResource("3_l5x2m")
-metadata/_custom_type_script = "uid://dbp6afc4wf6ql"
-
 [resource]
 script = ExtResource("4_8ptao")
 id = "title"
-events = Array[ExtResource("1_w25jc")]([SubResource("Resource_w81v2"), SubResource("Resource_frx7w")])
+scene = ExtResource("3_l5x2m")
+halt = true
+events = Array[ExtResource("1_w25jc")]([SubResource("Resource_w81v2")])
 metadata/_custom_type_script = "uid://df011ese0wh1b"

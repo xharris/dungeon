@@ -2,7 +2,12 @@ extends Node2D
 class_name UIInspectNode
 
 enum State {HIDDEN, VISIBLE, SELECTED}
+static var static_logs = Logger.new("ui_inspect_node")
 static var _last_selected_node:UIInspectNode
+
+static func _static_init() -> void:
+    static_logs.info("reset")
+    _last_selected_node = null
 
 signal selected(layer:UILayer)
 signal deselected

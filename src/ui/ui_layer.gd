@@ -23,6 +23,10 @@ func _ready() -> void:
     logs.set_prefix(config.id)
     if config.visible:
         set_state(State.VISIBLE)
+    Events.trigger_rooms_next.connect(_on_trigger_rooms_next)
+    
+func _on_trigger_rooms_next():
+    Util.destroy(self)
         
 func set_state(state: State, _from_layer := false) -> bool:
     logs.info("set state %s%s" % [State.find_key(state), " (from layer)" if _from_layer else ""])
@@ -177,7 +181,7 @@ func _update_focus() -> bool:
             
         ctrl_rows[i] = row
         
-    logs.info_if(
+    logs.debug_if(
         str(ctrl_rows) != prev_rows_str,
         "nodes were filtered\n\n\tbefore %s\n\n\tafter %s\n" % [prev_rows_str, ctrl_rows]
     )

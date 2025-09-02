@@ -1,0 +1,39 @@
+[gd_scene load_steps=6 format=3 uid="uid://s2psctwlfll"]
+
+[ext_resource type="Script" uid="uid://ci3duvo8atgnv" path="res://src/game_environment.gd" id="1_cb4f3"]
+
+[sub_resource type="Gradient" id="Gradient_80nbo"]
+offsets = PackedFloat32Array(0, 0.907407)
+colors = PackedColorArray(0.24, 0.24, 0.24, 1, 0.47, 0.47, 0.47, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_e2o6t"]
+gradient = SubResource("Gradient_80nbo")
+fill_from = Vector2(1, 1)
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_fc0e3"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_fc0e3"]
+size = Vector2(768, 20)
+
+[node name="GameEnvironment" type="Node2D"]
+script = ExtResource("1_cb4f3")
+
+[node name="Floor" type="Polygon2D" parent="."]
+position = Vector2(-960, 544)
+scale = Vector2(6, 1.66667)
+color = Color(0.631373, 0.533333, 0.498039, 1)
+texture = SubResource("GradientTexture2D_e2o6t")
+polygon = PackedVector2Array(4.29153e-06, -96, 320, -96, 320, 2.38419e-06, 0, 3.33786e-06, 0, -46.6263)
+uv = PackedVector2Array(1.63, 0.619999, 63.13, 0.619999, 66.13, 63.12, 3.13, 61.62)
+
+[node name="StaticBody2D" type="StaticBody2D" parent="Floor"]
+position = Vector2(0, -352.595)
+scale = Vector2(0.5, 0.979432)
+collision_mask = 2
+physics_material_override = SubResource("PhysicsMaterial_fc0e3")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Floor/StaticBody2D"]
+position = Vector2(320, 272)
+shape = SubResource("RectangleShape2D_fc0e3")
+
+[node name="Duplicates" type="Node2D" parent="."]

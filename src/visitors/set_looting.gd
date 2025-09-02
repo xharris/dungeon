@@ -22,9 +22,7 @@ func run():
     finished.emit()
 
 func _show_looting_ui():
-    var layer = UIElements.layer()
-    layer.config = LOOTING
-    Util.main_node.add_child(layer)
+    var layer = UIElements.layer(LOOTING)
     
     # show create looting ui
     if logs.warn_if(layer.set_state(UILayer.State.VISIBLE), "could not create looting ui"):

@@ -1,4 +1,4 @@
-extends Node
+extends Node2D
 class_name Game
 
 enum State {NONE, TITLE, PLAY}
@@ -7,29 +7,32 @@ enum GameOverType {PLAYER_DEATH}
 signal over(type:GameOverType)
 
 @onready var camera:GameCamera = $GameCamera
-@onready var environment:GameEnvironment = $Environment
-@onready var characters:Characters = $Characters
+@onready var _environment:GameEnvironment = $GameEnvironment
+@onready var _characters:Characters = $Characters
 @onready var rooms:Rooms = $Rooms
 
+@export var title_room:RoomConfig = preload("res://src/rooms/title.tres")
 @export var starting_zone:ZoneConfig = preload("res://src/zones/forest/forest.tres")
-## call reset on given visitors (should reset static variables and stuff)
-@export var reset_visitors:Array[Visitor] = [VisitorAddCharacter.new()]
 
 var logs = Logger.new("game")
 var _current_zone: ZoneConfig
 
 func _ready() -> void:
+    name = "Game"
     _current_zone = starting_zone
     Events.room_created.connect(_on_room_created)
     Events.character_created.connect(_on_character_created)
-    
+    Events.trigger_game_restart.connect(_on_trigger_game_reset, CONNECT_DEFERRED)
+
+func _on_trigger_game_reset():
+    restart()    
+
 func _on_room_created(config:RoomConfig, node:Node2D):
-    if config.id != Scenes.ROOM_TITLE.id:
-        environment.expand()
+    _environment.expand()
     # move camera to current room
     camera.move_to(node.position)
-    var all_chars = characters.get_all()
-    await characters.arrange(all_chars, node.global_position)
+    var all_chars = _characters.get_all()
+    await _characters.arrange(all_chars, node.global_position)
 
 func _on_character_created(c:Character):
     var room_center = rooms.center()
@@ -41,25 +44,20 @@ func _on_character_created(c:Character):
     c.position.y = 0
     c.stats.death.connect(_on_character_death.bind(c), CONNECT_ONE_SHOT)
     # arrange
-    await characters.arrange([c], room_center)
+    await _characters.arrange([c], room_center)
 
 func start():
     logs.info("start")
-    rooms.push_room(Scenes.ROOM_TITLE)
+    rooms.push_room(title_room)
     enter_zone(_current_zone)
 
-func destroy():
-    logs.info("destroy")
-    for v in reset_visitors:
-        logs.info("reset visitor: %s" % v.id)
-        v.reset()
-    UIInspectNode.reset()
-    Util.destroy(self)
+func restart():
+    get_tree().reload_current_scene()
     
 func enter_zone(config:ZoneConfig):
     for r in config.get_rooms():
         rooms.push_room(r)
-    rooms.next()
+    Events.trigger_rooms_next.emit()
 
 func _on_character_death(c:Character):
     if c.is_in_group(Groups.CHARACTER_PLAYER):
@@ -67,5 +65,5 @@ func _on_character_death(c:Character):
         over.emit(GameOverType.PLAYER_DEATH)
 
 func is_over() -> bool:
-    var player = characters.get_player()
+    var player = _characters.get_player()
     return player and not player.stats.is_alive()

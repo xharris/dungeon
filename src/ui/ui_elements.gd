@@ -6,8 +6,9 @@ var THEME_BASE = preload("res://themes/base.tres")
 
 var logs = Logger.new("ui_elements")
 
-func layer() -> UILayer:
-    var e = UI_LAYER.instantiate()
+func layer(config:UILayerConfig) -> UILayer:
+    var e = UI_LAYER.instantiate() as UILayer
+    e.config = config
     return e
 
 func rich_text_label() -> RichTextLabel:
