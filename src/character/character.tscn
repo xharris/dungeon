@@ -147,7 +147,7 @@ position = Vector2(0, 72)
 rotation = 1.57079
 shape = SubResource("CapsuleShape2D_1l1n4")
 
-[node name="UICharacterInspect" parent="." node_paths=PackedStringArray("character", "anchor_node") instance=ExtResource("4_hx151")]
+[node name="UIInspectNode" parent="." node_paths=PackedStringArray("character", "anchor_node") instance=ExtResource("4_hx151")]
 unique_name_in_owner = true
 script = ExtResource("5_0rvpn")
 character = NodePath("..")

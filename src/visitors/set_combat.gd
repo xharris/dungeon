@@ -19,7 +19,9 @@ func run():
 func _on_arrange_finished():
     logs.info("arrange finished")
     for c in GameUtil.all_characters():
-        c.stats.death.connect(_on_character_death.bind(c))
+        var fn_char_death = _on_character_death.bind(c)
+        if not c.stats.death.is_connected(fn_char_death):
+            c.stats.death.connect(fn_char_death)
         c.enable_combat()
 
 func _on_character_death(character:Character):

@@ -54,5 +54,7 @@ metadata/_custom_type_script = "uid://cxr4md3rik2h"
 [resource]
 script = ExtResource("10_27gxg")
 id = "test"
+halt = true
 events = Array[ExtResource("1_1kfpf")]([SubResource("Resource_0i0me"), SubResource("Resource_rbnx6"), SubResource("Resource_nxokt")])
+event_order = 0
 metadata/_custom_type_script = "uid://df011ese0wh1b"

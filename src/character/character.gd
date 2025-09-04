@@ -21,7 +21,7 @@ signal move_to_finished
 @onready var _animation_player: AnimationPlayer = $CharacterSprite/AnimationPlayer
 @onready var _weapon_animation_player: AnimationPlayer = $CharacterSprite/WeaponAnimationPlayer
 @onready var _attack_timer: AttackTimer = $AttackTimer
-@onready var inspect_node: UICharacterInspect = %UICharacterInspect
+@onready var inspect_node: UICharacterInspect = %UIInspectNode
 
 var logs = Logger.new("character") # , Logger.Level.DEBUG)
 var stats: Stats

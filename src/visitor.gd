@@ -4,7 +4,7 @@ class_name Visitor
 @warning_ignore("unused_signal")
 signal finished
 
-static var logs = Logger.new("visitor")
+var logs = Logger.new("visitor")
 var id:String = "Visitor"
 
 ## WARNING Do not override

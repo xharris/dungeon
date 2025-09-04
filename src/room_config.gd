@@ -13,7 +13,10 @@ var logs = Logger.new("room")
 ## stop advancing to the next room automatically
 @export var halt:bool = true
 @export var events:Array[Visitor]
+
+@export_group("Order")
 @export var event_order: Order.Type = Order.Type.LINEAR
+@export var event_wrap: bool = false
 
 var _order: Order
 
@@ -22,6 +25,7 @@ func run_events():
     _order = Order.new()
     _order.set_items(events)
     _order.set_type(event_order)
+    _order.set_wrap(event_wrap)
     _run_event()
 
 func _run_event():

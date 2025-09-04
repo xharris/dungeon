@@ -21,10 +21,11 @@ func _ready() -> void:
     _current_zone = starting_zone
     Events.room_created.connect(_on_room_created)
     Events.character_created.connect(_on_character_created)
-    Events.trigger_game_restart.connect(_on_trigger_game_reset, CONNECT_DEFERRED)
+    Events.trigger_game_restart.connect(_on_trigger_game_restart)
 
-func _on_trigger_game_reset():
-    restart()    
+func _on_trigger_game_restart():
+    Events.game_restart.emit()
+    restart()
 
 func _on_room_created(config:RoomConfig, room:Room):
     # move camera to current room
@@ -55,6 +56,7 @@ func start():
     enter_zone(_current_zone)
 
 func restart():
+    logs.info("restart")
     get_tree().reload_current_scene()
     
 func enter_zone(config:ZoneConfig):

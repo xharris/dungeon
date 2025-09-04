@@ -6,7 +6,7 @@
 [ext_resource type="PackedScene" uid="uid://csd34w7fjq0wn" path="res://src/rooms/title/title.tscn" id="3_l5x2m"]
 [ext_resource type="Script" uid="uid://df011ese0wh1b" path="res://src/room_config.gd" id="4_8ptao"]
 
-[sub_resource type="Resource" id="Resource_w81v2"]
+[sub_resource type="Resource" id="Resource_vbe0n"]
 script = ExtResource("3_frx7w")
 config = ExtResource("2_5sqdj")
 metadata/_custom_type_script = "uid://bxluh27mtef27"
@@ -16,6 +16,7 @@ script = ExtResource("4_8ptao")
 id = "title"
 scene = ExtResource("3_l5x2m")
 halt = true
-events = Array[ExtResource("1_w25jc")]([SubResource("Resource_w81v2")])
+events = Array[ExtResource("1_w25jc")]([SubResource("Resource_vbe0n")])
 event_order = 0
+event_wrap = false
 metadata/_custom_type_script = "uid://df011ese0wh1b"
