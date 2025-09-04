@@ -1,6 +1,8 @@
 extends Node2D
 class_name Rooms
 
+static var ROOM = preload("res://src/room/room.tscn")
+
 @export var title_room_id:String = "title"
 
 var logs = Logger.new("rooms")
@@ -50,7 +52,7 @@ func next() -> bool:
         logs.info("no rooms left in queue")
         return false
     _index += 1
-    var node = Node2D.new()    
+    var node = ROOM.instantiate() as Room    
     # position room node
     node.name = "room-%d-%s" % [_index, config.id]
     if _last_room_node:

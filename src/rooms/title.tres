@@ -17,4 +17,5 @@ id = "title"
 scene = ExtResource("3_l5x2m")
 halt = true
 events = Array[ExtResource("1_w25jc")]([SubResource("Resource_w81v2")])
+event_order = 0
 metadata/_custom_type_script = "uid://df011ese0wh1b"

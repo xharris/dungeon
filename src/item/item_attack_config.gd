@@ -10,7 +10,7 @@ class_name ItemAttackConfig
     set(v):
         animation_name = v
         _animation_names.assign(v.split(",", false))
-        logs.info("set animation names: %s -> %s" % [v, _animation_names])
+        logs.debug("set animation names: %s -> %s" % [v, _animation_names])
 @export var animation_order:Order.Type
 ## if the sweet spot is triggered, ignore the normal attack strategy
 @export var sweet_spot_skip_attack:bool = false

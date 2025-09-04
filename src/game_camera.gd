@@ -5,16 +5,11 @@ signal tween_finished
 
 @export var tween_duration:float = 5
 
-@onready var _initial_position: Vector2 = position
-
-func move_to(v:Vector2):
+func move_to(center:Vector2):
     # move camera to current Rooms
     var tween = create_tween()
-    var prop = tween.tween_property(self, "position", v, tween_duration)
+    var prop = tween.tween_property(self, "position", center, tween_duration)
     prop.set_trans(Tween.TransitionType.TRANS_QUAD)
     prop.set_ease(Tween.EaseType.EASE_IN_OUT)
     tween.finished.connect(tween_finished.emit)
     tween.play()
-
-func reset():
-    position = _initial_position

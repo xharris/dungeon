@@ -57,7 +57,7 @@ folder_colors={
 "res://src/characters/": "yellow",
 "res://src/dev/": "orange",
 "res://src/items/": "yellow",
-"res://src/rooms/": "orange",
+"res://src/rooms/": "yellow",
 "res://src/ui/": "green",
 "res://src/ui_button_configs/": "green",
 "res://src/ui_layer_configs/": "green",

@@ -1,8 +1,7 @@
-[gd_scene load_steps=6 format=3 uid="uid://6r7lwgjglfjs"]
+[gd_scene load_steps=5 format=3 uid="uid://6r7lwgjglfjs"]
 
 [ext_resource type="Script" uid="uid://bjkk1no4qjk4e" path="res://src/game.gd" id="1_7jktm"]
 [ext_resource type="PackedScene" uid="uid://ddmafsyxkbsus" path="res://src/game_camera.tscn" id="2_ryrav"]
-[ext_resource type="PackedScene" uid="uid://s2psctwlfll" path="res://src/game_environment.tscn" id="3_bs6l1"]
 [ext_resource type="PackedScene" uid="uid://dh8l7rcfqnx1p" path="res://src/rooms.tscn" id="4_j5wjh"]
 [ext_resource type="Script" uid="uid://c0akj433rf2px" path="res://src/characters.gd" id="5_vef74"]
 
@@ -10,8 +9,6 @@
 script = ExtResource("1_7jktm")
 
 [node name="GameCamera" parent="." instance=ExtResource("2_ryrav")]
-
-[node name="GameEnvironment" parent="." instance=ExtResource("3_bs6l1")]
 
 [node name="Rooms" parent="." instance=ExtResource("4_j5wjh")]
 

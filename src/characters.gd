@@ -13,17 +13,12 @@ func _ready() -> void:
 func _on_character_created(c:Character):
     add_child(c)
 
-func get_all() -> Array[Character]:
-    var out:Array[Character]
-    out.append_array(get_tree().get_nodes_in_group(Groups.CHARACTER_ANY))
-    return out
-
 func get_player() -> Character:
     return get_tree().get_first_node_in_group(Groups.CHARACTER_PLAYER) as Character
 
 # arrange all characters to their designated side of the screen
-func arrange(characters:Array[Character], center:Vector2):
-    logs.info("arrange characters (%d)" % characters.size())
+func arrange(characters:Array[Character], area:Rect2):
+    logs.info("arrange characters (%d), area=%s" % [characters.size(), area])
     characters = GameUtil.all_characters()
     
     var side_order = [GroupSide.Left, GroupSide.Right]
@@ -47,8 +42,8 @@ func arrange(characters:Array[Character], center:Vector2):
                 await_arrange.add(c.move_to_finished)
     await_arrange.done.connect(_on_arrange_finished, CONNECT_ONE_SHOT)
     
-    var x = center.x - Util.size.x/2 + 30
-    var w = center.x + Util.size.x/2 - 30
+    var x = area.position.x # center.x - Util.size.x/2 + 30
+    var w = area.position.x + area.size.x # center.x + Util.size.x/2 - 30
     logs.debug("arrange area x=[%d, %d]" % [x, w])
     var side_size = (w - x) / side_order.size()
     for i in side_order.size():

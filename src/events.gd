@@ -4,7 +4,7 @@ extends Node
 signal character_created(c:Character)
 signal characters_arranged
 
-signal room_created(room:RoomConfig, node:Node2D)
+signal room_created(config:RoomConfig, room:Room)
 signal room_finished(room:RoomConfig)
 
 signal trigger_rooms_next

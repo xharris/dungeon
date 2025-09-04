@@ -7,6 +7,38 @@ var size:Vector2:
     get:
         return get_viewport().get_visible_rect().size
         
+func _get_tree() -> SceneTree:
+    if not main_node:
+        logs.warn("main node not set")
+        return
+    var tree = main_node.get_tree()
+    if not tree:
+        logs.warn("main node not in tree, main node=%s" % [main_node.name])
+        return
+    return tree
+        
+func get_first_node_in_group(group:String) -> Node:
+    var tree = _get_tree()
+    if logs.warn_if(not tree, "could not get tree, group=%s" % group):
+        return
+    return tree.get_first_node_in_group(group)
+
+func get_last_node_in_group(group:String) -> Node:
+    var tree = _get_tree()
+    if logs.warn_if(not tree, "could not get tree, group=%s" % group):
+        return
+    var nodes = tree.get_nodes_in_group(group)
+    if nodes.size() == 0:
+        logs.debug("no nodes found, group=%s" % group)
+        return
+    return nodes.back()
+
+func get_nodes_in_group(group:String) -> Array:
+    var tree = _get_tree()
+    if logs.warn_if(not tree, "could not get tree, group=%s" % group):
+        return []
+    return tree.get_nodes_in_group(group)
+
 ## Returns [code]false[/code] if object is already being destroyed
 func destroy(node:Node) -> bool:
     if node == null:

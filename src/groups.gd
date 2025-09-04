@@ -9,5 +9,10 @@ const UI_LAYER = &"ui_layer"
 const UI_BUTTON = &"ui_button"
 const UI_INSPECT_NODE = &"ui_inspect_node"
 
+const ROOM = &"room"
+
 const ROOMS = &"rooms"
 const CHARACTERS = &"characters"
+
+# GameEnvironment Floor
+const FLOOR = &"floor"

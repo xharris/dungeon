@@ -7,7 +7,6 @@ enum GameOverType {PLAYER_DEATH}
 signal over(type:GameOverType)
 
 @onready var camera:GameCamera = $GameCamera
-@onready var _environment:GameEnvironment = $GameEnvironment
 @onready var _characters:Characters = $Characters
 @onready var rooms:Rooms = $Rooms
 
@@ -27,15 +26,19 @@ func _ready() -> void:
 func _on_trigger_game_reset():
     restart()    
 
-func _on_room_created(config:RoomConfig, node:Node2D):
-    _environment.expand()
+func _on_room_created(config:RoomConfig, room:Room):
     # move camera to current room
-    camera.move_to(node.position)
-    var all_chars = _characters.get_all()
-    await _characters.arrange(all_chars, node.global_position)
+    camera.move_to(room.center())
+    var all_chars:Array[Character] = []
+    all_chars.assign(Util.get_nodes_in_group(Groups.CHARACTER_ANY))
+    await _characters.arrange(all_chars, room.get_rect())
 
 func _on_character_created(c:Character):
-    var room_center = rooms.center()
+    var last_room = Util.get_last_node_in_group(Groups.ROOM) as Room
+    if not last_room:
+        logs.warn("no rooms created")
+        return
+    var room_center = last_room.center()
     var offset_x = (Util.size.x / 2) + (Util.get_rect(c).size.x * 2)
     if c.is_in_group(Groups.CHARACTER_ENEMY):
         c.global_position.x = room_center.x + offset_x
@@ -44,7 +47,7 @@ func _on_character_created(c:Character):
     c.position.y = 0
     c.stats.death.connect(_on_character_death.bind(c), CONNECT_ONE_SHOT)
     # arrange
-    await _characters.arrange([c], room_center)
+    await _characters.arrange([c], last_room.get_rect())
 
 func start():
     logs.info("start")

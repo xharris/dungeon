@@ -13,13 +13,14 @@ ui_layer = NodePath("UILayer")
 follow_viewport_enabled = true
 follow_viewport_scale = 0.8
 
-[node name="Control" type="CenterContainer" parent="CanvasLayer"]
-offset_right = 1259.0
-offset_bottom = 138.0
-size_flags_horizontal = 0
-use_top_left = true
+[node name="CenterContainer" type="CenterContainer" parent="CanvasLayer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 
-[node name="RichTextLabel" type="RichTextLabel" parent="CanvasLayer/Control"]
+[node name="RichTextLabel" type="RichTextLabel" parent="CanvasLayer/CenterContainer"]
 layout_mode = 2
 size_flags_horizontal = 8
 size_flags_vertical = 8
@@ -35,6 +36,12 @@ scroll_active = false
 autowrap_mode = 0
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="Control" type="CenterContainer" parent="CanvasLayer"]
+offset_right = 1259.0
+offset_bottom = 138.0
+size_flags_horizontal = 0
+use_top_left = true
 
 [node name="UILayer" parent="." instance=ExtResource("3_tuxiw")]
 unique_name_in_owner = true
