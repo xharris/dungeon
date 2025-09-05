@@ -24,7 +24,7 @@ signal state_changed(state:State)
 @onready var _p_sweet_spot: GPUParticles2D = $Particles/ParticlesSweetSpot
 @onready var _p_ability_triggered: GPUParticles2D = $Particles/ParticlesAbilityTriggered
 
-var logs = Logger.new("attack_timer", Logger.Level.DEBUG)
+var logs = Logger.new("attack_timer")#, Logger.Level.DEBUG)
 var id:String:
     set(v):
         logs.set_prefix(v)
@@ -179,8 +179,6 @@ func _process(delta: float) -> void:
                 start()
 
 func _unhandled_input(event: InputEvent) -> void:
-    if event.is_action_pressed("debug_action") and character.is_in_group(Groups.CHARACTER_PLAYER):
-        _emit(_p_sweet_spot)
     if _attack_config and _state == State.ENABLED and \
     character.is_in_group(Groups.CHARACTER_PLAYER) and event.is_action_pressed("action"):
         var is_in_sweet_spot = _sweet_spot_entered and not _sweet_spot_done
