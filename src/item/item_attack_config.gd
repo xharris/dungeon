@@ -29,8 +29,9 @@ func next_animation() -> String:
     _order.set_items(_animation_names)
     return _order.next()
 
+## returns sweet spot duration (seconds)
 func get_sweet_spot_size() -> float:
-    return [0.1, 0.075, 0.05][difficulty]
+    return [0.3, 0.2, 0.1][difficulty]
 
 func is_in_sweet_spot(elapsed:float) -> bool:
     var size = get_sweet_spot_size()
@@ -39,3 +40,13 @@ func is_in_sweet_spot(elapsed:float) -> bool:
 func is_past_sweet_spot(elapsed:float) -> bool:
     var size = get_sweet_spot_size()
     return elapsed > midpoint + size
+
+## returns time left inside sweet spot
+## 
+## [code]0[/code] if not in the sweet spot
+func get_sweet_spot_left(elapsed: float) -> float:
+    var size = get_sweet_spot_size()
+    if not is_in_sweet_spot(elapsed):
+        return 0
+    var end = midpoint + size
+    return max(0, end - elapsed)

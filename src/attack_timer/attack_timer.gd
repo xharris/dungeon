@@ -1,4 +1,4 @@
-extends Node
+extends Node2D
 ## - Weapon attack timer
 ## - Sweet spot activation
 class_name AttackTimer
@@ -12,7 +12,6 @@ signal sweet_spot_triggered
 signal sweet_spot_missed
 signal state_changed(state:State)
 
-var logs = Logger.new("attack_timer")#, Logger.Level.DEBUG)
 @export var animation_player: AnimationPlayer
 @export var character: Character
 ## node that will display sweet spot indication
@@ -21,12 +20,15 @@ var logs = Logger.new("attack_timer")#, Logger.Level.DEBUG)
         particle_node = v
         update_particles()
 
-@onready var _particles: GPUParticles2D = $GPUParticles2D
-@onready var _remote_transform: RemoteTransform2D = $RemoteTransform2D
+@onready var _particles: Node2D = $Particles
+@onready var _p_sweet_spot: GPUParticles2D = $Particles/ParticlesSweetSpot
+@onready var _p_ability_triggered: GPUParticles2D = $Particles/ParticlesAbilityTriggered
 
+var logs = Logger.new("attack_timer", Logger.Level.DEBUG)
 var id:String:
     set(v):
         logs.set_prefix(v)
+        id = v
 var speed: float = 1.0
 var _state: State
 var _attack_config: ItemAttackConfig
@@ -38,32 +40,29 @@ var _sweet_spot_missed = false
 var _last_weapon_node: Node2D
 
 func _ready() -> void:
-    _particles.amount_ratio = 0
-    _remote_transform.tree_exiting.connect(_on_remote_transform_tree_exited)
-
-func _on_remote_transform_tree_exited():
-    _remote_transform.reparent(self)
+    update_particles()
 
 func set_state(state:State) -> bool:
     logs.info("set state: %s" % State.find_key(state))
     match state:
         State.DISABLED:
             _timer = 0
-            
+
         State.ENABLED:
             _state = state
             start()
-            
+
     _state = state
     state_changed.emit(_state)
     return true
 
 func start():
-    logs.debug("start")
+    logs.debug("attack start")
     if _state != State.ENABLED:
         logs.warn("not enabled")
         return
     _timer = 0
+    _p_ability_triggered.amount_ratio = 0
     _attack_done = false
     _sweet_spot_done = false
     _sweet_spot_entered = false
@@ -80,32 +79,35 @@ func set_attack_config(config: ItemAttackConfig):
     _attack_config = config
 
 func update_particles():
-    if not _particles:
-        logs.warn("particles not ready")
+    logs.info("update particles")
+    if not _p_ability_triggered:
+        logs.debug("not ready")
         return
-    var mat:ParticleProcessMaterial = _particles.process_material
     var rect = Util.get_rect(particle_node)
     if rect.size.length() == 0:
         return
-    logs.info("update particles")
-    logs.info("weapon rect: %s" % rect)
-    # update particle emission area to cover weapon node
-    mat.emission_box_extents.x = rect.size.x / 2
-    mat.emission_box_extents.y = rect.size.y / 2
-    # draw particles behind weapon
-    _particles.z_index = particle_node.z_index - 1
-    _remote_transform.reparent(particle_node)
-
+    for p in _particles.get_children():
+        if p is GPUParticles2D:
+            p = p as GPUParticles2D
+            var mat:ParticleProcessMaterial = p.process_material
+            logs.info("weapon rect: %s" % rect)
+            # update particle emission area to cover weapon node
+            mat.emission_box_extents.x = rect.size.x / 2
+            mat.emission_box_extents.y = rect.size.y / 2
+            # draw particles behind weapon
+            #_particles.z_as_relative = false
+            #_particles.z_index = particle_node.z_index - 1
+    
 func _sweet_spot_enter():
     if _sweet_spot_entered:
         return
+    if not _attack_config:
+        logs.debug("_attack_config not set")
+        return
+    logs.debug("sweet spot enter")
     _sweet_spot_entered = true
     # show visual
-    _particles.emit_particle(
-        Transform2D.IDENTITY, Vector2.ZERO, 
-        Color.WHITE, Color.WHITE,
-        0
-    )
+    _emit(_p_sweet_spot, _attack_config.get_sweet_spot_size())
     sweet_spot_entered.emit()
 
 func _sweet_spot_exit():
@@ -116,16 +118,38 @@ func _sweet_spot_exit():
 
 func _sweet_spot_trigger():
     sweet_spot_triggered.emit()
-    _particles.amount_ratio = 1
-    var t = _particles.create_tween()
-    t.tween_property(_particles, "amount_ratio", 0, 0.5)
-    t.play()
+    _p_ability_triggered.amount_ratio = 1
+    logs.debug("sweet spot triggered")
+    if animation_player.current_animation:
+        var t = create_tween()
+        var time_left = animation_player.current_animation_length - animation_player.current_animation_position
+        logs.debug("attack animation time left=%0.3f" % time_left)
+        #t.tween_property(_p_ability_triggered, "amount_ratio", 0, time_left)
+        #t.play()
+    else:
+        logs.debug("no current animation")
 
+func _emit(emitter: GPUParticles2D, lifetime: float = 1.0):
+    emitter.lifetime = lifetime
+    emitter.emitting = true
+    emitter.amount_ratio = 1
+    emitter.emit_particle( 
+        particle_node.global_transform, 
+        Vector2.ZERO, Color.WHITE, 
+        Color(0, 0, 0, emitter.lifetime), 
+        GPUParticles2D.EmitFlags.EMIT_FLAG_POSITION
+    )
+    logs.debug("emit %s lifetime=%f" % [emitter.name, emitter.lifetime])
+    
 func _process(delta: float) -> void:
     if particle_node and  _last_weapon_node != particle_node:
         update_particles()
         _last_weapon_node = particle_node
-    
+    if particle_node:
+        for p in _particles.get_children():
+            if p is GPUParticles2D:
+                p = p as GPUParticles2D
+                p.global_position = particle_node.global_position
     match _state:
         State.ENABLED:
             _timer += delta * speed
@@ -155,21 +179,23 @@ func _process(delta: float) -> void:
                 start()
 
 func _unhandled_input(event: InputEvent) -> void:
-    if _state == State.ENABLED and character.is_in_group(Groups.CHARACTER_PLAYER) and event.is_action_pressed("action"):
-        if _attack_config:
-            var is_in_sweet_spot = _sweet_spot_entered and not _sweet_spot_done
-            if is_in_sweet_spot:
-                # sweet spot triggered
-                logs.info("sweet spot triggered!")
-                for s in _attack_config.sweet_spot_strategy:
-                    s.run(character)
-                _sweet_spot_exit()
-                _sweet_spot_trigger()
-            elif not _sweet_spot_missed:
-                # sweet spot missed
-                logs.info("sweet spot missed")
-                for s in _attack_config.sweet_spot_missed_strategy:
-                    s.run(character)
-                _sweet_spot_missed = true
-                _sweet_spot_exit()
-                sweet_spot_missed.emit()
+    if event.is_action_pressed("debug_action") and character.is_in_group(Groups.CHARACTER_PLAYER):
+        _emit(_p_sweet_spot)
+    if _attack_config and _state == State.ENABLED and \
+    character.is_in_group(Groups.CHARACTER_PLAYER) and event.is_action_pressed("action"):
+        var is_in_sweet_spot = _sweet_spot_entered and not _sweet_spot_done
+        if is_in_sweet_spot:
+            # sweet spot triggered
+            logs.info("sweet spot triggered!")
+            for s in _attack_config.sweet_spot_strategy:
+                s.run(character)
+            _sweet_spot_exit()
+            _sweet_spot_trigger()
+        elif not _sweet_spot_missed:
+            # sweet spot missed
+            logs.info("sweet spot missed")
+            for s in _attack_config.sweet_spot_missed_strategy:
+                s.run(character)
+            _sweet_spot_missed = true
+            _sweet_spot_exit()
+            sweet_spot_missed.emit()

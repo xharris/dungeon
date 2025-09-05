@@ -105,6 +105,7 @@ func _on_attack_timer_started():
         if _weapon_animation_player.is_playing():
             _weapon_animation_player.stop(true)
         _weapon_animation_player.play(animation_name)
+    
 
 func _on_death():
     disable_combat()
@@ -165,6 +166,7 @@ func _on_item_added(item: Item):
         Util.clear_children(held_item_r)
         # add held item
         parent_node.add_child(item_node)
+    _attack_timer.set_attack_config(_weapon.attack_config)
 
 func _on_item_removed(item: Item, _left: int):
     if inventory.count(item.id) == 0:
