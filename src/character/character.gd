@@ -44,10 +44,11 @@ static func create(config: CharacterConfig) -> Character:
     return me
 
 func use_config(config: CharacterConfig):
+    config = config.duplicate(true)
     id = config.id
     # configure
-    stats = config.stats.duplicate()
-    inventory = config.inventory.duplicate()
+    stats = config.stats
+    inventory = config.inventory
     stats.id = id
     inventory.id = id
     # position depending on group

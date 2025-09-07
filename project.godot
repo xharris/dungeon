@@ -58,7 +58,6 @@ folder_colors={
 "res://src/dev/": "orange",
 "res://src/items/": "yellow",
 "res://src/particle_materials/": "blue",
-"res://src/projectile_visitors/": "yellow",
 "res://src/rooms/": "yellow",
 "res://src/ui/": "green",
 "res://src/ui_button_configs/": "green",

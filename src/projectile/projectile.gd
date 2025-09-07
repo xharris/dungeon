@@ -8,7 +8,6 @@ class Data:
     var source: Node2D
     var target: Node2D
     var target_stats: Stats
-    var visitors: Array[ProjectileVisitor]
 
 static func create(data: Data, count: int = 1) -> Array[Projectile]:
     var projectiles: Array[Projectile]
