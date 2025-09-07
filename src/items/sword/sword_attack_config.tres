@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="ItemAttackConfig" load_steps=7 format=3 uid="uid://dse3ma3t1jdju"]
 
-[ext_resource type="Script" uid="uid://cfkl8e4vj5aja" path="res://src/item/attack_strategy.gd" id="1_yylkl"]
-[ext_resource type="Resource" uid="uid://b1g5gqqepf61v" path="res://src/attack_strategies/slash.tres" id="2_7yqst"]
+[ext_resource type="Script" uid="uid://cfkl8e4vj5aja" path="res://src/attack_strategy.gd" id="1_625v2"]
+[ext_resource type="Resource" uid="uid://b1g5gqqepf61v" path="res://src/attack_strategies/basic_attack.tres" id="2_g5nww"]
 [ext_resource type="Script" uid="uid://cosq5g2atvso1" path="res://src/item/item_attack_config.gd" id="2_hsum5"]
 [ext_resource type="Resource" uid="uid://j6tq6npu51mt" path="res://src/attack_strategies/ramping_attack_speed.tres" id="4_7yqst"]
 [ext_resource type="Script" uid="uid://cgjg0sabc0cb4" path="res://src/attack_strategies/reverse_modify_stats.gd" id="5_625v2"]
@@ -10,9 +10,9 @@
 script = ExtResource("5_625v2")
 attack_strategy = ExtResource("4_7yqst")
 id = ""
-deal_damage = true
-strength_ratio = 1
 target = 0
+deal_damage = true
+strength_ratio = 1.0
 metadata/_custom_type_script = "uid://cgjg0sabc0cb4"
 
 [resource]
@@ -23,7 +23,7 @@ midpoint = 0.85
 animation_name = "swing_up,swing_down"
 animation_order = 2
 sweet_spot_skip_attack = false
-attack_strategy = Array[ExtResource("1_yylkl")]([ExtResource("2_7yqst")])
-sweet_spot_strategy = Array[ExtResource("1_yylkl")]([ExtResource("4_7yqst")])
-sweet_spot_missed_strategy = Array[ExtResource("1_yylkl")]([SubResource("Resource_g5nww")])
+attack_strategy = Array[ExtResource("1_625v2")]([ExtResource("2_g5nww")])
+sweet_spot_strategy = Array[ExtResource("1_625v2")]([ExtResource("4_7yqst")])
+sweet_spot_missed_strategy = Array[ExtResource("1_625v2")]([SubResource("Resource_g5nww")])
 metadata/_custom_type_script = "uid://cosq5g2atvso1"

@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="AttackStrategy" load_steps=2 format=3 uid="uid://b1g5gqqepf61v"]
+
+[ext_resource type="Script" uid="uid://cfkl8e4vj5aja" path="res://src/attack_strategy.gd" id="1_kbasi"]
+
+[resource]
+script = ExtResource("1_kbasi")
+id = "basic_attack"
+target = 2
+deal_damage = true
+strength_ratio = 1.0
+metadata/_custom_type_script = "uid://cfkl8e4vj5aja"

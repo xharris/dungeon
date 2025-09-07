@@ -1,5 +1,5 @@
-class_name Item
 extends Resource
+class_name Item
 
 enum AttackAnimation {None, Swing}
 enum Hold {None, Primary, Secondary}
@@ -32,5 +32,4 @@ enum Hold {None, Primary, Secondary}
 
 func get_description() -> String:
     var texts:Array[String] = [id]  
-    
     return "\n".join(texts)

@@ -2,7 +2,7 @@
 
 [ext_resource type="AnimationLibrary" uid="uid://df2bo6bawi54v" path="res://src/items/_animations/swing_animation.res" id="1_bgr1c"]
 [ext_resource type="Script" uid="uid://oedsddb184wt" path="res://src/item/item.gd" id="1_i1pd1"]
-[ext_resource type="Resource" uid="uid://dse3ma3t1jdju" path="res://src/items/_animations/swing_attack_config.tres" id="2_ht42l"]
+[ext_resource type="Resource" uid="uid://dse3ma3t1jdju" path="res://src/items/sword/sword_attack_config.tres" id="2_ht42l"]
 
 [resource]
 script = ExtResource("1_i1pd1")

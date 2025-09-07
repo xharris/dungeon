@@ -35,6 +35,7 @@ var target_distance: Vector2 = Vector2(20, 20)
 var _max_velocity: Vector2 = Vector2(400, 500)
 var _weapon: Item
 var _primary_hand: Hand = Hand.LEFT
+var _item_node: Node2D
 
 static func create(config: CharacterConfig) -> Character:
     var me = SCENE.instantiate() as Character
@@ -76,13 +77,27 @@ func _ready() -> void:
     stats.damage_taken.connect(_on_damage_taken)
     stats.death.connect(_on_death)
     _attack_timer.attack_started.connect(_on_attack_timer_started)
+    _attack_timer.sweet_spot_exited.connect(_on_sweet_spot_exited)
     
     # trigger signal for default items
     for item in inventory.items:
-        logs.debug("add default item: %s" % item.id)
+        ## BUG item is of type Resource not Item. ?????
         _on_item_added(item)
 
     add_to_group(Groups.CHARACTER_ANY)
+
+func _on_sweet_spot_exited():
+    logs.debug("sweet spot exited (attack landed)")
+    if not _weapon:
+        return logs.debug("no weapon set")
+    var attack_config = _weapon.attack_config
+    if not attack_config:
+        return logs.debug("no attack config")
+    # run strategies on attack targets
+    for s: AttackStrategy in attack_config.attack_strategy:
+        var targets = _get_targets(s.target)
+        for t in targets:
+            s.run(t.stats)
 
 func _on_attack_timer_started():
     if not _weapon:
@@ -91,6 +106,7 @@ func _on_attack_timer_started():
     if not _weapon.attack_config:
         logs.warn("missing weapon.attack_config: %s" % _weapon.id)
         return
+        
     # weapon animation
     if not _weapon_animation_player.has_animation_library(_weapon.id):
         logs.info("add animation library: %s (%s)" % [_weapon.id, _weapon.animation_library.get_animation_list()])
@@ -106,6 +122,28 @@ func _on_attack_timer_started():
             _weapon_animation_player.stop(true)
         _weapon_animation_player.play(animation_name)
     
+
+func _get_targets(target: AttackStrategy.TARGET) -> Array[Character]:
+    var possible_characters:Array[Character]
+    var self_is_ally = is_in_group(Groups.CHARACTER_PLAYER) or is_in_group(Groups.CHARACTER_ALLY)
+    for c in GameUtil.all_characters():
+        if not c.stats.is_alive():
+            continue
+        var add:bool = false
+        var other_is_ally = c.is_in_group(Groups.CHARACTER_PLAYER) or c.is_in_group(Groups.CHARACTER_ALLY)
+        match target:
+            AttackStrategy.TARGET.SELF:
+                if c == self:
+                    add = true
+            AttackStrategy.TARGET.ALLY:
+                if self_is_ally == other_is_ally:
+                    add = true
+            AttackStrategy.TARGET.ENEMY:
+                if self_is_ally != other_is_ally:
+                    add = true
+        if add:
+            possible_characters.append(c)
+    return possible_characters
 
 func _on_death():
     disable_combat()
@@ -159,13 +197,13 @@ func _on_item_added(item: Item):
     _attack_timer.particle_node = parent_node
     _weapon = item
     # add item to hand
-    var item_node = item.scene.instantiate() as Node2D if item.scene else null
-    if item_node:
+    _item_node = item.scene.instantiate() as Node2D if item.scene else null
+    if _item_node:
         # clear currently held item
         Util.clear_children(held_item_l)
         Util.clear_children(held_item_r)
         # add held item
-        parent_node.add_child(item_node)
+        parent_node.add_child(_item_node)
     _attack_timer.set_attack_config(_weapon.attack_config)
 
 func _on_item_removed(item: Item, _left: int):
@@ -238,7 +276,7 @@ func destroy():
     if Util.destroy(self):
         logs.info("destroyed")
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
     _attack_timer.speed = stats.attack_speed
 
 func _physics_process(delta: float) -> void:

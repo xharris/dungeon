@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="Item" load_steps=5 format=3 uid="uid://epcvu5nhmv1t"]
+
+[ext_resource type="AnimationLibrary" uid="uid://df2bo6bawi54v" path="res://src/items/_animations/swing_animation.res" id="1_uh70m"]
+[ext_resource type="Script" uid="uid://oedsddb184wt" path="res://src/item/item.gd" id="1_v8cbd"]
+[ext_resource type="PackedScene" uid="uid://c25jygu7vf880" path="res://src/items/bow/bow.tscn" id="2_7vw0c"]
+[ext_resource type="Resource" uid="uid://cbpddup8apdoj" path="res://src/items/bow/bow_attack_config.tres" id="2_i0wc2"]
+
+[resource]
+script = ExtResource("1_v8cbd")
+id = "bow"
+hide = false
+disable_unequip = false
+is_weapon = true
+scene = ExtResource("2_7vw0c")
+animation_library = ExtResource("1_uh70m")
+attack_config = ExtResource("2_i0wc2")
+metadata/_custom_type_script = "uid://oedsddb184wt"

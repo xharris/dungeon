@@ -53,10 +53,12 @@ enabled=PackedStringArray("res://addons/gut/plugin.cfg", "res://addons/script-id
 [file_customization]
 
 folder_colors={
-"res://src/attack_strategies/": "yellow",
+"res://src/attack_strategies/": "blue",
 "res://src/characters/": "yellow",
 "res://src/dev/": "orange",
 "res://src/items/": "yellow",
+"res://src/particle_materials/": "blue",
+"res://src/projectile_visitors/": "yellow",
 "res://src/rooms/": "yellow",
 "res://src/ui/": "green",
 "res://src/ui_button_configs/": "green",

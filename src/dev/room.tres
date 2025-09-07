@@ -6,7 +6,7 @@
 [ext_resource type="Script" uid="uid://oedsddb184wt" path="res://src/item/item.gd" id="4_8xvyj"]
 [ext_resource type="Resource" uid="uid://d4eo2x47h5he7" path="res://src/items/stick/stick.tres" id="5_2yus2"]
 [ext_resource type="Script" uid="uid://bergs16kyq55l" path="res://src/inventory.gd" id="6_l04pt"]
-[ext_resource type="Script" uid="uid://bedyejdsvyux6" path="res://src/character_config.gd" id="7_1vep8"]
+[ext_resource type="Script" uid="uid://bedyejdsvyux6" path="res://src/character/character_config.gd" id="7_1vep8"]
 [ext_resource type="Script" uid="uid://brhyw2hs6qpeh" path="res://src/stats.gd" id="8_3iphe"]
 [ext_resource type="Script" uid="uid://cxr4md3rik2h" path="res://src/visitors/set_combat.gd" id="9_1kfpf"]
 [ext_resource type="Script" uid="uid://df011ese0wh1b" path="res://src/room_config.gd" id="10_27gxg"]

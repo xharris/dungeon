@@ -120,14 +120,14 @@ func _sweet_spot_trigger():
     sweet_spot_triggered.emit()
     _p_ability_triggered.amount_ratio = 1
     logs.debug("sweet spot triggered")
-    if animation_player.current_animation:
-        var t = create_tween()
-        var time_left = animation_player.current_animation_length - animation_player.current_animation_position
-        logs.debug("attack animation time left=%0.3f" % time_left)
+    #if animation_player.current_animation:
+        #var t = create_tween()
+        #var time_left = animation_player.current_animation_length - animation_player.current_animation_position
+        #logs.debug("attack animation time left=%0.3f" % time_left)
         #t.tween_property(_p_ability_triggered, "amount_ratio", 0, time_left)
         #t.play()
-    else:
-        logs.debug("no current animation")
+    #else:
+        #logs.debug("no current animation")
 
 func _emit(emitter: GPUParticles2D, lifetime: float = 1.0):
     emitter.lifetime = lifetime
@@ -167,7 +167,7 @@ func _process(delta: float) -> void:
                     # attack landed
                     logs.info("attack landed")
                     for s in _attack_config.attack_strategy:
-                        s.run(character)
+                        s.run(character.stats)
                     _attack_done = true
                     # also the end of sweet spot technically
                     if _sweet_spot_entered and not _sweet_spot_done:
@@ -186,14 +186,14 @@ func _unhandled_input(event: InputEvent) -> void:
             # sweet spot triggered
             logs.info("sweet spot triggered!")
             for s in _attack_config.sweet_spot_strategy:
-                s.run(character)
+                s.run(character.stats)
             _sweet_spot_exit()
             _sweet_spot_trigger()
         elif not _sweet_spot_missed:
             # sweet spot missed
             logs.info("sweet spot missed")
             for s in _attack_config.sweet_spot_missed_strategy:
-                s.run(character)
+                s.run(character.stats)
             _sweet_spot_missed = true
             _sweet_spot_exit()
             sweet_spot_missed.emit()

@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="AttackStrategy" load_steps=4 format=3 uid="uid://j6tq6npu51mt"]
 
-[ext_resource type="Script" uid="uid://cfkl8e4vj5aja" path="res://src/item/attack_strategy.gd" id="1_2s7yd"]
+[ext_resource type="Script" uid="uid://cfkl8e4vj5aja" path="res://src/attack_strategy.gd" id="1_2s7yd"]
 [ext_resource type="Script" uid="uid://brhyw2hs6qpeh" path="res://src/stats.gd" id="1_ip43u"]
 
 [sub_resource type="Resource" id="Resource_5j7rv"]
@@ -16,8 +16,8 @@ metadata/_custom_type_script = "uid://brhyw2hs6qpeh"
 [resource]
 script = ExtResource("1_2s7yd")
 id = "ramping_attack_speed"
-deal_damage = false
-strength_ratio = 1
 target = 0
 modify_stats = SubResource("Resource_5j7rv")
+deal_damage = false
+strength_ratio = 1.0
 metadata/_custom_type_script = "uid://cfkl8e4vj5aja"

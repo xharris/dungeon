@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3 uid="uid://c25jygu7vf880"]
+
+[ext_resource type="Texture2D" uid="uid://c0ktu3xoip7kb" path="res://assets/( D&K ) Items V.2.png" id="1_1iuas"]
+
+[node name="Bow" type="Node2D"]
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("1_1iuas")
+region_enabled = true
+region_rect = Rect2(148, 106, 6, 22)

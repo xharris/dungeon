@@ -1,1 +1,2 @@
 ## NOTHING YET
+extends Node

@@ -42,7 +42,7 @@ func _on_selected(layer:UILayer) -> bool:
         
     return true
 
-func _on_item_pressed(i:int):
+func _on_item_pressed(_i:int):
     pass 
     # TODO show help info for this item? 
     # TODO or should it go in the top row with a 'press SPACE to view more' if needed?
