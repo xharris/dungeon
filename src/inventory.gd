@@ -13,14 +13,14 @@ var id:String = "":
 @export var capacity:int = 1
 @export var lootable:bool = false
 ## NOTE do not modify directly in code. use [code]add_item[/code]
-@export var items:Array[Item]:
-    get:
-        return _items
-        
-var _items: Array[Item]
+@export var items:Array[Item]
 
 func _init() -> void:
-    for item in items:
+    # re-add the items use add_item to triggers signals and stuff
+    var _items: Array[Item]
+    _items.assign(items)
+    items.clear()
+    for item in _items:
         _items.append(item)
 
 func can_add_item(item:Item):
