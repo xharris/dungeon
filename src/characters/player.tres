@@ -1,12 +1,13 @@
 [gd_resource type="Resource" script_class="CharacterConfig" load_steps=8 format=3 uid="uid://fgagrkai80mk"]
 
 [ext_resource type="Script" uid="uid://oedsddb184wt" path="res://src/item/item.gd" id="1_eihup"]
-[ext_resource type="Resource" uid="uid://bgjej82kxtic3" path="res://src/items/fist.tres" id="2_ogd11"]
+[ext_resource type="Resource" uid="uid://bwi364866jxdn" path="res://src/items/fist.tres" id="2_ogd11"]
 [ext_resource type="Script" uid="uid://bergs16kyq55l" path="res://src/inventory.gd" id="3_tscml"]
 [ext_resource type="Script" uid="uid://bedyejdsvyux6" path="res://src/character/character_config.gd" id="4_0rp45"]
 [ext_resource type="Script" uid="uid://brhyw2hs6qpeh" path="res://src/stats.gd" id="5_ymyix"]
 
 [sub_resource type="Resource" id="Resource_6fhkq"]
+resource_local_to_scene = true
 script = ExtResource("3_tscml")
 capacity = 1
 items = Array[ExtResource("1_eihup")]([ExtResource("2_ogd11")])
@@ -14,6 +15,7 @@ lootable = false
 metadata/_custom_type_script = "uid://bergs16kyq55l"
 
 [sub_resource type="Resource" id="Resource_gafta"]
+resource_local_to_scene = true
 script = ExtResource("5_ymyix")
 ignore_limits = false
 max_hp = 20

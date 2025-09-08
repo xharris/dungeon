@@ -63,7 +63,9 @@ folder_colors={
 "res://src/ui_button_configs/": "green",
 "res://src/ui_layer_configs/": "green",
 "res://src/visitors/": "blue",
-"res://src/zones/": "yellow"
+"res://src/zones/": "yellow",
+"res://themes/": "blue",
+"res://tools/": "orange"
 }
 
 [global_group]

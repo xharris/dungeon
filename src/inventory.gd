@@ -11,8 +11,17 @@ var id:String = "":
         id = v
         logs.set_prefix(id)
 @export var capacity:int = 1
-@export var items:Array[Item]
 @export var lootable:bool = false
+## NOTE do not modify directly in code. use [code]add_item[/code]
+@export var items:Array[Item]:
+    get:
+        return _items
+        
+var _items: Array[Item]
+
+func _init() -> void:
+    for item in items:
+        _items.append(item)
 
 func can_add_item(item:Item):
     return count(item.id) < item.max_stack

@@ -1,9 +1,6 @@
 extends Resource
 class_name Item
 
-enum AttackAnimation {None, Swing}
-enum Hold {None, Primary, Secondary}
-
 # config
 
 @export var id: String = "unknown"
@@ -20,7 +17,8 @@ enum Hold {None, Primary, Secondary}
 @export var animation_library:AnimationLibrary:
     set(v):
         animation_library = v.duplicate()
-        animation_library.resource_name = id
+        if animation_library:
+            animation_library.resource_name = id
 
 # combat
 

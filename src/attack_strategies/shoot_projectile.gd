@@ -2,7 +2,6 @@ extends AttackStrategy
 class_name ShootProjectile
 
 @export var count: int = 1
-#@export var visitors: Array[ProjectileVisitor] # NOTE not used
 @export var config: ProjectileConfig
 
 func run(stats: Stats):
