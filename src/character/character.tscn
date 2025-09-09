@@ -1,9 +1,8 @@
-[gd_scene load_steps=12 format=3 uid="uid://bvvb08ueug3f5"]
+[gd_scene load_steps=11 format=3 uid="uid://bvvb08ueug3f5"]
 
 [ext_resource type="Script" uid="uid://orgeq2888yy8" path="res://src/character/character.gd" id="1_adhfm"]
 [ext_resource type="Script" uid="uid://cx02tvmol43rj" path="res://src/character/character_sprite.gd" id="2_ugqs2"]
 [ext_resource type="Texture2D" uid="uid://x6yxorfmb7pj" path="res://assets/character_template.png" id="3_hx151"]
-[ext_resource type="AnimationLibrary" uid="uid://df2bo6bawi54v" path="res://src/items/_animations/swing_animation.res" id="4_56uj1"]
 [ext_resource type="AnimationLibrary" uid="uid://bik0f5cvqasrr" path="res://src/character/character_movement.res" id="4_a5pac"]
 [ext_resource type="PackedScene" uid="uid://dwtj0afn88aat" path="res://src/ui/ui_inspect_node.tscn" id="4_hx151"]
 [ext_resource type="Script" uid="uid://xkofkxdheath" path="res://src/character/ui_character_inspect.gd" id="5_0rvpn"]
@@ -86,7 +85,7 @@ z_index = -1
 position = Vector2(0, 6)
 
 [node name="HandSprite" type="Sprite2D" parent="CharacterSprite/ArmL/HandL"]
-z_index = 1
+z_index = -1
 rotation = -3.14159
 texture = ExtResource("3_hx151")
 hframes = 6
@@ -138,9 +137,6 @@ libraries = {
 
 [node name="WeaponAnimationPlayer" type="AnimationPlayer" parent="CharacterSprite"]
 reset_on_save = false
-libraries = {
-&"sword": ExtResource("4_56uj1")
-}
 
 [node name="FeetHitbox" type="CollisionShape2D" parent="."]
 position = Vector2(0, 72)

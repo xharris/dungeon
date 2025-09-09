@@ -16,12 +16,15 @@ var id:String = "":
 @export var items:Array[Item]
 
 func _init() -> void:
-    # re-add the items use add_item to triggers signals and stuff
+    # re-add the items using add_item to trigger signals and stuff
     var _items: Array[Item]
     _items.assign(items)
     items.clear()
     for item in _items:
         _items.append(item)
+
+func size() -> int:
+    return items.size()
 
 func can_add_item(item:Item):
     return count(item.id) < item.max_stack

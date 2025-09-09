@@ -24,8 +24,16 @@ signal move_to_finished
 @onready var inspect_node: UICharacterInspect = %UIInspectNode
 
 var logs = Logger.new("character") # , Logger.Level.DEBUG)
-var stats: Stats
-var inventory: Inventory
+var stats: Stats:
+    get:
+        if not _config:
+            return null
+        return _config.stats
+var inventory: Inventory:
+    get:
+        if not _config:
+            return null
+        return _config.inventory
 
 var id: String = "unknown"
 var _combat_state: CombatState
@@ -36,31 +44,25 @@ var _max_velocity: Vector2 = Vector2(400, 500)
 var _weapon: Item
 var _primary_hand: Hand = Hand.LEFT
 var _item_node: Node2D
+var _config: CharacterConfig
 
 static func create(config: CharacterConfig) -> Character:
     var me = SCENE.instantiate() as Character
-    me.use_config(config)
+    # use config
+    me._config = config.duplicate(true)
+    me.id = config.id
+    me._config.stats.id = me.id
+    me._config.inventory.id = me.id
+    # position depending on group
+    match me._config.group:
+        Groups.CHARACTER_PLAYER:
+            me.global_position.x -= (Util.size.x / 2) + (Util.get_rect(me).size.x * 2)
+        _:
+            me.global_position.x += (Util.size.x / 2) + (Util.get_rect(me).size.x * 2)
+    me.position.y = 0
+    # done
     Events.character_created.emit(me)
     return me
-
-func use_config(config: CharacterConfig):
-    config = config.duplicate(true)
-    id = config.id
-    # configure
-    stats = config.stats
-    inventory = config.inventory
-    stats.id = id
-    inventory.id = id
-    # position depending on group
-    match config.group:
-        Groups.CHARACTER_PLAYER:
-            global_position.x -= (Util.size.x / 2) + (Util.get_rect(self).size.x * 2)
-        _:
-            global_position.x += (Util.size.x / 2) + (Util.get_rect(self).size.x * 2)
-    position.y = 0
-    
-    add_to_group(config.group)
-    add_to_group(Groups.CHARACTER_ANY)
 
 func _ready() -> void:
     name = "char-%s-%d" % [id, get_instance_id()]
@@ -69,9 +71,9 @@ func _ready() -> void:
     _attack_timer.particle_node = get_primary_hand_node()
     _weapon_animation_player.active = true
     _animation_player.play("RESET")
-    
+
     logs.info("create %s at %.2v" % [id, global_position])
-    
+
     inventory.item_added.connect(_on_item_added)
     inventory.item_removed.connect(_on_item_removed)
     stats.modified.connect(_on_stats_modified)
@@ -86,6 +88,7 @@ func _ready() -> void:
         _on_item_added(item)
 
     add_to_group(Groups.CHARACTER_ANY)
+    add_to_group(_config.group)
 
 func _on_sweet_spot_exited():
     logs.debug("sweet spot exited (attack landed)")

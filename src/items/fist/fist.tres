@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="Item" load_steps=2 format=3 uid="uid://bwi364866jxdn"]
+
+[ext_resource type="Script" uid="uid://oedsddb184wt" path="res://src/item/item.gd" id="3_dswyn"]
+
+[resource]
+script = ExtResource("3_dswyn")
+id = "fist"
+hide = false
+disable_unequip = false
+is_weapon = false
+metadata/_custom_type_script = "uid://oedsddb184wt"
