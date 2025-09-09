@@ -1,5 +1,7 @@
-[gd_resource type="Resource" script_class="Item" load_steps=2 format=3 uid="uid://bwi364866jxdn"]
+[gd_resource type="Resource" script_class="Item" load_steps=4 format=3 uid="uid://dkg4t2vp827ku"]
 
+[ext_resource type="AnimationLibrary" uid="uid://df2bo6bawi54v" path="res://src/items/_animations/swing_animation.res" id="1_5iy5y"]
+[ext_resource type="Resource" uid="uid://dse3ma3t1jdju" path="res://src/items/sword/sword_attack_config.tres" id="2_3dikl"]
 [ext_resource type="Script" uid="uid://oedsddb184wt" path="res://src/item/item.gd" id="3_dswyn"]
 
 [resource]
@@ -7,5 +9,7 @@ script = ExtResource("3_dswyn")
 id = "fist"
 hide = false
 disable_unequip = false
-is_weapon = false
+is_weapon = true
+animation_library = ExtResource("1_5iy5y")
+attack_config = ExtResource("2_3dikl")
 metadata/_custom_type_script = "uid://oedsddb184wt"

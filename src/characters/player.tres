@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="CharacterConfig" load_steps=8 format=3 uid="uid://fgagrkai80mk"]
 
 [ext_resource type="Script" uid="uid://oedsddb184wt" path="res://src/item/item.gd" id="1_eihup"]
-[ext_resource type="Resource" uid="uid://bwi364866jxdn" path="res://src/items/fist/fist.tres" id="2_ogd11"]
+[ext_resource type="Resource" uid="uid://dkg4t2vp827ku" path="res://src/items/fist/fist.tres" id="2_ogd11"]
 [ext_resource type="Script" uid="uid://bergs16kyq55l" path="res://src/inventory.gd" id="3_tscml"]
 [ext_resource type="Script" uid="uid://bedyejdsvyux6" path="res://src/character/character_config.gd" id="4_0rp45"]
 [ext_resource type="Script" uid="uid://brhyw2hs6qpeh" path="res://src/stats.gd" id="5_ymyix"]

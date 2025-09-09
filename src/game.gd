@@ -10,15 +10,12 @@ signal over(type:GameOverType)
 @onready var _characters:Characters = $Characters
 @onready var rooms:Rooms = $Rooms
 
-@export var title_room:RoomConfig = preload("res://src/rooms/title.tres")
-@export var starting_zone:ZoneConfig = preload("res://src/zones/forest/forest.tres")
-
 var logs = Logger.new("game")
 var _current_zone: ZoneConfig
 
 func _ready() -> void:
     name = "Game"
-    _current_zone = starting_zone
+    _current_zone = load("res://src/zones/forest/forest.tres")
     Events.room_created.connect(_on_room_created)
     Events.character_created.connect(_on_character_created)
     Events.trigger_game_restart.connect(_on_trigger_game_restart)
@@ -52,6 +49,7 @@ func _on_character_created(c:Character):
 
 func start():
     logs.info("start")
+    var title_room:RoomConfig = load("res://src/rooms/title.tres")
     rooms.push_room(title_room)
     enter_zone(_current_zone)
 
