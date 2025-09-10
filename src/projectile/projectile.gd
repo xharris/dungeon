@@ -13,7 +13,7 @@ static func create(data: Data, count: int = 1) -> Array[Projectile]:
     var projectiles: Array[Projectile]
     for _i in count:
         var me = _SCENE.instantiate() as Projectile
-        me._data
+        me._data = data
         projectiles.append(me)
     return projectiles
 

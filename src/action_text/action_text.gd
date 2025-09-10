@@ -7,7 +7,6 @@ static func create(modifiers: Array[Callable] = []) -> ActionText:
     var me = scene.instantiate() as ActionText
     me._tween = me.create_tween().set_parallel(true)
     Mod.duration = 0.5
-    Util.main_node.add_child(me)
     for m in modifiers:
         m.call(me)
     me._tween.finished.connect(me._done)

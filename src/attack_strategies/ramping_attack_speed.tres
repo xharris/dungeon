@@ -11,6 +11,7 @@ hp = 0
 movespeed = Vector2(0, 0)
 strength = 0
 attack_speed = 0.02
+invincible = false
 metadata/_custom_type_script = "uid://brhyw2hs6qpeh"
 
 [resource]

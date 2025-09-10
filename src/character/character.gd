@@ -101,6 +101,7 @@ func _on_sweet_spot_exited():
     for s: AttackStrategy in attack_config.attack_strategy:
         var targets = _get_targets(s.target)
         for t in targets:
+            s.setup(self, t)
             s.run(t.stats)
 
 func _on_attack_timer_started():
@@ -155,7 +156,7 @@ func _on_death():
 
 func _show_stats_action_text(stat_name:String, change_amount:float):
     if change_amount != 0:
-        ActionText.create([
+        var text = ActionText.create([
             ActionText.Mod.set_duration(1),
             ActionText.Mod.use_global_position(self),
             ActionText.Mod.set_text("%s%s" % [stat_name, "+" if change_amount > 0 else ""]),
@@ -168,12 +169,13 @@ func _show_stats_action_text(stat_name:String, change_amount:float):
             ActionText.Mod.set_duration(0.2),
             ActionText.Mod.modulate(Color.TRANSPARENT), # fade out
         ])
+        get_tree().root.add_child(text)
 
 func _on_stats_modified(amount:Stats):    
     _show_stats_action_text("SPEED", amount.attack_speed)        
 
 func _on_damage_taken(amount: int):
-    ActionText.create([
+    var text = ActionText.create([
         ActionText.Mod.use_global_position(self),
         ActionText.Mod.set_text("-%d" % amount),
         ActionText.Mod.velocity(), # float up
@@ -183,6 +185,7 @@ func _on_damage_taken(amount: int):
         ActionText.Mod.set_duration(0.25),
         ActionText.Mod.modulate(Color.TRANSPARENT), # fade out
     ])
+    get_tree().root.add_child(text)
 
 func get_primary_hand_node() -> Node2D:
     return \

@@ -29,9 +29,13 @@ var id:String = "":
             attack_speed = v
         else:
             attack_speed = max(MIN_ATTACK_SPEED, min(MAX_ATTACK_SPEED, v))
+@export var invincible: bool = false
 
 func take_damage(v:int) -> Stats:
     logs.info("take damage: %d" % v)
+    if invincible:
+        logs.debug("invincible")
+        return self
     hp -= v
     damage_taken.emit(v)
     if not is_alive():

@@ -1,0 +1,56 @@
+[gd_resource type="Resource" script_class="RoomConfig" load_steps=15 format=3 uid="uid://b0ads54g57q3s"]
+
+[ext_resource type="Script" uid="uid://btoexdkxgn0jv" path="res://src/visitor.gd" id="1_a0hym"]
+[ext_resource type="Script" uid="uid://bedyejdsvyux6" path="res://src/character/character_config.gd" id="2_hplbh"]
+[ext_resource type="Script" uid="uid://df011ese0wh1b" path="res://src/room_config.gd" id="2_lk2rg"]
+[ext_resource type="Script" uid="uid://oedsddb184wt" path="res://src/item/item.gd" id="2_sgfi8"]
+[ext_resource type="Script" uid="uid://brhyw2hs6qpeh" path="res://src/stats.gd" id="3_64jvo"]
+[ext_resource type="Resource" uid="uid://epcvu5nhmv1t" path="res://src/items/bow/bow.tres" id="3_i01e8"]
+[ext_resource type="Script" uid="uid://bxluh27mtef27" path="res://src/visitors/add_character.gd" id="4_d7xy6"]
+[ext_resource type="Script" uid="uid://bergs16kyq55l" path="res://src/inventory.gd" id="4_uha6f"]
+[ext_resource type="Resource" uid="uid://ctlbypk5vki7g" path="res://src/characters/goblin.tres" id="8_i01e8"]
+
+[sub_resource type="Resource" id="Resource_1y1j7"]
+script = ExtResource("4_uha6f")
+capacity = 1
+lootable = false
+items = Array[ExtResource("2_sgfi8")]([ExtResource("3_i01e8")])
+metadata/_custom_type_script = "uid://bergs16kyq55l"
+
+[sub_resource type="Resource" id="Resource_sgfi8"]
+script = ExtResource("3_64jvo")
+ignore_limits = false
+max_hp = 0
+hp = 0
+movespeed = Vector2(0, 0)
+strength = 0
+attack_speed = 0.0
+invincible = true
+metadata/_custom_type_script = "uid://brhyw2hs6qpeh"
+
+[sub_resource type="Resource" id="Resource_i01e8"]
+script = ExtResource("2_hplbh")
+id = "player"
+group = "any"
+stats = SubResource("Resource_sgfi8")
+inventory = SubResource("Resource_1y1j7")
+metadata/_custom_type_script = "uid://bedyejdsvyux6"
+
+[sub_resource type="Resource" id="Resource_uha6f"]
+script = ExtResource("4_d7xy6")
+config = SubResource("Resource_i01e8")
+metadata/_custom_type_script = "uid://bxluh27mtef27"
+
+[sub_resource type="Resource" id="Resource_20js8"]
+script = ExtResource("4_d7xy6")
+config = ExtResource("8_i01e8")
+metadata/_custom_type_script = "uid://bxluh27mtef27"
+
+[resource]
+script = ExtResource("2_lk2rg")
+id = "bow_example_room"
+halt = true
+events = Array[ExtResource("1_a0hym")]([SubResource("Resource_uha6f"), SubResource("Resource_20js8")])
+event_order = 0
+event_wrap = false
+metadata/_custom_type_script = "uid://df011ese0wh1b"
