@@ -1,23 +1,26 @@
 extends Node2D
 class_name Characters
 
-enum GroupSide {Left=0, Right=1}
+enum GroupSide {Left = 0, Right = 1}
 
 var logs = Logger.new("characters")
 var await_arrange = Async.AwaitAll.new()
+
+func accept(v: Visitor):
+    v.visit_characters(self)
 
 func _ready() -> void:
     add_to_group(Groups.CHARACTERS)
     Events.character_created.connect(_on_character_created)
     
-func _on_character_created(c:Character):
+func _on_character_created(c: Character):
     add_child(c)
 
 func get_player() -> Character:
     return get_tree().get_first_node_in_group(Groups.CHARACTER_PLAYER) as Character
 
 # arrange all characters to their designated side of the screen
-func arrange(characters:Array[Character], area:Rect2):
+func arrange(characters: Array[Character], area: Rect2):
     logs.info("arrange characters (%d), area=%s" % [characters.size(), area])
     characters = GameUtil.all_characters()
     
@@ -37,7 +40,7 @@ func arrange(characters:Array[Character], area:Rect2):
     for c in characters:
         for g in group_side:
             if c.is_in_group(g):
-                var side:GroupSide = group_side[g]
+                var side: GroupSide = group_side[g]
                 side_chars[side].append(c)
                 await_arrange.add(c.move_to_finished)
     await_arrange.done.connect(_on_arrange_finished, CONNECT_ONE_SHOT)
@@ -47,7 +50,7 @@ func arrange(characters:Array[Character], area:Rect2):
     logs.debug("arrange area x=[%d, %d]" % [x, w])
     var side_size = (w - x) / side_order.size()
     for i in side_order.size():
-        var side:GroupSide = side_order[i]
+        var side: GroupSide = side_order[i]
         var side_x = side_size * i
         var side_sep = 64 # (side_size / side_chars[side].size())
         var char_count = side_chars[side].size()

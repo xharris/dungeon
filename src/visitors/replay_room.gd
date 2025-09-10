@@ -6,4 +6,4 @@ func run():
     var last_room = rooms.last_room()
     logs.error(not last_room, "no previous room to replay")
     rooms.push_room(last_room)
-    finished.emit()
+    # finished.emit()

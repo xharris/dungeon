@@ -1,11 +1,11 @@
 extends Node2D
 class_name Rooms
 
-@export var title_room_id:String = "title"
+@export var title_room_id: String = "title"
 
 var logs = Logger.new("rooms")
-var _last_room:RoomConfig
-var _next_rooms:Array[RoomConfig]
+var _last_room: RoomConfig
+var _next_rooms: Array[RoomConfig]
 
 func _ready() -> void:
     add_to_group(Groups.ROOMS)
@@ -13,6 +13,9 @@ func _ready() -> void:
     
     Room.grid = Grid.new()
     
+func accept(v: Visitor):
+    v.visit_rooms(self)
+
 func _on_room_events_finished():
     var ok = next()
     if not ok:
@@ -24,7 +27,7 @@ func _on_trigger_rooms_next():
 func last_room() -> RoomConfig:
     return _last_room
 
-func push_room(config:RoomConfig) -> Rooms:
+func push_room(config: RoomConfig) -> Rooms:
     logs.info("push room: %s" % config.id)
     _next_rooms.append(config)
     return self
@@ -36,7 +39,7 @@ func center() -> Vector2:
     return last_room.center()
 
 ## returns false if a room is not loaded
-func next() -> bool:   
+func next() -> bool:
     var config = _next_rooms.pop_front() as RoomConfig
     if not config:
         logs.info("no rooms left in queue")

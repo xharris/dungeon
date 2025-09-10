@@ -34,6 +34,4 @@ func _run_event():
         logs.info("all events finished")
         events_finished.emit()
         return
-    if not event.finished.is_connected(_run_event):
-        event.finished.connect(_run_event, CONNECT_ONE_SHOT)
     event.visit()

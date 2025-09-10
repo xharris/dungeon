@@ -1,4 +1,4 @@
-extends Resource
+extends Visitable
 class_name Stats
 
 const MIN_ATTACK_SPEED = 0.2
@@ -30,6 +30,9 @@ var id:String = "":
         else:
             attack_speed = max(MIN_ATTACK_SPEED, min(MAX_ATTACK_SPEED, v))
 @export var invincible: bool = false
+
+func accept(visitor: Visitor):
+    visitor.visit_stats(self)
 
 func take_damage(v:int) -> Stats:
     logs.info("take damage: %d" % v)
